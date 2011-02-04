@@ -1,0 +1,16 @@
+ INSTRUCTIONS
+
+1.   edit your .cshrc file to something like:
+     	  setenv SPS_HOME /home/directory/for/SPS/routines/ 
+	  (this should point to the directory containing the src/ directory)
+
+2.  edit the makefile in the src/ directory so that it is using your fortran compiler
+     one should then be able to compile everything by simply typing "make"
+
+3.  email cconroy@astro.princeton.edu so that I can keep you posted on updates.  
+    	  ->  this step is actually important.  Every code has bugs.  If I don't know 
+	         that you're using this code, I can't tell you that I found a catastrophic 
+		 bug that invalidates all of your results!
+
+4.  email me if have any problems or find any bugs
+
