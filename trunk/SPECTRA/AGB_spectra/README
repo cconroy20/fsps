@@ -1,0 +1,24 @@
+averaged AGB spectra from Lancon & Mouhcine 2002
+
+Note (1): The spectra are normalized in such a way that the integral of
+    Flambda.d(lambda) equals 1 (unit of energy), if the wavelengths are
+    taken as is (i.e. in Angstroem). The extrapolation to a nil flux
+    density at 3500Å and 50000Å, justified in the paper, has been
+    taken into account. In addition, the coolest O-rich spectrum (o_bin9)
+    has been divided by 1.05 (this assumes that the standard extrapolation
+    misses 5% of the total flux); the second coolest C-rich spectrum
+    (c_bin4) has been divided by 1.10 (correction for a 10%
+    underestimate); the coolest C-rich spectrum (c_bin5) has been divided
+    by 1.25 (correction for a 25% underestimate).
+
+    Reddened spectra for dust-enshrouded sources are also provided. For
+    the O-rich series, we have used the coolest spectrum (o_bin9),
+    normalized as described above, and applied the extinction law of
+    Cardelli et al. (1989ApJ...345..245C), as justified in the paper. For
+    the C-rich series, we have proceeded in the same way with the coolest
+    C-rich average (c_bin5).
+
+    Example of practical use: If you need a given spectrum to represent a
+    star with a luminosity of 1 L{Sun}, use the spectrum as it is, and
+    simply consider the flux density units to be in L/Angstroem
+    (the same is valid for any chosen energy unit).

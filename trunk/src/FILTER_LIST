@@ -1,0 +1,47 @@
+1	Johnson V (from Bessell 1990 via M. Blanton)  --- this defines V=0 for the Vega system
+2	Johnson U (from Bessell 1990 via M. Blanton)
+3	DEEP2 B-band (from Blanton's kcorrect)
+4	DEEP2 R-band (from Blanton's kcorrect)
+5	DEEP2 I-band (from Blanton's kcorrect)
+6	2MASS J filter (total response w/atm)
+7 	2MASS H filter (total response w/atm)
+8	2MASS Ks filter (total response w/atm)
+9	SDSS Camera u Response Function, airmass = 1.3 (June 2001)
+10	SDSS Camera g Response Function, airmass = 1.3 (June 2001)
+11	SDSS Camera r Response Function, airmass = 1.3 (June 2001)
+12	SDSS Camera i Response Function, airmass = 1.3 (June 2001)
+13	SDSS Camera z Response Function, airmass = 1.3 (June 2001)
+14 	WFC ACS F435W  (http://acs.pha.jhu.edu/instrument/photometry/)
+15	WFC ACS F606W            "
+16	WFC ACS F775W            "
+17	WFC ACS F814W           "
+18	WFC ACS F850LP           "
+19	IRAC Channel 1
+20	IRAC Channel 2
+21	IRAC Channel 3
+22	ISAAC Js
+23	ISAAC Ks
+24	FORS V
+25	FORS R
+26	NICMOS F110W
+27	NICMOS F160W
+28	GALEX NUV
+29	GALEX FUV
+30	DES g  (all from Huan Lin, for DES camera)
+31	DES r
+32	DES i
+33	DES z
+34	DES Y
+35	WFCAM Z  (all from Hewett et al. 2006, via A. Smith)
+36	WFCAM Y
+37	WFCAM J
+38	WFCAM H
+39	WFCAM K
+40	Johnson B (from BC03.  This is the B2 filter from Buser)
+41	Cousins R (from Bessell 1990 via M. Blanton) 
+42 	Cousins I (from Bessell 1990 via M. Blanton) 
+43	Johnson B (from Bessell)
+44 	WFPC2 F555W
+45	WFPC2 F814W
+46	Cousins I (from ACS)
+47  	DENIS I

@@ -1,0 +1,41 @@
+REVISION HISTORY
+
+1/14/09
+ - small bug in compsp.f90 fixed.  effected tabulated SFH outputs
+
+1/24/09
+ - Bug fixed in the output of *spec files (only effects readin from read_spec.pro)
+ - Allowed tau to be less than 0.1.  Minor modifications to compsp.f90
+ - Added lesssimple.f90 routine
+ - Updated the manual	      	 
+
+4/29/09
+ - Bug in BaSeL library fixed.  Effected primarily red/near-IR colors at 
+   the 0.05 mag level.
+ - dust attenuation can now be applied to SSPs (i.e. when sfh=0)
+ - greatly increased flexibility in the dust model
+   	   - Added Calzetti et al. 2000 attenuation curve
+	   - Several additional parameters were added to the parameter set to control
+	      various aspects of the dust model.  See the manual for details
+ - WFPC2 F606W filter was added.   If you have added filters to the FILTER_LIST file
+    you will have to probably contact me to resolve the conflict.
+
+11/17/09 
+ - Release of v2.0.  Major revisions, including a calibration of the
+   TP-AGB parameters Delta_L and Delta_T on Magellanic Cloud data.  See
+   Conroy & Gunn 2009 for details.
+ - BaSTI isochrones added
+ - Post-AGB tracks added
+ - Witt & Gordon 2000 dust models added
+ - Routines for computing spectral indices, and velocity broadening
+   added
+ 
+02/10/20
+ - Release of v2.1.  Major revisions, including the addition of synthetic 
+   post-AGB spectra from Rauch 2003, synthetic OB and WR spectra from 
+   Smith et al. 2002, and the Geneva models for massive stars (>70 Msun).
+ - The time array has been substantially modified at early times, and the
+   model outputs should be much more reliable/accurate at log(t/yrs)<6.6
+ - The directory structure has been reorganized.
+ - The code is now in a svn repository for easy future updates
+
