@@ -50,8 +50,8 @@ SUBROUTINE GETMAGS(zred,spec,mags)
              (vega_spec(j+1)*bands(i,j+1)/spec_lambda(j+1)+&
              vega_spec(j)*bands(i,j)/spec_lambda(j))/2        
      ENDDO
-     IF (mags(i).LE.1E-35)  mags(i)  = 1E-35
-     IF (vmags(i).LE.1E-35) vmags(i) = 1E-35
+     mags(i)  = MAX(mags(i),tiny_number)
+     vmags(i) = MAX(vmags(i),tiny_number)
   ENDDO
 
   !define AB magnitudes; see Fukugita et al. 1996, Oke & Gunn
