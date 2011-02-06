@@ -25,7 +25,7 @@ SUBROUTINE IMF_WEIGHT(mini,wght,nmass)
   DO i=1,nmass
 
      IF (i.EQ.1) THEN
-        m1 = mlo
+        m1 = imf_lower_limit
      ELSE
         m1 = mini(i) - 0.5*(mini(i)-mini(i-1))
      ENDIF
@@ -41,7 +41,7 @@ SUBROUTINE IMF_WEIGHT(mini,wght,nmass)
 
   !normalize the weights
   imf_type = imf_type + 10
-  wght = wght / qromb(imf,mlo,mup)
+  wght = wght / qromb(imf,imf_lower_limit,imf_upper_limit)
   imf_type = imf_type - 10
 
   RETURN

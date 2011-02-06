@@ -44,4 +44,13 @@
 44 	WFPC2 F555W
 45	WFPC2 F814W
 46	Cousins I (from ACS)
-47  	DENIS I
+47  	WFC3 F275W
+48  	Steidel Un (via A. Shapley; see Steidel et al. 2003)
+49	Steidel G         " 
+50 	Steidel Rs       "
+51	Steidel I          "
+52	CFHT MegaCam u* (http://cadcwww.dao.nrc.ca/megapipe/docs/filters.html, Dec 2010)
+53	CFHT MegaCam g' (http://cadcwww.dao.nrc.ca/megapipe/docs/filters.html)
+54	CFHT MegaCam r' (http://cadcwww.dao.nrc.ca/megapipe/docs/filters.html)
+55	CFHT MegaCam i' (http://cadcwww.dao.nrc.ca/megapipe/docs/filters.html)
+56	CFHT MegaCam z' (http://cadcwww.dao.nrc.ca/megapipe/docs/filters.html)

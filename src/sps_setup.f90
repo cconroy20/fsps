@@ -71,7 +71,7 @@ SUBROUTINE SPS_SETUP(zin)
      STOP
   ENDIF
 
-  IF (spec_type.NE.'basel'.AND.spec_type.NE.'miles') THEN
+  IF (spec_type.NE.'basel'.AND.spec_type.NE.'miles'.AND.spec_type.NE.'picks') THEN
      WRITE(*,*) 'SPS_SETUP ERROR: spec_type var set to invalid type: ',spec_type
      STOP
   ENDIF
@@ -86,6 +86,21 @@ SUBROUTINE SPS_SETUP(zin)
      STOP
   ENDIF
 
+  IF (spec_type.EQ.'miles'.AND.nz.NE.5) THEN
+     WRITE(*,*) 'SPS_SETUP ERROR: spec_type="miles", but nz NE 5!'
+     STOP
+  ENDIF
+
+  IF (spec_type.EQ.'picks'.AND.nz.NE.1) THEN
+     WRITE(*,*) 'SPS_SETUP ERROR: spec_type="picks", but nz NE 1!'
+     STOP
+  ENDIF
+
+  IF (spec_type.EQ.'picks'.AND.nspec.NE.1895) THEN
+     WRITE(*,*) 'SPS_SETUP ERROR: spec_type = "picks" but nspec NE 1895!'
+     STOP
+  ENDIF
+
   IF (spec_type.EQ.'basel'.AND.nspec.NE.1221) THEN
      WRITE(*,*) 'SPS_SETUP ERROR: spec_type = "basel" but nspec NE 1221!'
      STOP
@@ -97,10 +112,10 @@ SUBROUTINE SPS_SETUP(zin)
   
   !units are simply metal fraction by mass (e.g. Z=0.0190 for Zsun)
   IF (isoc_type.EQ.'pdva') THEN
-     OPEN(90,FILE=TRIM(SPS_HOME)//'/Padova/Padova2007/zlegend_'//&
+     OPEN(90,FILE=TRIM(SPS_HOME)//'/ISOCHRONES/Padova/Padova2007/zlegend_'//&
           spec_type//'.dat',STATUS='OLD',iostat=stat,ACTION='READ')
   ELSE IF (isoc_type.EQ.'bsti') THEN
-     OPEN(90,FILE=TRIM(SPS_HOME)//'/BaSTI/zlegend_'//&
+     OPEN(90,FILE=TRIM(SPS_HOME)//'/ISOCHRONES/BaSTI/zlegend_'//&
           spec_type//'.dat',STATUS='OLD',iostat=stat,ACTION='READ')
   ENDIF
   IF (stat.NE.0) THEN
@@ -121,16 +136,25 @@ SUBROUTINE SPS_SETUP(zin)
      zmax = zin
   ENDIF
 
+  !force the Z to be Zsol when using Pickles library
+  IF (spec_type.EQ.'picks') THEN
+     zmin = 1
+     zmax = 1
+  ENDIF
+
   !----------------------------------------------------------------!
-  !-----------------Read in HR diagram spectra---------------------!
+  !-----------------Read in spectral library-----------------------!
   !----------------------------------------------------------------!
 
   !read in wavelength array
   IF (spec_type.EQ.'basel') THEN
-     OPEN(91,FILE=TRIM(SPS_HOME)//'/BaSeL3.1/basel.lambda',&
+     OPEN(91,FILE=TRIM(SPS_HOME)//'/SPECTRA/BaSeL3.1/basel.lambda',&
           STATUS='OLD',iostat=stat,ACTION='READ')
-  ELSE
-     OPEN(91,FILE=TRIM(SPS_HOME)//'/MILES/miles.lambda',&
+  ELSE IF (spec_type.EQ.'miles') THEN
+     OPEN(91,FILE=TRIM(SPS_HOME)//'/SPECTRA/MILES/miles.lambda',&
+          STATUS='OLD',iostat=stat,ACTION='READ')
+  ELSE IF (spec_type.EQ.'picks') THEN
+     OPEN(91,FILE=TRIM(SPS_HOME)//'/SPECTRA/Pickles/pickles.lambda',&
           STATUS='OLD',iostat=stat,ACTION='READ')
   ENDIF
 
@@ -146,14 +170,14 @@ SUBROUTINE SPS_SETUP(zin)
   CLOSE(91)
   
   !read in basel logg and logt arrays
-  !NB: these are the same as for the MILES library
-  OPEN(91,FILE=TRIM(SPS_HOME)//'/BaSeL3.1/basel_logt.dat',&
+  !NB: these are the same as for all spectral libraries
+  OPEN(91,FILE=TRIM(SPS_HOME)//'/SPECTRA/BaSeL3.1/basel_logt.dat',&
        STATUS='OLD',iostat=stat,ACTION='READ')
   DO i=1,ndim_logt
      READ(91,*) basel_logt(i)
   ENDDO
   CLOSE(91)
-  OPEN(91,FILE=TRIM(SPS_HOME)//'/BaSeL3.1/basel_logg.dat',&
+  OPEN(91,FILE=TRIM(SPS_HOME)//'/SPECTRA/BaSeL3.1/basel_logg.dat',&
        STATUS='OLD',iostat=stat,ACTION='READ')
   DO i=1,ndim_logg
      READ(91,*) basel_logg(i)
@@ -167,13 +191,18 @@ SUBROUTINE SPS_SETUP(zin)
 
      !read in spectral library
      IF (spec_type.EQ.'basel') THEN
-        OPEN(92,FILE=TRIM(SPS_HOME)//'/BaSeL3.1/basel_'//basel_str//'_z'&
+        OPEN(92,FILE=TRIM(SPS_HOME)//'/SPECTRA/BaSeL3.1/basel_'//basel_str//'_z'&
              //zstype//'.spectra.bin',FORM='UNFORMATTED',&
              STATUS='OLD',iostat=stat,ACTION='READ',access='direct',&
              recl=nspec*ndim_logg*ndim_logt*4)
-     ELSE
-        OPEN(92,FILE=TRIM(SPS_HOME)//'/MILES/imiles_z'&
+     ELSE IF (spec_type.EQ.'miles') THEN
+        OPEN(92,FILE=TRIM(SPS_HOME)//'/SPECTRA/MILES/imiles_z'&
              //zstype//'.spectra.bin',FORM='UNFORMATTED',&
+             STATUS='OLD',iostat=stat,ACTION='READ',access='direct',&
+             recl=nspec*ndim_logg*ndim_logt*4)
+     ELSE IF (spec_type.EQ.'picks') THEN
+        OPEN(92,FILE=TRIM(SPS_HOME)//'/SPECTRA/Pickles/pickles.'&
+             //'spectra.bin',FORM='UNFORMATTED',&
              STATUS='OLD',iostat=stat,ACTION='READ',access='direct',&
              recl=nspec*ndim_logg*ndim_logt*4)
      ENDIF
@@ -189,11 +218,11 @@ SUBROUTINE SPS_SETUP(zin)
   ENDDO
   
   !read in AGB Teff array for O-rich spectra
-  OPEN(93,FILE=TRIM(SPS_HOME)//'/AGB_spectra/Orich_teff_allZ_'//&
-       isoc_type//'.dat',STATUS='OLD',iostat=stat,ACTION='READ')
+  OPEN(93,FILE=TRIM(SPS_HOME)//'/SPECTRA/AGB_spectra/Orich_teff_allZ_'//&
+       isoc_type//'_'//spec_type//'.dat',STATUS='OLD',iostat=stat,ACTION='READ')
   IF (stat.NE.0) THEN
-     WRITE(*,*) 'SPS_SETUP ERROR3: /AGB_spectra/Orich_teff_allZ_'&
-          //isoc_type//'.dat cannot be opened'
+     WRITE(*,*) 'SPS_SETUP ERROR3: /SPECTRA/AGB_spectra/Orich_teff_allZ_'&
+          //isoc_type//'_'//spec_type//'.dat cannot be opened'
      STOP 
   ENDIF
   !burn the header
@@ -205,51 +234,120 @@ SUBROUTINE SPS_SETUP(zin)
   agb_logt_o = LOG10(agb_logt_o)
 
   !read in AGB Teff array for C-rich spectra
-  OPEN(94,FILE=TRIM(SPS_HOME)//'/AGB_spectra/Crich_teff_allZ_'//&
-       isoc_type//'.dat',STATUS='OLD',iostat=stat,ACTION='READ')
+  OPEN(94,FILE=TRIM(SPS_HOME)//'/SPECTRA/AGB_spectra/Crich_teff_allZ'//&
+       '.dat',STATUS='OLD',iostat=stat,ACTION='READ')
   IF (stat.NE.0) THEN
-     WRITE(*,*) 'SPS_SETUP ERROR4: /AGB_spectra/Crich_teff_allZ_'//&
-          isoc_type//'.dat cannot be opened'
+     WRITE(*,*) 'SPS_SETUP ERROR4: /SPECTRA/AGB_spectra/'//'&
+          Crich_teff_allZ.dat cannot be opened'
      STOP 
   ENDIF
   !burn the header
   READ(94,*,IOSTAT=stat) char
   DO i=1,n_agb_c
-     READ(94,*) dumr1, agb_logt_c(:,i)
+     READ(94,*) dumr1, agb_logt_c(i)
   ENDDO  
   CLOSE(94)
   agb_logt_c = LOG10(agb_logt_c)
 
-  !read in AGB O-rich spectra
-  OPEN(95,FILE=TRIM(SPS_HOME)//&
-       '/AGB_spectra/Orich_spec_all_'//spec_type//'.dat',&
-       STATUS='OLD',iostat=stat,ACTION='READ')
-  IF (stat.NE.0) THEN
-     WRITE(*,*) 'SPS_SETUP ERROR5: /AGB_spectra/Orich_spec_all_'//&
-          spec_type//'.dat '//'cannot be opened'
-     STOP 
+  IF (spec_type.NE.'picks') THEN
+
+     !read in TP-AGB O-rich spectra
+     OPEN(95,FILE=TRIM(SPS_HOME)//&
+          '/SPECTRA/AGB_spectra/Orich_spec_all_'//spec_type//'.dat',&
+          STATUS='OLD',iostat=stat,ACTION='READ')
+     IF (stat.NE.0) THEN
+
+        WRITE(*,*) 'SPS_SETUP ERROR5: /AGB_spectra/Orich_spec_all_'//&
+             spec_type//'.dat '//'cannot be opened'
+        STOP 
+     ENDIF
+     DO i=1,nspec
+        READ(95,*) d1,agb_spec_o(i,:)
+     ENDDO
+     CLOSE(95)
+     
+     !read in TP-AGB C-rich spectra
+     OPEN(96,FILE=TRIM(SPS_HOME)//&
+          '/SPECTRA/AGB_spectra/Crich_spec_all_'//spec_type//'.dat',&
+          STATUS='OLD',iostat=stat,ACTION='READ')
+     IF (stat.NE.0) THEN
+        WRITE(*,*) 'SPS_SETUP ERROR6: /AGB_spectra/SPECTRA/'//&
+             'Crich_spec_all_'//spec_type//'.dat '//'cannot be opened'
+        STOP 
+     ENDIF
+     DO i=1,nspec
+        READ(96,*) d1,agb_spec_c(i,:)
+     ENDDO
+     CLOSE(96)
+
   ENDIF
-  DO i=1,nspec
-     READ(95,*) d1,agb_spec_o(i,1),agb_spec_o(i,2),agb_spec_o(i,3),&
-          agb_spec_o(i,4),agb_spec_o(i,5),agb_spec_o(i,6),&
-          agb_spec_o(i,7),agb_spec_o(i,8),agb_spec_o(i,9)
-  ENDDO
-  CLOSE(95)
   
-  !read in TP-AGB C-rich spectra
-  OPEN(96,FILE=TRIM(SPS_HOME)//&
-       '/AGB_spectra/Crich_spec_all_'//spec_type//'.dat',&
-       STATUS='OLD',iostat=stat,ACTION='READ')
-  IF (stat.NE.0) THEN
-     WRITE(*,*) 'SPS_SETUP ERROR6: /AGB_spectra/Crich_spec_all_'//&
-          spec_type//'.dat '//'cannot be opened'
-     STOP 
+     !read in WR Teff array
+     OPEN(94,FILE=TRIM(SPS_HOME)//'/SPECTRA/Hot_spectra/iwr.teff',&
+          STATUS='OLD',iostat=stat,ACTION='READ')
+     IF (stat.NE.0) THEN
+        WRITE(*,*) 'SPS_SETUP ERROR8: Hot_spectra/iwr.teff cannot be opened'
+        STOP 
+     ENDIF
+     DO i=1,ndim_wr
+        READ(94,*) wr_logt(i)
+     ENDDO
+     CLOSE(94)
+
+     !read in post-AGB Teff array
+     OPEN(94,FILE=TRIM(SPS_HOME)//'/SPECTRA/Hot_spectra/ipagb.teff',&
+          STATUS='OLD',iostat=stat,ACTION='READ')
+     IF (stat.NE.0) THEN
+        WRITE(*,*) 'SPS_SETUP ERROR8: Hot_spectra/ipagb.teff cannot be opened'
+        STOP 
+     ENDIF
+     DO i=1,ndim_pagb
+        READ(94,*) pagb_logt(i)
+     ENDDO
+     CLOSE(94)
+     pagb_logt = LOG10(pagb_logt)
+
+  IF (spec_type.EQ.'basel') THEN 
+
+     !read in post-AGB spectra from Rauch 2003
+     OPEN(97,FILE=TRIM(SPS_HOME)//'/SPECTRA/Hot_spectra/ipagb.spec_solar',&
+          STATUS='OLD',iostat=stat,ACTION='READ')
+     IF (stat.NE.0) THEN
+        WRITE(*,*) 'SPS_SETUP ERROR7: /SPECTRA/Hot_spectra/'//&
+             'ipagb.spec_solar cannot be opened'
+        STOP 
+     ENDIF
+     DO i=1,nspec
+        READ(97,*) d1,pagb_spec(i,:,2)
+     ENDDO
+     CLOSE(97)
+     
+     OPEN(97,FILE=TRIM(SPS_HOME)//'/SPECTRA/Hot_spectra/ipagb.spec_halo',&
+          STATUS='OLD',iostat=stat,ACTION='READ')
+     IF (stat.NE.0) THEN
+        WRITE(*,*) 'SPS_SETUP ERROR7: /SPECTRA/Hot_spectra/'//&
+             'ipagb.spec_halo cannot be opened'
+        STOP 
+     ENDIF
+     DO i=1,nspec
+        READ(97,*) d1,pagb_spec(i,:,1)
+     ENDDO
+     CLOSE(97)
+
+     !read in WR spectra from Smith et al. 2002
+     OPEN(97,FILE=TRIM(SPS_HOME)//'/SPECTRA/Hot_spectra/iwr.spec',&
+          STATUS='OLD',iostat=stat,ACTION='READ')
+     IF (stat.NE.0) THEN
+        WRITE(*,*) 'SPS_SETUP ERROR7: Hot_spectra/iwr.spec '//&
+             'cannot be opened'
+        STOP 
+     ENDIF
+     DO i=1,nspec
+        READ(97,*) d1,wr_spec(i,:)
+     ENDDO
+     CLOSE(97)
+
   ENDIF
-  DO i=1,nspec
-     READ(96,*) d1,agb_spec_c(i,1),agb_spec_c(i,2),agb_spec_c(i,3),&
-          agb_spec_c(i,4),agb_spec_c(i,5)
-  ENDDO
-  CLOSE(96)
 
   !----------------------------------------------------------------!
   !--------------------Read in isochrones--------------------------!
@@ -261,104 +359,56 @@ SUBROUTINE SPS_SETUP(zin)
      n_isoc = 0
      WRITE(zstype,'(F6.4)') zlegend(z)
 
-     ! Add in non-evolving low mass stars (cf. Baraffe et al. 1998)
-     ! NB: this is only strictly appropriate for solar metallicity, 
-     ! but should be OK since they only contribute mass.
-  
-     DO i=1,nt
+     !open Padova isochrones
+     IF (isoc_type.EQ.'pdva') &
+          OPEN(97,FILE=TRIM(SPS_HOME)//&
+          '/ISOCHRONES/Padova/Padova2007/isoc_z'//&
+          zstype//'.dat',STATUS='OLD', IOSTAT=stat,ACTION='READ')
+     !open BaSTI isochrones
+     IF (isoc_type.EQ.'bsti') &
+          OPEN(97,FILE=TRIM(SPS_HOME)//&
+          'ISOCHRONES//BaSTI/isoc_z'//zstype//'.dat',STATUS='OLD',&
+          IOSTAT=stat,ACTION='READ')
+
+     IF (stat.NE.0) THEN
+        WRITE(*,*) 'SPS_SETUP ERROR7: isochrone files cannot be opened'
+        STOP 
+     END IF
         
-        mini_isoc(z,i,1:3) = (/0.10,0.11,0.13/)
-        mact_isoc(z,i,1:3) = (/0.10,0.11,0.13/)
-        logl_isoc(z,i,1:3) = (/-3.07,-2.93,-2.73/)
-        logt_isoc(z,i,1:3) = LOG10((/2813.,2921.,3056./))
-        logg_isoc(z,i,1:3) = (/5.251,5.218,5.169/)
-        nmass_isoc(z,i)    = nmass_isoc(z,i)+3
+     DO i=1,nlines
+           
+        READ(97,*,IOSTAT=stat) char
+        IF (stat.NE.0) GOTO 20
+        
+        IF (char.EQ.'#') THEN 
+           m = 1
+        ELSE 
+           
+           IF (m.EQ.1) n_isoc = n_isoc+1
+           BACKSPACE(97)
+           IF (m.GT.nm) THEN
+              WRITE(*,*) 'SPS_SETUP ERROR: number of mass points GT nm'
+              STOP
+           ENDIF
+           READ(97,*,IOSTAT=stat) logage,mini_isoc(z,n_isoc,m),&
+                mact_isoc(z,n_isoc,m),logl_isoc(z,n_isoc,m),&
+                logt_isoc(z,n_isoc,m),logg_isoc(z,n_isoc,m),&
+                ffco_isoc(z,n_isoc,m),phase_isoc(z,n_isoc,m)
+           IF (stat.NE.0) GOTO 20
+           IF (m.EQ.1) timestep_isoc(z,n_isoc) = logage
+           nmass_isoc(z,n_isoc) = nmass_isoc(z,n_isoc)+1
+           m = m+1
+           
+        ENDIF
         
      ENDDO
 
-     !read in Padova isochrones
-     IF (isoc_type.EQ.'pdva') THEN
-
-        OPEN(97,FILE=TRIM(SPS_HOME)//&
-             '/Padova/Padova2007/isoc_z'//&
-             zstype//'.dat',STATUS='OLD', IOSTAT=stat,ACTION='READ')
-        IF (stat.NE.0) THEN
-           WRITE(*,*) 'SPS_SETUP ERROR7: Padova isochrone files cannot be opened'
-           STOP 
-        END IF
-        
-        DO i=1,nlines
-           
-           READ(97,*,IOSTAT=stat) char
-           IF (stat.NE.0) GOTO 20
-           
-           IF (char.EQ.'#') THEN 
-              m = 4
-           ELSE 
-              
-              IF (m.EQ.4) n_isoc = n_isoc+1
-              BACKSPACE(97)
-              READ(97,*,IOSTAT=stat) logage,mini_isoc(z,n_isoc,m),&
-                   mact_isoc(z,n_isoc,m),logl_isoc(z,n_isoc,m),&
-                   logt_isoc(z,n_isoc,m),logg_isoc(z,n_isoc,m),&
-                   ffco_isoc(z,n_isoc,m),phase_isoc(z,n_isoc,m)
-              IF (stat.NE.0) GOTO 20
-              IF (m.EQ.4) timestep_isoc(z,n_isoc) = logage
-              nmass_isoc(z,n_isoc) = nmass_isoc(z,n_isoc)+1
-              m = m+1
-              
-           ENDIF
-        
-        ENDDO
-
-        WRITE(*,*) 'SPS_SETUP ERROR8: didnt finish reading in the isochrones!'
-        STOP
+     WRITE(*,*) 'SPS_SETUP ERROR8: didnt finish reading in the isochrones!'
+     STOP
      
-20      CONTINUE
-        CLOSE(97)
+20   CONTINUE
+     CLOSE(97)
 
-     !read in BaSTI isochrones
-     ELSE IF (isoc_type.EQ.'bsti') THEN
-
-        OPEN(97,FILE=TRIM(SPS_HOME)//&
-             '/BaSTI/isoc_z'//zstype//'.dat',STATUS='OLD',&
-             IOSTAT=stat,ACTION='READ')
-        IF (stat.NE.0) THEN
-           WRITE(*,*) 'SPS_SETUP ERROR7: BaSTI isochrone files cannot be opened'
-           STOP 
-        END IF
-
-        DO i=1,nlines
-           
-           READ(97,*,IOSTAT=stat) char
-           IF (stat.NE.0) GOTO 21
-           
-           IF (char.EQ.'#') THEN 
-              m = 4
-           ELSE
-              
-              IF (m.EQ.4) n_isoc = n_isoc+1
-              BACKSPACE(97)
-              READ(97,*,IOSTAT=stat) logage,mini_isoc(z,n_isoc,m),&
-                   mact_isoc(z,n_isoc,m),logl_isoc(z,n_isoc,m),&
-                   logt_isoc(z,n_isoc,m),phase_isoc(z,n_isoc,m)
-              IF (stat.NE.0) GOTO 21
-              IF (m.EQ.4) timestep_isoc(z,n_isoc) = logage
-              nmass_isoc(z,n_isoc) = nmass_isoc(z,n_isoc)+1
-              m = m+1
-              
-           ENDIF
-        
-        ENDDO
-
-        WRITE(*,*) 'SPS_SETUP ERROR8: didnt finish reading in the isochrones!'
-        STOP
-     
-21      CONTINUE
-        CLOSE(97)
-
-     ENDIF
-     
   ENDDO
 
   !----------------------------------------------------------------!
@@ -366,10 +416,10 @@ SUBROUTINE SPS_SETUP(zin)
   !----------------------------------------------------------------!
 
   !read in Vega-like star (lambda, Flambda)
-  OPEN(98,FILE=TRIM(SPS_HOME)//'/src/A0V_KURUCZ_92.SED',&
+  OPEN(98,FILE=TRIM(SPS_HOME)//'/SPECTRA/A0V_KURUCZ_92.SED',&
        STATUS='OLD',iostat=stat,ACTION='READ')
   IF (stat.NE.0) THEN
-     WRITE(*,*) 'SPS_SETUP ERROR9: A0V_KURUCZ_92.SED cannot be opened'
+     WRITE(*,*) 'SPS_SETUP ERROR9: SPECTRA/A0V_KURUCZ_92.SED cannot be opened'
      STOP 
   END IF  
   !burn the header
@@ -507,10 +557,9 @@ SUBROUTINE SPS_SETUP(zin)
   ENDDO
 
   !----------------------------------------------------------------!
-  !----------------------------------------------------------------!
+  !---------set up the redshift-age relation (age in Gyr)----------!
   !----------------------------------------------------------------!
 
-  !set up the redshift-age relation (age in Gyr)
   DO i=1,500
      a = (i-1)/499.*(1-1/1001.)+1/1001.
      zagespl(i,1) = 1/a-1
@@ -519,11 +568,13 @@ SUBROUTINE SPS_SETUP(zin)
   CALL spline(zagespl(:,2),zagespl(:,1),1.0e30_sp,&
              1.0e30_sp,zagespl(:,3))
 
+  !set Tuniv
+  tuniv = get_tuniv(0.0)
+
   !----------------------------------------------------------------!
-  !----------------------------------------------------------------!
+  !-----------------read in index definitions----------------------!
   !----------------------------------------------------------------!
 
-  !read in index definitions
   OPEN(99,FILE=TRIM(SPS_HOME)//'/src/allindices.dat',&
        STATUS='OLD',iostat=stat,ACTION='READ')
   DO i=1,7
@@ -533,6 +584,16 @@ SUBROUTINE SPS_SETUP(zin)
      READ(99,*) indexdefined(:,i)
   ENDDO
   CLOSE(99)
+
+  !----------------------------------------------------------------!
+  !-----------------set up expanded time array---------------------!
+  !----------------------------------------------------------------!
+
+  DO i=1,ntfull
+     time_full(i) = timestep_isoc(zmin,1)+&
+          (i-1)*(timestep_isoc(zmin,nt)-timestep_isoc(zmin,1))/&
+          (time_res_incr*(nt-1))
+  ENDDO
 
   !----------------------------------------------------------------!
   !----------------------------------------------------------------!

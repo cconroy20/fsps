@@ -117,6 +117,11 @@ SUBROUTINE MOD_HB(f_bhb,t,mini,mact,logl,logt,phase, &
 
   ENDDO
 
+  IF (nmass(t).GT.nm) THEN
+     WRITE(*,*) 'MOD_HB ERROR: number of mass points GT nm'
+     STOP
+  ENDIF
+
   RETURN
 
 END SUBROUTINE MOD_HB

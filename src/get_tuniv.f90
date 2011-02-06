@@ -1,26 +1,26 @@
 FUNCTION GET_TUNIV(z)
 
-  !compute age of Universe at redshift z
-  !assumes flat universe w/ only matter and lambda (from WMAP5).
-  !assumes t_H set in sps_vars.f90
+  !compute age of Universe in Gyr at redshift z
+  !assumes flat universe w/ only matter and lambda
+  !assumes om0,ol0,thub set in sps_vars.f90
   
-  USE nrtype
+  USE nrtype; USE sps_vars
   IMPLICIT NONE
   INTEGER :: i
+  INTEGER, PARAMETER :: ii=10000
   REAL(SP), INTENT(in) :: z
   REAL(SP) :: get_tuniv
-  REAL(SP), DIMENSION(10000) :: lnstig, hub, weights
+  REAL(SP), DIMENSION(ii) :: lnstig, hub
 
-  !set up integration weights
-  weights                = 1.0
-  weights(1:3)           = (/3./8,7./6,23./24/)
-  weights(10000-2:10000) = (/23./24,7./6,3./8/)
-  
-  DO i=1,10000
-     lnstig(i) = REAL(i)/1E4*(LOG(1E8)-LOG(1+z))+LOG(1+z)
+  DO i=1,ii
+     lnstig(i) = REAL(i)/ii*(LOG(1E4)-LOG(1+z))+LOG(1+z)
   ENDDO
   
-  hub       = SQRT( 0.258*EXP(lnstig)**3 + 0.742 )
-  get_tuniv = (lnstig(2)-lnstig(1)) * SUM(weights/hub) * 13.7
-  
+  hub       = SQRT( om0*EXP(lnstig)**3 + ol0 )
+  get_tuniv = 0.0
+  DO i=1,ii-1
+     get_tuniv = get_tuniv + 0.5*(1/hub(i)+1/hub(i+1))
+  ENDDO
+  get_tuniv = get_tuniv * thub * (lnstig(2)-lnstig(1))
+
 END FUNCTION GET_TUNIV

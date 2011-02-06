@@ -8,16 +8,15 @@ PROGRAM LESSSIMPLE
   !NB: the various structure types are defined in sps_vars.f90
   !    variables not explicitly defined here are defined in sps_vars.f90
   INTEGER :: i
-  REAL(SP) :: zave
   !define variable for SSP spectrum
-  REAL(SP), DIMENSION(nt,nspec)  :: spec_pz
+  REAL(SP), DIMENSION(ntfull,nspec)  :: spec_pz
   !define variables for Mass and Lbol info
-  REAL(SP), DIMENSION(nt)    :: mass_pz,lbol_pz
+  REAL(SP), DIMENSION(ntfull)    :: mass_pz,lbol_pz
   CHARACTER(100) :: file2=''
   !structure containing all necessary parameters
   TYPE(PARAMS) :: pset
   !define structure for CSP spectrum
-  TYPE(COMPSPOUT), DIMENSION(nt) :: ocompsp
+  TYPE(COMPSPOUT), DIMENSION(ntfull) :: ocompsp
 
   !-----------------------------------------------------------!
   
@@ -43,7 +42,7 @@ PROGRAM LESSSIMPLE
   !define the yield for a closed box distribution
   pset%pmetals = 0.02
   !compute SSP convolved with a closed box  
-  CALL PZ_CONVOL(pset,zave,spec_pz,lbol_pz,mass_pz)
+  CALL PZ_CONVOL(pset,spec_pz,lbol_pz,mass_pz)
   file2    = 'SSP_pz.out'
   !now compute magnitudes for this SSP
   CALL COMPSP(1,1,file2,mass_pz,lbol_pz,&
