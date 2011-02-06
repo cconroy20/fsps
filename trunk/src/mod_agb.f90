@@ -41,10 +41,14 @@ SUBROUTINE MOD_AGB(zz,t,age,delt,dell,pagb,redgb,&
      ENDIF
 
      !modify the RGB + red clump HB + AGB
-     IF (phase(t,i).EQ.2.OR.phase(t,i).EQ.3&
-          .OR.phase(t,i).EQ.4) THEN
+     IF (phase(t,i).EQ.2.OR.phase(t,i).EQ.3 &
+          .OR.phase(t,i).EQ.4.OR.phase(t,i).EQ.5) THEN
         wght(i) = wght(i)*redgb
      ENDIF
+
+     !IF (phase(t,i).GE.3) THEN
+     !   wght(i) = 0.0
+     !ENDIF
 
   ENDDO
 

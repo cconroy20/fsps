@@ -7,16 +7,10 @@
 !  time-dependent spectrum from the far-UV to the IR.              !
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 !
-! COMPARISONS/TESTS:
-!   1. Mass(t) for both Salpeter & Chabrier IMFs are within <3%
-!      of those from B&C03.
-!   2. Color evolution in many bands brackets the BC03 and 
-!      Maraston 05 models for all metallicities.
-!   3. Spectral evolution is bracketed by the BC03 and M05 models
-!
-! PARAMETER RANGES:
+!   PARAMETER RANGES:
 !   1.  if (fbhb,sbs)<1E-3 then (fbhb,sbs)=0.0
 !   2.  if abs(delt)>0.5 then abs(delt)=0.5
+!
 !-----------------------------------------------------------!
 !-----------------------------------------------------------!
 
@@ -24,6 +18,8 @@ SUBROUTINE STITCH_PAGB(t,mini,mact,logl,logt,logg,wght,nmass,phase)
 
   !routine to add a few dummy stars to stitch the post-AGB tracks
   !onto the full isochrones
+
+  !NB: routine is not currently used
 
   USE sps_vars; USE nrtype
   IMPLICIT NONE
@@ -37,6 +33,7 @@ SUBROUTINE STITCH_PAGB(t,mini,mact,logl,logt,logg,wght,nmass,phase)
 
   nn = nmass(t)
 
+  !simply spread the most luminous pagb star uniformly over to the agb tip
   pagb: DO i=1,nn
      IF (phase(t,i).EQ.6.0.AND.logg(t,i).EQ.-99.) THEN
         wght(i) = wght(i)/REAL(nexp+1)
@@ -62,26 +59,26 @@ END SUBROUTINE STITCH_PAGB
 
 SUBROUTINE SSP_GEN(pset,mass_ssp,lbol_ssp,spec_ssp)
 
-  USE sps_vars; USE nrtype
+  USE sps_vars; USE nrtype; USE nr, ONLY : locate
   USE sps_utils
   IMPLICIT NONE
   
-  INTEGER :: i=1, j=1
+  INTEGER :: i=1, j=1, stat,ii,klo,khi
   !weight given to the entire horizontal branch
-  REAL(SP) :: hb_wght   
+  REAL(SP) :: hb_wght,dt
   !array of IMF weights
   REAL(SP), DIMENSION(nm) :: wght
   !SSP spectrum
-  REAL(SP), INTENT(inout), DIMENSION(nt,nspec) :: spec_ssp
+  REAL(SP), INTENT(inout), DIMENSION(ntfull,nspec) :: spec_ssp
   !Mass and Lbol info
-  REAL(SP), INTENT(inout), DIMENSION(nt) :: mass_ssp, lbol_ssp
+  REAL(SP), INTENT(inout), DIMENSION(ntfull) :: mass_ssp, lbol_ssp
 
   !temp arrays for the isochrone data
   REAL(SP), DIMENSION(nt,nm) :: mini,mact,logl,logt,logg,ffco,phase
   !arrays holding the number of mass elements for each isochrone
   !and the age of each isochrone
   INTEGER, DIMENSION(nt)  :: nmass
-  REAL(SP), DIMENSION(nt) :: time_ssp
+  REAL(SP), DIMENSION(nt) :: time
   REAL(SP), DIMENSION(nspec) :: tspec
 
   !structure containing all necessary parameters
@@ -114,27 +111,43 @@ SUBROUTINE SSP_GEN(pset,mass_ssp,lbol_ssp,spec_ssp)
   ENDIF
 
   IF (imf_type.NE.0.AND.imf_type.NE.1.AND.imf_type.NE.2.&
-       .AND.imf_type.NE.3) THEN
+       .AND.imf_type.NE.3.AND.imf_type.NE.4.AND.imf_type.NE.5) THEN
      WRITE(*,*) 'SSP_GEN ERROR: IMF type outside of range',imf_type
      STOP
   ENDIF
-
-  !Dump Padova isochrones into temporary arrays
-  mini     = mini_isoc(pset%zmet,:,:)  !initial mass
-  mact     = mact_isoc(pset%zmet,:,:)  !actual (present) mass
-  logl     = logl_isoc(pset%zmet,:,:)  !log(Lbol)
-  logt     = logt_isoc(pset%zmet,:,:)  !log(Teff)
-  logg     = logg_isoc(pset%zmet,:,:)  !log(g)
-  ffco     = ffco_isoc(pset%zmet,:,:)  !is the TP-AGB star C-rich or O-rich?
-  phase    = phase_isoc(pset%zmet,:,:) !flag indicating phase of evolution
-  nmass    = nmass_isoc(pset%zmet,:)   !number of elements per isochrone
-  time_ssp = timestep_isoc(pset%zmet,:)!age of each isochrone in log(yr)
 
   !dump IMF parameters into common block
   imf_alpha(1) = pset%imf1
   imf_alpha(2) = pset%imf2
   imf_alpha(3) = pset%imf3
-  vdmc         = pset%vdmc
+  imf_vdmc     = pset%vdmc
+  imf_mdave    = pset%mdave
+
+  !read in user-defined IMF
+  IF (imf_type.EQ.5) THEN
+     OPEN(13,FILE='imf.dat',ACTION='READ',STATUS='OLD')
+     DO i=1,100
+        READ(13,*,IOSTAT=stat) imf_user_alpha(1,i),imf_user_alpha(2,i),&
+             imf_user_alpha(3,i)
+        IF (stat.NE.0) GOTO 29
+     ENDDO
+     WRITE(*,*) 'SSP_GEN ERROR: didnt finish reading in the imf file'
+     STOP
+29   CONTINUE
+     CLOSE(13)
+     n_user_imf = i-1
+  ENDIF
+
+  !Dump Padova isochrones into temporary arrays
+  mini  = mini_isoc(pset%zmet,:,:)  !initial mass
+  mact  = mact_isoc(pset%zmet,:,:)  !actual (present) mass
+  logl  = logl_isoc(pset%zmet,:,:)  !log(Lbol)
+  logt  = logt_isoc(pset%zmet,:,:)  !log(Teff)
+  logg  = logg_isoc(pset%zmet,:,:)  !log(g)
+  ffco  = ffco_isoc(pset%zmet,:,:)  !is the TP-AGB star C-rich or O-rich?
+  phase = phase_isoc(pset%zmet,:,:) !flag indicating phase of evolution
+  nmass = nmass_isoc(pset%zmet,:)   !number of elements per isochrone
+  time  = timestep_isoc(pset%zmet,:)!age of each isochrone in log(yr)
 
   !write for control
   IF (verbose.NE.0) THEN
@@ -148,7 +161,7 @@ SUBROUTINE SSP_GEN(pset,mass_ssp,lbol_ssp,spec_ssp)
         WRITE(*,'("   IMF: ",I1,", slopes= ",3F4.1)') &
              imf_type,imf_alpha
      ELSE IF (imf_type.EQ.3) THEN
-        WRITE(*,'("   IMF: ",I1,", cut-off= ",F4.2)') imf_type,vdmc
+        WRITE(*,'("   IMF: ",I1,", cut-off= ",F4.2)') imf_type,imf_vdmc
      ELSE
         WRITE(*,'("   IMF: ",I1)') imf_type
      ENDIF
@@ -168,15 +181,15 @@ SUBROUTINE SSP_GEN(pset,mass_ssp,lbol_ssp,spec_ssp)
      !need the hb weight for the blue stragglers too
      IF (pset%fbhb.GT.0.0.OR.pset%sbss.GT.1E-3) &
           CALL MOD_HB(pset%fbhb,i,mini,mact,logl,logt,phase,&
-          wght,hb_wght,nmass,time_ssp(i))
+          wght,hb_wght,nmass,time(i))
 
      !add in blue stragglers
-     IF (time_ssp(i).GE.bhb_sbs_time.AND.pset%sbss.GT.1E-3) &
+     IF (time(i).GE.bhb_sbs_time.AND.pset%sbss.GT.1E-3) &
           CALL ADD_BS(pset%sbss,i,mini,mact,logl,logt,phase,&
           wght,hb_wght,nmass)
 
      !modify the TP-AGB stars and Post-AGB stars
-     CALL MOD_AGB(pset%zmet,i,time_ssp,pset%delt,pset%dell,pset%pagb,&
+     CALL MOD_AGB(pset%zmet,i,time,pset%delt,pset%dell,pset%pagb,&
           pset%redgb,nmass(i),logl,logt,phase,wght)
 
      !stitch the post-AGB tracks smoothly onto the full isochrone
@@ -189,30 +202,56 @@ SUBROUTINE SSP_GEN(pset,mass_ssp,lbol_ssp,spec_ssp)
         WRITE(istr2,'(I2)') 10+pset%zmet
         OPEN(89,file='isoc_basti_Z'//istr2//'_t'//istr//'.dat')
         DO j=1,nmass(i)
-           WRITE(89,*) time_ssp(i),mini(i,j),logl(i,j),logt(i,j),&
+           WRITE(89,*) time(i),mini(i,j),logl(i,j),logt(i,j),&
                 wght(j),phase(i,j)
         ENDDO
         CLOSE(89)
      ENDIF
 
+     ii = 1 + (i-1)*time_res_incr
+
      !compute IMF-weighted mass of the SSP
-     mass_ssp(i) = SUM(wght(1:nmass(i))*mact(i,1:nmass(i)))
+     mass_ssp(ii) = SUM(wght(1:nmass(i))*mact(i,1:nmass(i)))
      !add in remant masses
-     CALL ADD_REMNANTS(mass_ssp(i),MAXVAL(mini(i,:)))
+     CALL ADD_REMNANTS(mass_ssp(ii),MAXVAL(mini(i,:)))
 
      !compute IMF-weighted bolometric luminosity (actually log(Lbol))
-     lbol_ssp(i) = LOG10(SUM(wght(1:nmass(i))*10**logl(i,1:nmass(i))))
+     lbol_ssp(ii) = LOG10(SUM(wght(1:nmass(i))*10**logl(i,1:nmass(i))))
 
      !compute SSP spectrum
-     spec_ssp(i,:) = 0.
+     spec_ssp(ii,:) = 0.
      DO j=1,nmass(i)
         CALL GETSPEC(pset%zmet,mini(i,j),mact(i,j),logt(i,j),&
              10**logl(i,j),phase(i,j),ffco(i,j),tspec)
-        spec_ssp(i,:) = wght(j)*tspec + spec_ssp(i,:)
+        spec_ssp(ii,:) = wght(j)*tspec + spec_ssp(ii,:)
      ENDDO
 
   ENDDO
+
+  !-----------------------------------------------------------!
+  !now interpolate the SSPs to fill out the expanded time grid!
+  !-----------------------------------------------------------!
   
+  IF (time_res_incr.GT.1) THEN
+
+     DO j=1,ntfull
+        IF (MOD(j-1,time_res_incr).EQ.0) CYCLE
+        klo = MAX(MIN(locate(time,time_full(j)),nt-1),1)
+        dt  = (time_full(j)-time(klo))/&
+             (time(klo+1)-time(klo))
+        klo = 1+(klo-1)*time_res_incr
+        khi = klo+time_res_incr
+        spec_ssp(j,:) = spec_ssp(klo,:) + &
+             dt*(spec_ssp(khi,:)-spec_ssp(klo,:))
+        lbol_ssp(j) = lbol_ssp(klo) + &
+             dt*(lbol_ssp(khi)-lbol_ssp(klo))
+        mass_ssp(j) = mass_ssp(klo) + &
+             dt*(mass_ssp(khi)-mass_ssp(klo))
+     ENDDO
+
+  ENDIF
+
+
 END SUBROUTINE SSP_GEN
 
 

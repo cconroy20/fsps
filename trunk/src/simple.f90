@@ -9,14 +9,14 @@ PROGRAM SIMPLE
   !    variables not explicitly defined here are defined in sps_vars.f90
   INTEGER :: i
   !define variable for SSP spectrum
-  REAL(SP), DIMENSION(nt,nspec)  :: spec_ssp
+  REAL(SP), DIMENSION(ntfull,nspec)  :: spec_ssp
   !define variables for Mass and Lbol info
-  REAL(SP), DIMENSION(nt)    :: mass_ssp,lbol_ssp
+  REAL(SP), DIMENSION(ntfull)    :: mass_ssp,lbol_ssp
   CHARACTER(100) :: file1='', file2=''
   !structure containing all necessary parameters
   TYPE(PARAMS) :: pset
   !define structure for CSP spectrum
-  TYPE(COMPSPOUT), DIMENSION(nt) :: ocompsp
+  TYPE(COMPSPOUT), DIMENSION(ntfull) :: ocompsp
 
   !-----------------------------------------------------------!
   

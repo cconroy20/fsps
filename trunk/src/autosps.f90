@@ -5,17 +5,17 @@ PROGRAM AUTOSPS
   IMPLICIT NONE
 
   INTEGER :: z
-  REAL(SP), DIMENSION(nt,nspec)  :: spec_ssp
-  REAL(SP), DIMENSION(nt)        :: mass_ssp,lbol_ssp
+  REAL(SP), DIMENSION(ntfull,nspec)  :: spec_ssp
+  REAL(SP), DIMENSION(ntfull)        :: mass_ssp,lbol_ssp
   CHARACTER(100) :: file1='',aux
   CHARACTER(3)  :: str
   TYPE(PARAMS)  :: pset
-  TYPE(COMPSPOUT), DIMENSION(nt) :: ocompsp
+  TYPE(COMPSPOUT), DIMENSION(ntfull) :: ocompsp
 
   !-----------------------------------------------------------!
   
   !set IMF
-  WRITE(6,*)  'enter IMF [pos:0-3; def:0]:'
+  WRITE(6,*)  'enter IMF [0-3; def:0]:'
   WRITE(6,*) ' (0=Salpeter, 1=Chabrier 2003, 2=Kroupa 2001, 3=van Dokkum 2008)'
   READ(5,'(A)')  aux
   IF (len(trim(aux)).EQ.0) THEN
@@ -36,7 +36,7 @@ PROGRAM AUTOSPS
      WRITE(*,*) 'SETUP_SPS ERROR: spsdir environment variable not set!'
      STOP
   ENDIF
-  OPEN(90,FILE=TRIM(SPS_HOME)//'/Padova/Padova2007/zlegend_'&
+  OPEN(90,FILE=TRIM(SPS_HOME)//'/ISOCHRONES/Padova/Padova2007/zlegend_'&
        //spec_type//'.dat',STATUS='OLD',ACTION='READ')
   DO z=1,nz
      READ(90,'(F6.4)') zlegend(z)
@@ -46,7 +46,7 @@ PROGRAM AUTOSPS
 
   !set SFH
   WRITE(6,*)
-  WRITE(6,*)  'Specify SFH [pos:0-2, def:0]'
+  WRITE(6,*)  'Specify SFH [0-2, def:0]'
   WRITE(6,*)  '(0=SSP, 1=CSP, 2=tabulated)'
   READ(5,'(A)')  aux
   IF (len(trim(aux)).EQ.0) THEN
@@ -84,7 +84,7 @@ PROGRAM AUTOSPS
   IF (pset%sfh.NE.2) THEN
      !set metallicity
      WRITE(6,*)
-     WRITE(6,*)  'enter metallicity [pos:1-22; def:20]:'
+     WRITE(6,*)  'enter metallicity [1-22; def:20]:'
      READ(5,'(A)')  aux
      IF (len(trim(aux)).EQ.0) THEN
         pset%zmet = 20
@@ -101,13 +101,13 @@ PROGRAM AUTOSPS
 
   !set dust
   WRITE(6,*)
-  WRITE(6,*)  'Include default dust model? [pos:yes/no, def:no]'
-  WRITE(6,*)  '(if yes: tau1=1.0, tau2=0.3, power-law reddening curve)'
+  WRITE(6,*)  'Include default dust model? [yes/no, def:no]'
+  WRITE(6,*)  '(default: tau1=1.0, tau2=0.3, MW extinction)'
   READ(5,'(A)')  aux
   IF (len(trim(aux)).NE.0) THEN
      READ(aux,'(A3)') str
      IF (str(1:1).EQ.'y') THEN
-        dust_type  = 0
+        dust_type  = 1
         pset%dust1 = 1.0
         pset%dust2 = 0.3
      ENDIF
@@ -125,7 +125,6 @@ PROGRAM AUTOSPS
      READ(aux,'(A)') file1
   ENDIF
   WRITE(6,'(" ---> Output filename:",1x,A100)'),file1
-
 
 
   WRITE(6,'(" ---> Running model.......")')

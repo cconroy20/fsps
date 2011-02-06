@@ -12,7 +12,7 @@ SUBROUTINE ADD_DUST(pset,csp1,csp2,specdust)
   INTEGER :: w63, i
   REAL(SP), DIMENSION(nspec)  :: diffuse_dust,tau2,katt,cspi
   REAL(SP), DIMENSION(nspec)  :: x,a,b,y,fa,fb,boost
-  REAL(SP), DIMENSION(ntall)  :: weights
+  REAL(SP), DIMENSION(ntfull)  :: weights
   REAL(SP), DIMENSION(nclump) :: nden,wclump
   REAL(SP) :: clump_ave
   CHARACTER(2) :: str
@@ -33,8 +33,8 @@ SUBROUTINE ADD_DUST(pset,csp1,csp2,specdust)
   ENDIF
 
   IF (pset%wgp1.LT.1.OR.pset%wgp2.LT.1) THEN
-     WRITE(*,*) 'ADD_DUST ERROR: pset%wgp1 and/or pset%wgp2 out of bounds: ',&
-          pset%wgp1,pset%wgp2
+     WRITE(*,*) 'ADD_DUST ERROR: pset%wgp1 and/or pset%wgp2 '//&
+          'out of bounds: ',pset%wgp1,pset%wgp2
      STOP
   ENDIF
 
@@ -47,6 +47,7 @@ SUBROUTINE ADD_DUST(pset,csp1,csp2,specdust)
   !MW extinction law w/ UV bump
   IF (dust_type.EQ.1) THEN 
 
+     tau2 = 0.0
      !use CCM89 extinction curve parameterization
      x = 1E4/spec_lambda
      y = x-1.82
@@ -80,7 +81,8 @@ SUBROUTINE ADD_DUST(pset,csp1,csp2,specdust)
           (a(mwdindex(3))+b(mwdindex(3))/pset%mwr))
      tau2(mwdindex(4):mwdindex(3)) = &
           a(mwdindex(4):mwdindex(3)) + &
-          b(mwdindex(4):mwdindex(3))/pset%mwr + boost(mwdindex(4):mwdindex(3))
+          b(mwdindex(4):mwdindex(3))/pset%mwr + &
+          boost(mwdindex(4):mwdindex(3))
 
      !mid-UV
      fa = -0.04473*(x-5.9)**2-0.009779*(x-5.9)**3
@@ -151,20 +153,27 @@ SUBROUTINE ADD_DUST(pset,csp1,csp2,specdust)
      ENDIF
 
      !compute total spectrum, including both dust components
-     cspi = csp1 * EXP(-pset%dust1*(spec_lambda/5500.)**(-1.0))*&
+     cspi = csp1 * EXP(-pset%dust1*(spec_lambda/5500.)**(pset%dust1_index))*&
              (1-pset%frac_obrun) + csp1*pset%frac_obrun + csp2
-     specdust  = cspi*diffuse_dust*(1-pset%frac_nodust) + cspi*pset%frac_nodust
- 
+     IF (pset%frac_nodust.GE.0.0) THEN
+        specdust  = cspi*diffuse_dust*(1-pset%frac_nodust) + &
+             cspi*pset%frac_nodust
+     ELSE
+        specdust  = cspi*diffuse_dust*(1+pset%frac_nodust) - &
+             (csp1+csp2)*pset%frac_nodust
+     ENDIF
+
   ELSE
 
      !Calzetti et al. 2000 attenuation is applied to the entire spectrum 
      w63 = locate(spec_lambda,6300.00)
-     katt(1:w63)  = 1.17*( -1.857+1.04*(1E4/spec_lambda(1:w63)) ) + 1.78
-     katt(w63+1:) = 1.17*(-2.156+1.509*(1E4/spec_lambda(w63+1:))-&
-          0.198*(1E4/spec_lambda(w63+1:))**2 + &
-          0.011*(1E4/spec_lambda(w63+1:))**3) + 1.78
-     !R=4.05, tau_V=0.61
-     katt = katt/0.44/4.05 * pset%dust2 !*0.61
+     katt = 0.0
+     katt(w63+1:) = 1.17*( -1.857+1.04*(1E4/spec_lambda(w63+1:)) ) + 1.78
+     katt(1:w63)  = 1.17*(-2.156+1.509*(1E4/spec_lambda(1:w63))-&
+          0.198*(1E4/spec_lambda(1:w63))**2 + &
+          0.011*(1E4/spec_lambda(1:w63))**3) + 1.78
+     !R=4.05
+     katt = katt/0.44/4.05 * pset%dust2
      w63 = locate(katt,0.0)
      IF (w63.NE.nspec) THEN
         katt(w63+1:) = 0.0

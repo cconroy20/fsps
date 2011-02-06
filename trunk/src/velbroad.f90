@@ -20,9 +20,9 @@ SUBROUTINE VELBROAD(lambda,spec,sigma)
   c  = 2.998E5
   cg = 1/sqrt(2*mypi)/sigma
 
+  nn = SIZE(spec)
   tspec(1:nn) = spec(1:nn)
   spec(1:nn)  = 0.0
-  nn = SIZE(spec)
    
   !convolve at fixed sigma_velocity
   IF (velocity.EQ.1) THEN

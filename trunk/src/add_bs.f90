@@ -81,6 +81,11 @@ SUBROUTINE ADD_BS(s_bs,t,mini,mact,logl,logt,phase, &
   !update number of stars in the isochrone
   nmass(t) = nmass(t) + nbs
 
+  IF (nmass(t).GT.nm) THEN
+     WRITE(*,*) 'ADD_BS ERROR: number of mass points GT nm'
+     STOP
+  ENDIF
+
   RETURN
 
 END SUBROUTINE ADD_BS

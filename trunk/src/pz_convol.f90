@@ -13,8 +13,8 @@ SUBROUTINE PZ_CONVOL(pset,zave,spec_pz,lbol_pz,mass_pz)
   
   INTEGER  :: i,t,z
   REAL(SP) :: norm
-  REAL(SP), INTENT(out), DIMENSION(nt,nspec) :: spec_pz
-  REAL(SP), INTENT(out), DIMENSION(nt) :: mass_pz, lbol_pz
+  REAL(SP), INTENT(out), DIMENSION(ntfull,nspec) :: spec_pz
+  REAL(SP), INTENT(out), DIMENSION(ntfull) :: mass_pz, lbol_pz
   REAL(SP), INTENT(out)    :: zave
   REAL(SP), DIMENSION(nz)  ::  pzz1,spl
   REAL(SP), DIMENSION(100) :: pzz2,zz2,zzspec
@@ -58,6 +58,7 @@ SUBROUTINE PZ_CONVOL(pset,zave,spec_pz,lbol_pz,mass_pz)
 
      !define P(Z)
      pzz2 = zz2**zpow * EXP(-zz2/pset%pmetals)
+     !pzz2 = zz2/ (1/zz2 + 1E4*zz2**zpow)
 
      DO t=nt,nt
         DO i=1,nspec

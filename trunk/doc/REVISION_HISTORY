@@ -1,6 +1,9 @@
 REVISION HISTORY
 
-1/14/09
+01/10/09 
+ - Release of v0.9
+
+1/18/09
  - small bug in compsp.f90 fixed.  effected tabulated SFH outputs
 
 1/24/09
@@ -10,9 +13,11 @@ REVISION HISTORY
  - Updated the manual	      	 
 
 4/29/09
+ - Release of v1.0
  - Bug in BaSeL library fixed.  Effected primarily red/near-IR colors at 
    the 0.05 mag level.
- - dust attenuation can now be applied to SSPs (i.e. when sfh=0)
+ - dust attenuation can now be applied to SSPs (i.e. when sfh=0), when 
+   dust is turned on
  - greatly increased flexibility in the dust model
    	   - Added Calzetti et al. 2000 attenuation curve
 	   - Several additional parameters were added to the parameter set to control
@@ -31,11 +36,13 @@ REVISION HISTORY
    added
  
 02/10/20
- - Release of v2.1.  Major revisions, including the addition of synthetic 
+ - Release of v2.2.  Major revisions, including the addition of synthetic 
    post-AGB spectra from Rauch 2003, synthetic OB and WR spectra from 
-   Smith et al. 2002, and the Geneva models for massive stars (>70 Msun).
- - The time array has been substantially modified at early times, and the
-   model outputs should be much more reliable/accurate at log(t/yrs)<6.6
+   Smith et al. 2002, and the Geneva models for massive stars (>70 Msun).  
+   This means that the model predictions are now more accurate at very early ages.
  - The directory structure has been reorganized.
  - The code is now in a svn repository for easy future updates
-
+ - There was a bug in compsp that effected early ages.  
+ - The time array is now much finer, and can be easily modified to be even finer
+ - new IMF option: imf_type=5, which allows for tabulated piece-wise power-law IMFs
+ - the Miles spectral library is now fully embedded in FSPS

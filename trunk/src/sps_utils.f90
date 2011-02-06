@@ -17,12 +17,40 @@ MODULE SPS_UTILS
   END INTERFACE
 
   INTERFACE
+     SUBROUTINE GETZMET(smass,pos)
+       USE nrtype; USE sps_vars
+       IMPLICIT NONE
+       REAL(SP), INTENT(in) :: smass
+       TYPE(PARAMS), INTENT(inout) :: pos
+     END SUBROUTINE GETZMET
+  END INTERFACE
+
+  INTERFACE
      SUBROUTINE GETINDX(lambda,spec,indices)
        USE sps_vars; USE nrtype
        REAL(SP), INTENT(in), DIMENSION(:) :: spec,lambda
        REAL(SP), INTENT(inout), DIMENSION(nindsps) :: indices
      END SUBROUTINE GETINDX
   END INTERFACE
+
+  INTERFACE
+     SUBROUTINE FITGAL_INIT(switch,pos,powell_pos)
+       USE sps_vars; USE nrtype
+       IMPLICIT NONE
+       INTEGER, INTENT(in) :: switch
+       TYPE(PARAMS), INTENT(inout) :: pos
+       REAL(SP), OPTIONAL, DIMENSION(:), INTENT(inout) :: powell_pos
+     END SUBROUTINE FITGAL_INIT
+  END INTERFACE
+
+  INTERFACE
+     SUBROUTINE FITFAST_INIT(switch,pos,powell_pos)
+       USE sps_vars; USE nrtype
+       INTEGER, INTENT(in) :: switch
+       TYPE(PARAMS), INTENT(inout) :: pos
+       REAL(SP), OPTIONAL, DIMENSION(:), INTENT(inout) :: powell_pos
+     END SUBROUTINE FITFAST_INIT
+    END INTERFACE
 
   INTERFACE
      SUBROUTINE ADD_REMNANTS(mass,maxmass)
@@ -117,6 +145,18 @@ MODULE SPS_UTILS
   END INTERFACE  
 
   INTERFACE
+     SUBROUTINE READ_SPEC(file,lambda,spec,time,mass,lbol,n_isoc)
+       USE sps_vars; USE nrtype
+       IMPLICIT NONE
+       INTEGER, INTENT(out) :: n_isoc
+       CHARACTER(60), INTENT(in) :: file
+       REAL(SP), INTENT(out), DIMENSION(nspec) :: lambda
+       REAL(SP), INTENT(out), DIMENSION(nt,nspec) :: spec
+       REAL(SP), INTENT(out), DIMENSION(nt) :: time, mass, lbol
+     END SUBROUTINE READ_SPEC
+  END INTERFACE
+  
+  INTERFACE
      SUBROUTINE GETMAGS(zred,spec,mags) 
        USE sps_vars 
        USE nrtype; USE nrutil, ONLY : assert_eq
@@ -129,8 +169,50 @@ MODULE SPS_UTILS
   END INTERFACE
   
   INTERFACE
+     REAL FUNCTION SPS_PRIORS(pos)
+       USE sps_vars
+       IMPLICIT NONE
+       TYPE(PARAMS), INTENT(in) :: pos
+     END FUNCTION SPS_PRIORS
+  END INTERFACE
+  
+  INTERFACE
+     SUBROUTINE ZINTERP(zpos,spec,lbol,mass)
+       USE sps_vars; USE nrtype
+       USE nrutil, ONLY : assert_eq; USE nr, ONLY : locate
+       IMPLICIT NONE
+       REAL(SP),INTENT(in) :: zpos
+       REAL(SP),INTENT(inout),DIMENSION(nt) :: mass, lbol
+       REAL(SP),INTENT(inout),DIMENSION(nt,nspec) :: spec
+     END SUBROUTINE ZINTERP
+  END INTERFACE
+
+  INTERFACE
+     FUNCTION SPS_CHI2(data,pos,csp)
+       USE sps_vars; USE nrtype
+       IMPLICIT NONE
+       TYPE(OBSDAT), INTENT(in)       :: data
+       TYPE(COMPSPOUT), INTENT(inout) :: csp
+       TYPE(PARAMS), INTENT(in)       :: pos
+       REAL(SP) :: sps_chi2
+     END FUNCTION SPS_CHI2
+  END INTERFACE
+
+  INTERFACE
+     FUNCTION SPS_CHI2_PHOTZ(data,pos,csp,pzphot)
+       USE sps_vars; USE nrtype
+       IMPLICIT NONE
+       TYPE(OBSDAT), INTENT(in)       :: data
+       TYPE(COMPSPOUT), INTENT(inout) :: csp
+       TYPE(PARAMS), INTENT(in)       :: pos
+       TYPE(TPZPHOT), INTENT(in)       :: pzphot
+       REAL(SP) :: sps_chi2_photz
+     END FUNCTION SPS_CHI2_PHOTZ
+  END INTERFACE
+
+  INTERFACE
      FUNCTION GET_TUNIV(z)
-       USE nrtype
+       USE nrtype; USE sps_vars
        IMPLICIT NONE
        REAL, INTENT(in) :: z
        REAL(SP) :: get_tuniv
