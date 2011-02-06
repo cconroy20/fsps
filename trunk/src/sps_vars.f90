@@ -140,6 +140,9 @@ MODULE SPS_VARS
   !cm in a pc
   REAL, PARAMETER :: pc2cm   = 3.08568E18
   
+  REAL, PARAMETER :: huge_number = 1E33
+  REAL, PARAMETER :: tiny_number = 1E-33
+  
   !---------------Common Block-------------------!
     
   INTEGER :: check_sps_setup = 0
@@ -255,5 +258,5 @@ MODULE SPS_VARS
      REAL, DIMENSION(nbands) :: mags=0.
      REAL, DIMENSION(nspec)  :: spec=0.
   END TYPE COMPSPOUT
-
+  
 END MODULE SPS_VARS
