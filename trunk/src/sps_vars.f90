@@ -6,6 +6,18 @@ MODULE SPS_VARS
   IMPLICIT NONE
   SAVE
 
+  !---Parameters not to be distributed in the public verision----!
+
+  !specify magnitude or spectral fitting in fitgal.f90
+  INTEGER, PARAMETER :: fitspec=0
+  !specify whether fitfast or normal fitting is done in powell
+  INTEGER, PARAMETER :: fitfast=1
+  !switch to fit P(z) for photo-z measurements
+  INTEGER, PARAMETER :: fitpzphot = 0
+  !switch for fitgal routine
+  !NB: when hard-wiring isochrone values, set default=1  
+  INTEGER, PARAMETER :: default=1
+
   !------Common parameters that may be altered by the user-------!
   
   !setup cosmology.  Used only for z(t) relation. (assumes h=0.72)
@@ -108,7 +120,7 @@ MODULE SPS_VARS
   !------------IMF-related Constants--------------!
   
   !Salpeter IMF index
-  REAL, PARAMETER :: salp_ind= 2.35
+  REAL :: salp_ind= 2.35
   !min/max masses for the IMF
   REAL :: imf_lower_limit = 0.08, imf_upper_limit=120.
   !Chabrier 2003 IMF parameters
@@ -259,4 +271,22 @@ MODULE SPS_VARS
      REAL, DIMENSION(nspec)  :: spec=0.
   END TYPE COMPSPOUT
   
+  !----the following are not to be included in the public version----!
+
+  !structure for observational data.  
+  TYPE OBSDAT
+     REAL                    :: zred=0.0,logsmass=0.0
+     REAL, DIMENSION(nbands) :: mags=0.0,magerr=0.0
+     REAL, DIMENSION(nspec)  :: spec=0.0, specerr=99.
+  END TYPE OBSDAT
+
+  !structure for using P(z) in chi2
+  INTEGER, PARAMETER :: npzphot   = 200
+  TYPE TPZPHOT
+     REAL, DIMENSION(npzphot) :: zz=0.0,pz=0.0
+  END TYPE TPZPHOT
+
+  !used for Powell minimization
+  TYPE(OBSDAT) :: powell_data
+
 END MODULE SPS_VARS

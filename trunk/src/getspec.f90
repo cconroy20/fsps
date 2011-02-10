@@ -20,7 +20,7 @@ SUBROUTINE GETSPEC(zz,mini,mact,logt,lbol,phase,ffco,spec)
   REAL(SP), INTENT(inout), DIMENSION(nspec) :: spec  
   INTEGER, DIMENSION(5) :: mizz
   REAL(SP) :: loggi,t,u,r2,tpagbtdiff,teffi, sumtest,tco
-  INTEGER  :: klo,jlo,j,idum=-1
+  INTEGER  :: klo,jlo,j,idum=-1,flag
 
   spec = 0.0
 
@@ -35,13 +35,15 @@ SUBROUTINE GETSPEC(zz,mini,mact,logt,lbol,phase,ffco,spec)
   loggi = LOG10( gsig4pi*mact/lbol ) + 4*logt
   !compute radius squared (cm^2) 
   r2    = mact*msun*newton/10**loggi
-  
-  !use Rauch 2003 post-AGB spectra for the hot PAGB stars
+
+  flag = 0
+
+  !post-AGB non-LTE model spectra from Rauch 2003
   !the H-Ni composition spectra are used here.
-  !NB: there is currently no log(g) dependence in this library
   !this library has two Zs, Solar and 0.1Solar, simply use one or the other
   IF (phase.EQ.6.0.AND.logt.GE.4.699.AND.spec_type.NE.'miles') THEN
     
+     flag = 1
      jlo = MIN(MAX(locate(pagb_logt,logt),1),ndim_pagb-1)
      t   = (logt-pagb_logt(jlo)) / &
           (pagb_logt(jlo+1)-pagb_logt(jlo))
@@ -51,17 +53,32 @@ SUBROUTINE GETSPEC(zz,mini,mact,logt,lbol,phase,ffco,spec)
      spec = lbol * ( pagb_spec(:,jlo,klo) + &
           t*(pagb_spec(:,jlo+1,klo)-pagb_spec(:,jlo,klo)) )
 
-  !stars hotter than 5E4 and not post-AGB are assumed to be WR stars.
-  !As discussed in Smith et al. 2002, Teff from the WR atmosphere 
-  !models cannot be directly compared to Teff from the interior models
-  !b/c the extended atmospheres of WR stars are optically thick.
-  !nonetheless, that is what we assume here.
-  !NB: there is currently no Z or log(g) dependence in these spectra
-  ELSE IF (logt.GE.4.699.AND.phase.NE.6.0.AND.spec_type.NE.'miles') THEN
+  !WN WR stars (N-rich), from Smith et al. 2002
+  !also use this library for very hot stars that are not post-AGB,
+  !such stars come from the Padova isochrones, for which no 
+  !phase information is available
+  ELSE IF ((phase.EQ.9.0.AND.tco.LT.10.AND.spec_type.NE.'miles').OR.&
+       (phase.NE.6.0.AND.logt.GE.4.699)) THEN
+
+     !NB: there is currently no Z or log(g) dependence in the WR spectra
      
+     flag = 1
      jlo = MIN(MAX(locate(wr_logt,logt),1),ndim_wr-1)
      t   = (logt-wr_logt(jlo)) / &
           (wr_logt(jlo+1)-wr_logt(jlo))
+     t = MIN(MAX(t,-1.0),1.0) !no extrapolation
+     !the WR library is normalized to unity
+     spec = lbol * ( wr_spec(:,jlo) + &
+          t*(wr_spec(:,jlo+1)-wr_spec(:,jlo)) )
+
+  !WC WR stars (C-rich), from Smith et al. 2002
+  ELSE IF (phase.EQ.9.0.AND.tco.GE.10.AND.spec_type.NE.'miles') THEN
+     
+     flag = 1
+     jlo = MIN(MAX(locate(wr_logt,logt),1),ndim_wr-1)
+     t   = (logt-wr_logt(jlo)) / &
+          (wr_logt(jlo+1)-wr_logt(jlo))
+     t = MIN(MAX(t,-1.0),1.0) !no extrapolation
      !the WR library is normalized to unity
      spec = lbol * ( wr_spec(:,jlo) + &
           t*(wr_spec(:,jlo+1)-wr_spec(:,jlo)) )
@@ -69,8 +86,8 @@ SUBROUTINE GETSPEC(zz,mini,mact,logt,lbol,phase,ffco,spec)
   !O-rich TP-AGB spectra, from Lancon & Mouhcine 2002
   ELSE IF (phase.EQ.5.0.AND.logt.LT.3.6.AND.tco.LE.1.0) THEN
      
+     flag = 1
      jlo = MAX(MIN(locate(agb_logt_o(zz,:),logt),n_agb_o-1),1)
-
      !never let the TP-AGB spectra be an extrapolation
      IF (logt.LT.agb_logt_o(zz,1)) THEN
         tpagbtdiff = 0.0
@@ -89,8 +106,8 @@ SUBROUTINE GETSPEC(zz,mini,mact,logt,lbol,phase,ffco,spec)
   !C-rich TP-AGB spectra, from Lancon & Mouhcine 2002
   ELSE IF (phase.EQ.5.0.AND.logt.LT.3.6.AND.tco.GT.1.0) THEN
      
+     flag = 1
      jlo = MAX(MIN(locate(agb_logt_c,logt),n_agb_c-1),1)
-     
      !never let the TP-AGB spectra be an extrapolation
      IF (logt.LT.agb_logt_c(1)) THEN
         tpagbtdiff = 0.0
@@ -109,6 +126,7 @@ SUBROUTINE GETSPEC(zz,mini,mact,logt,lbol,phase,ffco,spec)
   !use the primary library for the rest of the isochrone
   ELSE IF (logt.LT.4.699) THEN
      
+     flag = 1
      !find the subgrid containing point i 
      klo = MIN(MAX(locate(basel_logg,loggi),1),ndim_logg-1)
      jlo = MIN(MAX(locate(basel_logt,logt),1),ndim_logt-1)
@@ -135,7 +153,17 @@ SUBROUTINE GETSPEC(zz,mini,mact,logt,lbol,phase,ffco,spec)
           (1-t)*u*speclib(:,zz,jlo,klo+1) )
  
   ENDIF
+ 
+  !make sure the spectrum never has any zero's
+  spec = MAX(spec,0.0)
   
+  IF (flag.EQ.0) THEN
+     WRITE(*,*) 'GETSPEC ERROR: isochrone point not assigned a spectrum',&
+          logt,loggi,phase
+  ELSE IF (flag.GT.1) THEN
+     WRITE(*,*) 'GETSPEC ERROR: isochrone point assigned *two* spectra'
+  ENDIF
+
   !pure blackbody; no longer used but kept here for posterity
   !teffi = 10**logt
   !spec = 15/mypi*lbol/clight*&

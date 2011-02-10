@@ -149,6 +149,7 @@ SUBROUTINE SSP_GEN(pset,mass_ssp,lbol_ssp,spec_ssp)
   nmass = nmass_isoc(pset%zmet,:)   !number of elements per isochrone
   time  = timestep_isoc(pset%zmet,:)!age of each isochrone in log(yr)
 
+
   !write for control
   IF (verbose.NE.0) THEN
      WRITE(*,*)
@@ -241,16 +242,12 @@ SUBROUTINE SSP_GEN(pset,mass_ssp,lbol_ssp,spec_ssp)
              (time(klo+1)-time(klo))
         klo = 1+(klo-1)*time_res_incr
         khi = klo+time_res_incr
-        spec_ssp(j,:) = spec_ssp(klo,:) + &
-             dt*(spec_ssp(khi,:)-spec_ssp(klo,:))
-        lbol_ssp(j) = lbol_ssp(klo) + &
-             dt*(lbol_ssp(khi)-lbol_ssp(klo))
-        mass_ssp(j) = mass_ssp(klo) + &
-             dt*(mass_ssp(khi)-mass_ssp(klo))
+        spec_ssp(j,:) = (1-dt)*spec_ssp(klo,:) + dt*spec_ssp(khi,:)
+        lbol_ssp(j)   = (1-dt)*lbol_ssp(klo) + dt*lbol_ssp(khi)
+        mass_ssp(j)   = (1-dt)*mass_ssp(klo) + dt*mass_ssp(khi)
      ENDDO
 
   ENDIF
-
 
 END SUBROUTINE SSP_GEN
 
