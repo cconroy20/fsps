@@ -12,13 +12,12 @@ SUBROUTINE SPS_SETUP(zin)
   USE nr, ONLY : spline,splint
   IMPLICIT NONE
   INTEGER, INTENT(in) :: zin
-  INTEGER :: stat,n,dumi1,i,j,m,jj,k
+  INTEGER :: stat,n,i,j,m,jj,k
   INTEGER :: n_isoc,z,zmin,zmax
   CHARACTER(1) :: char
   CHARACTER(6) :: zstype
-  REAL(SP) :: dumr1,d1,d2,d3,d4,d5,d6,d7,d8,d9,d10,d11,d12,d13,logage
-  REAL(SP) :: x,y,a,b,fa,fb,r
-  REAL(SP), DIMENSION(1221) :: tvega_lam, tvega_spec
+  REAL(SP) :: dumr1,d1,d2,logage,x,a
+  REAL(SP), DIMENSION(1221) :: tvega_lam,tvega_spec,tsun_lam,tsun_spec
   REAL(SP), DIMENSION(50000) :: readlamb,readband,spl
   REAL(SP), DIMENSION(25) :: wglam
   REAL(SP), DIMENSION(25,18,2,6) :: wgtmp
@@ -237,8 +236,8 @@ SUBROUTINE SPS_SETUP(zin)
   OPEN(94,FILE=TRIM(SPS_HOME)//'/SPECTRA/AGB_spectra/Crich_teff_allZ'//&
        '.dat',STATUS='OLD',iostat=stat,ACTION='READ')
   IF (stat.NE.0) THEN
-     WRITE(*,*) 'SPS_SETUP ERROR4: /SPECTRA/AGB_spectra/'//'&
-          Crich_teff_allZ.dat cannot be opened'
+     WRITE(*,*) 'SPS_SETUP ERROR4: /SPECTRA/AGB_spectra/'//&
+          'Crich_teff_allZ.dat cannot be opened'
      STOP 
   ENDIF
   !burn the header
@@ -282,31 +281,31 @@ SUBROUTINE SPS_SETUP(zin)
 
   ENDIF
   
-     !read in WR Teff array
-     OPEN(94,FILE=TRIM(SPS_HOME)//'/SPECTRA/Hot_spectra/iwr.teff',&
-          STATUS='OLD',iostat=stat,ACTION='READ')
-     IF (stat.NE.0) THEN
-        WRITE(*,*) 'SPS_SETUP ERROR8: Hot_spectra/iwr.teff cannot be opened'
-        STOP 
-     ENDIF
-     DO i=1,ndim_wr
-        READ(94,*) wr_logt(i)
-     ENDDO
-     CLOSE(94)
-
-     !read in post-AGB Teff array
-     OPEN(94,FILE=TRIM(SPS_HOME)//'/SPECTRA/Hot_spectra/ipagb.teff',&
-          STATUS='OLD',iostat=stat,ACTION='READ')
-     IF (stat.NE.0) THEN
-        WRITE(*,*) 'SPS_SETUP ERROR8: Hot_spectra/ipagb.teff cannot be opened'
-        STOP 
-     ENDIF
-     DO i=1,ndim_pagb
-        READ(94,*) pagb_logt(i)
-     ENDDO
-     CLOSE(94)
-     pagb_logt = LOG10(pagb_logt)
-
+  !read in WR Teff array
+  OPEN(94,FILE=TRIM(SPS_HOME)//'/SPECTRA/Hot_spectra/iwr.teff',&
+       STATUS='OLD',iostat=stat,ACTION='READ')
+  IF (stat.NE.0) THEN
+     WRITE(*,*) 'SPS_SETUP ERROR8: Hot_spectra/iwr.teff cannot be opened'
+     STOP 
+  ENDIF
+  DO i=1,ndim_wr
+     READ(94,*) wr_logt(i)
+  ENDDO
+  CLOSE(94)
+  
+  !read in post-AGB Teff array
+  OPEN(94,FILE=TRIM(SPS_HOME)//'/SPECTRA/Hot_spectra/ipagb.teff',&
+       STATUS='OLD',iostat=stat,ACTION='READ')
+  IF (stat.NE.0) THEN
+     WRITE(*,*) 'SPS_SETUP ERROR8: Hot_spectra/ipagb.teff cannot be opened'
+     STOP 
+  ENDIF
+  DO i=1,ndim_pagb
+     READ(94,*) pagb_logt(i)
+  ENDDO
+  CLOSE(94)
+  pagb_logt = LOG10(pagb_logt)
+     
   IF (spec_type.EQ.'basel') THEN 
 
      !read in post-AGB spectra from Rauch 2003
@@ -322,6 +321,7 @@ SUBROUTINE SPS_SETUP(zin)
      ENDDO
      CLOSE(97)
      
+     !read in WR spectra from Smith et al. 2002
      OPEN(97,FILE=TRIM(SPS_HOME)//'/SPECTRA/Hot_spectra/ipagb.spec_halo',&
           STATUS='OLD',iostat=stat,ACTION='READ')
      IF (stat.NE.0) THEN
@@ -424,7 +424,6 @@ SUBROUTINE SPS_SETUP(zin)
   END IF  
   !burn the header
   READ(98,*)
-
   DO i=1,1221
      READ(98,*) tvega_lam(i), tvega_spec(i)
   ENDDO
@@ -432,14 +431,34 @@ SUBROUTINE SPS_SETUP(zin)
 
   !need to interpolate the Vega spectrum onto the MILES wavelength grid
   !for coding reasons, we need to "interpolate" even onto the BaSeL grid
-  CALL spline(tvega_lam,tvega_spec,1.0e30_sp,&
-       1.0e30_sp,spl(1:1221))
+  CALL SPLINE(tvega_lam,tvega_spec,1.0e30_sp,1.0e30_sp,spl(1:1221))
   DO i=1,nspec
      vega_spec(i) = splint(tvega_lam,tvega_spec,spl(1:1221),spec_lambda(i))
   ENDDO
 
-  !the normalization is not important here, only the shape.
+  !convert to fnu; the normalization is not important here, only the shape.
   vega_spec = vega_spec / clight * spec_lambda**2
+
+  !read in Solar spectrum
+  OPEN(98,FILE=TRIM(SPS_HOME)//'/SPECTRA/SUN_STScI.SED',&
+       STATUS='OLD',iostat=stat,ACTION='READ')
+  IF (stat.NE.0) THEN
+     WRITE(*,*) 'SPS_SETUP ERROR9: SPECTRA/SUN_STScI.SED cannot be opened'
+     STOP 
+  END IF  
+  DO i=1,1221
+     READ(98,*) tsun_lam(i), tsun_spec(i)
+  ENDDO
+  CLOSE(98)
+
+  !need to interpolate the Solar spectrum onto the MILES wavelength grid
+  !for coding reasons, we need to "interpolate" even onto the BaSeL grid
+  CALL SPLINE(tsun_lam,tsun_spec,1.0e30_sp,1.0e30_sp,spl(1:1221))
+  DO i=1,nspec
+     sun_spec(i) = splint(tsun_lam,tsun_spec,spl(1:1221),spec_lambda(i))
+  ENDDO
+
+  magsun = 0.0
 
   !read in and set up band-pass filters
   OPEN(99,FILE=TRIM(SPS_HOME)//'/src/allfilters.dat',&
@@ -474,7 +493,7 @@ SUBROUTINE SPS_SETUP(zin)
      ENDIF
 
      !interpolate the filter onto the master wavelength array
-     CALL spline(readlamb(1:jj),readband(1:jj),1.0e30_sp,&
+     CALL SPLINE(readlamb(1:jj),readband(1:jj),1.0e30_sp,&
        1.0e30_sp,spl(1:jj))
      DO j=1,nspec
         IF (spec_lambda(j).GE.readlamb(1).AND.&
@@ -484,12 +503,22 @@ SUBROUTINE SPS_SETUP(zin)
      ENDDO
 
      !normalize
-     dumr1 = 0.0
-     DO j=1,nspec-1
-        dumr1 = dumr1 + (spec_lambda(j+1)-spec_lambda(j))*&
-             (bands(i,j+1)/spec_lambda(j+1)+bands(i,j)/spec_lambda(j))/2.
-     ENDDO
+     dumr1 = SUM( (spec_lambda(2:nspec)-spec_lambda(1:nspec-1)) * &
+          (bands(i,2:nspec)/spec_lambda(2:nspec)+&
+          bands(i,1:nspec-1)/spec_lambda(1:nspec-1))/2. )
      bands(i,:) = bands(i,:) / dumr1
+
+     !compute absolute magnitude of the Sun in all filters
+     magsun(i) = SUM( (spec_lambda(2:nspec)-spec_lambda(1:nspec-1)) * &
+          (sun_spec(2:nspec)*bands(i,2:nspec)/spec_lambda(2:nspec)+&
+          sun_spec(1:nspec-1)*bands(i,1:nspec-1)/spec_lambda(1:nspec-1))/2. )
+     magsun(i) = -2.5*LOG10(magsun(i)) - 48.60
+
+     !compute mags of Vega
+     magvega(i) = SUM( (spec_lambda(2:nspec)-spec_lambda(1:nspec-1)) * &
+          (vega_spec(2:nspec)*bands(i,2:nspec)/spec_lambda(2:nspec)+&
+          vega_spec(1:nspec-1)*bands(i,1:nspec-1)/spec_lambda(1:nspec-1))/2. )
+     magvega(i) = -2.5 * LOG10(magvega(i)) - 48.60
 
   ENDDO
   CLOSE(99)

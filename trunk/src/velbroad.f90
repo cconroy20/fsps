@@ -8,11 +8,12 @@ SUBROUTINE VELBROAD(lambda,spec,sigma)
   USE sps_vars; USE nr, ONLY : locate; USE nrtype
   IMPLICIT NONE
   
-  REAL(SP), INTENT(inout), DIMENSION(:) :: spec,lambda
+  REAL(SP), INTENT(inout), DIMENSION(nspec) :: spec
+  REAL(SP), INTENT(in), DIMENSION(nspec) :: lambda
   REAL(SP), INTENT(in) :: sigma
-  REAL(SP), DIMENSION(10000) :: tspec,vel,func,gauss
+  REAL(SP), DIMENSION(nspec) :: tspec,vel,func,gauss
   REAL(SP) :: c,cg,xmax
-  INTEGER :: i,j,nn,m,il,ih, velocity=1
+  INTEGER :: i,j,m,il,ih, velocity=1
 
   !---------------------------------------------------------------!
   !---------------------------------------------------------------!
@@ -20,18 +21,17 @@ SUBROUTINE VELBROAD(lambda,spec,sigma)
   c  = 2.998E5
   cg = 1/sqrt(2*mypi)/sigma
 
-  nn = SIZE(spec)
-  tspec(1:nn) = spec(1:nn)
-  spec(1:nn)  = 0.0
+  tspec = spec
+  spec  = 0.0
    
   !convolve at fixed sigma_velocity
   IF (velocity.EQ.1) THEN
 
      m = 6
-     DO i=1,nn
+     DO i=1,nspec
         
         xmax = lambda(i)*(m*sigma/c+1)
-        ih = MIN(locate(lambda(1:nn),xmax),nn)
+        ih = MIN(locate(lambda(1:nspec),xmax),nspec)
         il = MAX(2*i-ih,1)
         
         vel(il:ih)  = (lambda(i)/lambda(il:ih)-1)*c
@@ -45,9 +45,9 @@ SUBROUTINE VELBROAD(lambda,spec,sigma)
   !convolve at fixed sigma_wavelength
   ELSE
 
-     DO i=1,nn
-        gauss(1:nn) = cg*EXP(-(lambda(1:nn)-lambda(i))**2/2/sigma**2)
-        DO j=1,nn
+     DO i=1,nspec
+        gauss = cg*EXP(-(lambda-lambda(i))**2/2/sigma**2)
+        DO j=1,nspec
            spec(i) = spec(i) + gauss(j)*tspec(j)
         ENDDO
      ENDDO

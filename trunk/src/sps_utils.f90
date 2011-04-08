@@ -1,9 +1,18 @@
 MODULE SPS_UTILS
 
   INTERFACE
+     REAL FUNCTION INTSFR(sfh,tau,const,maxtime,sfstart,t1,t2)
+       USE nrtype; USE sps_vars
+       INTEGER, INTENT(in)  :: sfh
+       REAL(SP), INTENT(in) :: t1,t2,tau,const,maxtime,sfstart
+     END FUNCTION INTSFR
+  END INTERFACE
+
+  INTERFACE
      SUBROUTINE VELBROAD(lambda,spec,sigma)
        USE sps_vars; USE nr, ONLY : locate; USE nrtype
-       REAL(SP), INTENT(inout), DIMENSION(:) :: spec,lambda
+       REAL(SP), INTENT(inout), DIMENSION(nspec) :: spec
+       REAL(SP), INTENT(in), DIMENSION(nspec) :: lambda
        REAL(SP), INTENT(in) :: sigma
      END SUBROUTINE VELBROAD
   END INTERFACE
@@ -11,7 +20,7 @@ MODULE SPS_UTILS
   INTERFACE
      REAL FUNCTION INTIND(lam,func,lo,hi)
        USE sps_vars; USE nrtype; USE nr, ONLY : locate
-       REAL(SP), INTENT(in), DIMENSION(:) :: lam,func
+       REAL(SP), INTENT(in), DIMENSION(nspec) :: lam,func
        REAL(SP), INTENT(in) :: lo,hi
      END FUNCTION INTIND
   END INTERFACE
@@ -28,7 +37,7 @@ MODULE SPS_UTILS
   INTERFACE
      SUBROUTINE GETINDX(lambda,spec,indices)
        USE sps_vars; USE nrtype
-       REAL(SP), INTENT(in), DIMENSION(:) :: spec,lambda
+       REAL(SP), INTENT(in), DIMENSION(nspec) :: spec,lambda
        REAL(SP), INTENT(inout), DIMENSION(nindsps) :: indices
      END SUBROUTINE GETINDX
   END INTERFACE

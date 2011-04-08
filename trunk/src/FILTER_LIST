@@ -1,8 +1,8 @@
 1	Johnson V (from Bessell 1990 via M. Blanton)  --- this defines V=0 for the Vega system
 2	Johnson U (from Bessell 1990 via M. Blanton)
-3	DEEP2 B-band (from Blanton's kcorrect)
-4	DEEP2 R-band (from Blanton's kcorrect)
-5	DEEP2 I-band (from Blanton's kcorrect)
+3	CFHT B-band (from Blanton's kcorrect)
+4	CFHT R-band (from Blanton's kcorrect)
+5	CFHT I-band (from Blanton's kcorrect)
 6	2MASS J filter (total response w/atm)
 7 	2MASS H filter (total response w/atm)
 8	2MASS Ks filter (total response w/atm)

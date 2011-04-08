@@ -6,24 +6,12 @@ MODULE SPS_VARS
   IMPLICIT NONE
   SAVE
 
-  !---Parameters not to be distributed in the public verision----!
-
-  !specify magnitude or spectral fitting in fitgal.f90
-  INTEGER, PARAMETER :: fitspec=0
-  !specify whether fitfast or normal fitting is done in powell
-  INTEGER, PARAMETER :: fitfast=1
-  !switch to fit P(z) for photo-z measurements
-  INTEGER, PARAMETER :: fitpzphot = 0
-  !switch for fitgal routine
-  !NB: when hard-wiring isochrone values, set default=1  
-  INTEGER, PARAMETER :: default=1
-
   !------Common parameters that may be altered by the user-------!
   
-  !setup cosmology.  Used only for z(t) relation. (assumes h=0.72)
-  REAL, PARAMETER :: om0=0.25, ol0=0.75, thub=13.58 
+  !setup cosmology (WMAP7).  Used only for z(t) relation.
+  REAL, PARAMETER :: om0=0.26, ol0=0.74, thub=13.77
   
-  !controls the level of output (0=no output to screen)
+  !controls the level of output (0 = no output to screen)
   INTEGER, PARAMETER :: verbose=0
 
   !Turn-on time for BHB and SBS phases, time is in log(yrs)
@@ -87,7 +75,7 @@ MODULE SPS_VARS
   
   !number of metallicities in the isochrones
   !22 = Padova+BaseL, 10 = BaSTI+BaSeL, 5 = MILES, 1 = Pickles
-  INTEGER, PARAMETER :: nz=22 
+  INTEGER, PARAMETER :: nz=22
   !number of elements per stellar spectrum for BaSeL/MILES/Pickles
   !1221 = BaSeL, 4222 = MILES, 1895 = Pickles
   INTEGER, PARAMETER :: nspec=1221
@@ -105,7 +93,9 @@ MODULE SPS_VARS
   !max dimension of mass and time arrays for isochrones
   INTEGER, PARAMETER :: nm=1500, nt=94
   !max number of lines to read in
-  INTEGER, PARAMETER ::  nlines=1E5
+  INTEGER, PARAMETER ::  nlines=100000
+  !max number of lines in tabulated SFH
+  INTEGER, PARAMETER :: ntabmax=10000
   !dimensions of BaSeL library
   INTEGER, PARAMETER :: ndim_logt=68, ndim_logg=19
   !number of O-rich AGB spectra
@@ -206,15 +196,18 @@ MODULE SPS_VARS
   REAL, DIMENSION(500,3) :: zagespl=0.0
  
   !array holding tabulated SFH 
-  REAL, DIMENSION(3,10000) :: sfh_tab=0.0
+  REAL, DIMENSION(3,ntabmax) :: sfh_tab=0.0
   INTEGER :: ntabsfh=0
 
   !bandpass filters 
   REAL, DIMENSION(nbands,nspec) :: bands
+  !magnitude of the Sun in all filters
+  REAL, DIMENSION(nbands) :: magsun,magvega
   !Vega-like star spectrum for Vega magnitude zero-point
-  REAL, DIMENSION(nspec) :: vega_spec=0.
+  !spectrum of Sun, for absolute mags of Sun
+  REAL, DIMENSION(nspec)  :: vega_spec=0.,sun_spec=0.0
   !common wavelength array
-  REAL, DIMENSION(nspec) :: spec_lambda=0.0
+  REAL, DIMENSION(nspec)  :: spec_lambda=0.0
 
   !arrays for stellar spectral information in HR diagram
   REAL, DIMENSION(ndim_logt) :: basel_logt=0.0
@@ -260,7 +253,8 @@ MODULE SPS_VARS
           tage=0.0,fburst=0.0,tburst=11.0,dust1=0.0,dust2=0.0,logzsol=-0.2,&
           zred=0.0,pmetals=0.02,imf1=1.3,imf2=2.3,imf3=2.3,vdmc=0.08,&
           dust_clumps=-99.,frac_nodust=0.0,dust_index=-0.7,dust_tesc=7.0,&
-          frac_obrun=0.0,uvb=1.0,mwr=3.1,redgb=1.0,dust1_index=-1.0,mdave=0.5
+          frac_obrun=0.0,uvb=1.0,mwr=3.1,redgb=1.0,dust1_index=-1.0,mdave=0.5,&
+          sf_start=0.0
      INTEGER :: zmet=1,sfh=0,wgp1=1,wgp2=1,wgp3=1
   END TYPE PARAMS
   
@@ -271,22 +265,4 @@ MODULE SPS_VARS
      REAL, DIMENSION(nspec)  :: spec=0.
   END TYPE COMPSPOUT
   
-  !----the following are not to be included in the public version----!
-
-  !structure for observational data.  
-  TYPE OBSDAT
-     REAL                    :: zred=0.0,logsmass=0.0
-     REAL, DIMENSION(nbands) :: mags=0.0,magerr=0.0
-     REAL, DIMENSION(nspec)  :: spec=0.0, specerr=99.
-  END TYPE OBSDAT
-
-  !structure for using P(z) in chi2
-  INTEGER, PARAMETER :: npzphot   = 200
-  TYPE TPZPHOT
-     REAL, DIMENSION(npzphot) :: zz=0.0,pz=0.0
-  END TYPE TPZPHOT
-
-  !used for Powell minimization
-  TYPE(OBSDAT) :: powell_data
-
 END MODULE SPS_VARS

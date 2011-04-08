@@ -5,7 +5,6 @@ SUBROUTINE GETSPEC(zz,mini,mact,logt,lbol,phase,ffco,spec)
   ! For very hot stars, assume a Blackbody.  For TP-AGB
   ! stars, use the empirical library of Lancon & Mouhcine 2002.
   ! Luminosities are in solar units; Fluxes are in Fnu units (Lsun/Hz)
-
   ! BS spectra from M67 look like MS stars (Liu et al. 2008)
 
   !This subroutine is a major bottleneck.  We must re-compute
@@ -18,11 +17,13 @@ SUBROUTINE GETSPEC(zz,mini,mact,logt,lbol,phase,ffco,spec)
   REAL(SP), INTENT(in) :: mini,mact,logt,lbol,phase,ffco
   INTEGER,  INTENT(in) :: zz
   REAL(SP), INTENT(inout), DIMENSION(nspec) :: spec  
-  INTEGER, DIMENSION(5) :: mizz
-  REAL(SP) :: loggi,t,u,r2,tpagbtdiff,teffi, sumtest,tco
-  INTEGER  :: klo,jlo,j,idum=-1,flag
+  REAL(SP) :: loggi,t,u,r2,tpagbtdiff,sumtest,tco
+  INTEGER  :: klo,jlo,idum=-1,flag
+
+  !-------------------------------------------------------------!
 
   spec = 0.0
+  flag = 0
 
   tco = ffco
   !allows us to dilute the C star fraction
@@ -36,8 +37,7 @@ SUBROUTINE GETSPEC(zz,mini,mact,logt,lbol,phase,ffco,spec)
   !compute radius squared (cm^2) 
   r2    = mact*msun*newton/10**loggi
 
-  flag = 0
-
+ 
   !post-AGB non-LTE model spectra from Rauch 2003
   !the H-Ni composition spectra are used here.
   !this library has two Zs, Solar and 0.1Solar, simply use one or the other
@@ -157,11 +157,11 @@ SUBROUTINE GETSPEC(zz,mini,mact,logt,lbol,phase,ffco,spec)
   !make sure the spectrum never has any zero's
   spec = MAX(spec,0.0)
   
-  IF (flag.EQ.0) THEN
+  IF (flag.EQ.0.AND.spec_type.NE.'miles') THEN
      WRITE(*,*) 'GETSPEC ERROR: isochrone point not assigned a spectrum',&
           logt,loggi,phase
   ELSE IF (flag.GT.1) THEN
-     WRITE(*,*) 'GETSPEC ERROR: isochrone point assigned *two* spectra'
+     WRITE(*,*) 'GETSPEC ERROR: isochrone point assigned *two* spectra!'
   ENDIF
 
   !pure blackbody; no longer used but kept here for posterity
