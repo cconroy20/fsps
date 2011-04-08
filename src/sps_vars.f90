@@ -265,4 +265,22 @@ MODULE SPS_VARS
      REAL, DIMENSION(nspec)  :: spec=0.
   END TYPE COMPSPOUT
   
+  !----the following are not to be included in the public version----!
+
+  !structure for observational data.  
+  TYPE OBSDAT
+     REAL                    :: zred=0.0,logsmass=0.0
+     REAL, DIMENSION(nbands) :: mags=0.0,magerr=0.0
+     REAL, DIMENSION(nspec)  :: spec=0.0, specerr=99.
+  END TYPE OBSDAT
+
+  !structure for using P(z) in chi2
+  INTEGER, PARAMETER :: npzphot   = 200
+  TYPE TPZPHOT
+     REAL, DIMENSION(npzphot) :: zz=0.0,pz=0.0
+  END TYPE TPZPHOT
+
+  !used for Powell minimization
+  TYPE(OBSDAT) :: powell_data
+
 END MODULE SPS_VARS
