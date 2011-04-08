@@ -12,10 +12,8 @@ SUBROUTINE ADD_DUST(pset,csp1,csp2,specdust)
   INTEGER :: w63, i
   REAL(SP), DIMENSION(nspec)  :: diffuse_dust,tau2,katt,cspi
   REAL(SP), DIMENSION(nspec)  :: x,a,b,y,fa,fb,boost
-  REAL(SP), DIMENSION(ntfull)  :: weights
   REAL(SP), DIMENSION(nclump) :: nden,wclump
   REAL(SP) :: clump_ave
-  CHARACTER(2) :: str
 
   !-----------------------------------------------------!
   !-----------------Test input params-------------------!

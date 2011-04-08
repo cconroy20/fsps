@@ -34,7 +34,7 @@ SUBROUTINE ADD_BS(s_bs,t,mini,mact,logl,logt,phase, &
   !weight given to total BS population
   REAL(SP) :: bs_wght=0.
   REAL(SP) :: tol=0., msspl=0.
-  INTEGER  :: maxt=0, i, k, idum=-1
+  INTEGER  :: maxt=0, i, k
 
   tol = 0.0
   bs_wght = s_bs * hb_wght

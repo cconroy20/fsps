@@ -5,16 +5,19 @@ REAL FUNCTION INTIND(lam,func,lo,hi)
 
   USE sps_vars; USE nrtype; USE nr, ONLY : locate
   IMPLICIT NONE
-  INTEGER :: l1,l2,i,n
-  REAL(SP), INTENT(in), DIMENSION(:) :: lam,func
+
+  INTEGER :: l1,l2,i
+  REAL(SP), INTENT(in), DIMENSION(nspec) :: lam, func
   REAL(SP), INTENT(in) :: lo,hi
   REAL(SP) :: f1,f2
 
   !-----------------------------------------------------------!
   !-----------------------------------------------------------!
 
-  l1 = locate(lam,lo)
-  l2 = locate(lam,hi)
+  !lam = spec_lambda
+
+  l1 = MAX(MIN(locate(lam,lo),nspec-1),1)
+  l2 = MAX(MIN(locate(lam,hi),nspec-1),2)
   f1 = (func(l1+1)-func(l1))/(lam(l1+1)-lam(l1))*&
        (lo-lam(l1)) + func(l1)
   f2 = (func(l2+1)-func(l2))/(lam(l2+1)-lam(l2))*&
@@ -42,15 +45,14 @@ SUBROUTINE GETINDX(lambda,spec,indices)
   !routine to calculate indices from an input spectrum
   !bandpasses and units are taken from the SDSS MPA reductions website:
   !http://www.mpa-garching.mpg.de/SDSS/DR4/SDSS_fixedidx.html
-  !the input spectrum is assumed to be in Fnu
+  !the input spectrum is assumed to be in Fnu units
 
   USE nrtype; USE nrutil, ONLY : assert_eq; USE sps_vars
-  USE sps_utils
-  USE nr, ONLY : spline, splint,locate
+  USE sps_utils; USE nr, ONLY : locate
   IMPLICIT NONE
 
-  INTEGER :: i,j
-  REAL(SP), INTENT(in), DIMENSION(:) :: spec,lambda
+  INTEGER :: j
+  REAL(SP), INTENT(in), DIMENSION(nspec) :: spec,lambda
   REAL(SP), INTENT(inout), DIMENSION(nindsps) :: indices
   REAL(SP) :: intfifc,cb,cr,lr,lb
 
@@ -61,7 +63,7 @@ SUBROUTINE GETINDX(lambda,spec,indices)
 
   IF (spec_type.NE.'miles') & 
        WRITE(*,*) 'GETINDX WARNING: you are attempting to '//&
-       'compute indices on the BaSeL library; are '//&
+       'compute indices on the low resolution BaSeL library; are '//&
        'you sure you want to do that??'
 
   DO j=1,nindsps
@@ -96,6 +98,11 @@ SUBROUTINE GETINDX(lambda,spec,indices)
         !different cr and cb would have to be computed
         indices(j) = cr/cb
      ENDIF
+
+     IF (indexdefined(6,j).GT.lambda(nspec)) &
+          indices(j) = 999.0
+     IF (indexdefined(3,j).LT.lambda(1)) &
+          indices(j) = 999.0
 
   ENDDO
 
