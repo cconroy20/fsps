@@ -104,7 +104,7 @@ SUBROUTINE INTSPEC(pset,nti,spec_ssp,csp,mass_ssp,lbol_ssp,&
      IF (pset%dust1.EQ.0.0.AND.pset%dust2.EQ.0.0) wtesc = ntfull
 
      indsf = locate(time(nti)-time(1:nti),sfstart)
-     IF (sfstart.EQ.0.0) indsf = nti
+     IF (sfstart.LE.tiny_number) indsf = nti
      indsf = MIN(indsf,ntfull-1)
      imax  = MIN(MIN(wtesc,nti),indsf)
 
@@ -147,7 +147,8 @@ SUBROUTINE INTSPEC(pset,nti,spec_ssp,csp,mass_ssp,lbol_ssp,&
      ENDIF
   
      !add in an instantaneous burst
-     IF (pset%fburst.GT.0.0.AND.(pset%sfh.EQ.1.OR.pset%sfh.EQ.4)) THEN
+     IF (pset%fburst.GT.tiny_number.AND.&
+          (pset%sfh.EQ.1.OR.pset%sfh.EQ.4)) THEN
         IF (deltb.LT.10**pset%dust_tesc) THEN
            csp1 = csp1*(1-pset%fburst) + specb*pset%fburst
            csp2 = csp2*(1-pset%fburst)
@@ -194,12 +195,11 @@ SUBROUTINE COMPSP(write_compsp,nzin,outfile,mass_ssp,&
   REAL(SP) :: tau,const,maxtime,writeage,psfr,sfstart,zhist
   REAL(SP) :: mass_csp,lbol_csp,dtb,dt,dz,zred=0.,t1,t2
   REAL(SP) :: mass_burst=0.0,lbol_burst=0.0,delt_burst=0.0
-  REAL(SP), DIMENSION(nbands)       :: mags=0.0
-  REAL(SP), DIMENSION(ntfull,nspec) :: ispec=0.0
-  REAL(SP), DIMENSION(nspec)  :: spec_csp=0.0,spec_burst=0.0,csp1,csp2,spec1
-  REAL(SP), DIMENSION(ntfull) :: imass=0.0, ilbol=0.0
-  REAL(SP), DIMENSION(ntfull) :: powtime
-  REAL(SP), DIMENSION(ntfull) :: sfr=0.,tsfr=0.,tzhist=0.
+  REAL(SP), DIMENSION(nbands)       :: mags
+  REAL(SP), DIMENSION(ntfull,nspec) :: ispec
+  REAL(SP), DIMENSION(nspec)  :: spec_csp,spec_burst=0.0,csp1,csp2,spec1
+  REAL(SP), DIMENSION(ntfull) :: imass,ilbol,powtime
+  REAL(SP), DIMENSION(ntfull) :: sfr,tsfr,tzhist
   REAL(SP), DIMENSION(ntabmax) :: tlb
 
   !(TYPE objects defined in sps_vars.f90)
@@ -256,14 +256,14 @@ SUBROUTINE COMPSP(write_compsp,nzin,outfile,mass_ssp,&
      !set up maxtime variable
      !if tage > 0 then only output one age=tage,
      !otherwise output ages from 0<t<maxtime
-     IF (pset%tage.GT.0.0) THEN
+     IF (pset%tage.GT.tiny_number) THEN
         maxtime = pset%tage*1E9
         imin    = MIN(MAX(locate(powtime,maxtime),1),ntfull-1)
         imax    = imin+1
      ENDIF
 
      !find sf_start in the time grid
-     IF (pset%sf_start.GT.0.0) THEN
+     IF (pset%sf_start.GT.tiny_number) THEN
         sfstart = pset%sf_start*1E9 !convert to yrs
         indsf = MIN(MAX(locate(powtime,sfstart),1),ntfull-1)
      ELSE
@@ -357,8 +357,8 @@ SUBROUTINE COMPSP(write_compsp,nzin,outfile,mass_ssp,&
         IF (write_compsp.EQ.2.OR.write_compsp.EQ.3) &
              WRITE(20,30) pset%dust1,pset%dust2
      ELSE
-        IF (pset%tage.GT.0.) writeage = pset%tage
-        IF (pset%tage.LE.0.) writeage = time_full(ntfull)
+        IF (pset%tage.GT.tiny_number) writeage = pset%tage
+        IF (pset%tage.LE.tiny_number) writeage = time_full(ntfull)
         IF (verbose.EQ.1) &
              WRITE(*,33) writeage,LOG10(tau),const,pset%fburst,&
              pset%tburst,pset%dust1,pset%dust2
@@ -424,9 +424,10 @@ SUBROUTINE COMPSP(write_compsp,nzin,outfile,mass_ssp,&
          ENDIF
 
       !set up an instantaneous burst
-      ELSE IF ((pset%sfh.EQ.1.OR.pset%sfh.EQ.4).AND.pset%fburst.GT.0.0) THEN
+      ELSE IF ((pset%sfh.EQ.1.OR.pset%sfh.EQ.4).AND.&
+           pset%fburst.GT.tiny_number) THEN
 
-         IF ((powtime(i)-pset%tburst*1E9).GT.0.0) THEN
+         IF ((powtime(i)-pset%tburst*1E9).GT.tiny_number) THEN
             delt_burst = powtime(i)-pset%tburst*1E9
             klo = MAX(MIN(locate(time_full,LOG10(delt_burst)),ntfull-1),1)
             dtb = (LOG10(delt_burst)-time_full(klo))/&
@@ -473,9 +474,8 @@ SUBROUTINE COMPSP(write_compsp,nzin,outfile,mass_ssp,&
 
       !only save results if computing all ages
       IF (imax-imin.GT.1) THEN
-         CALL SAVE_COMPSP(write_compsp,ocompsp(i),&
-              time_full(i),mass_csp,lbol_csp,tsfr(i),mags,&
-              spec_csp)
+         CALL SAVE_COMPSP(write_compsp,ocompsp(i),time_full(i),&
+              mass_csp,lbol_csp,tsfr(i),mags,spec_csp)
       ELSE
          !save results temporarily for later interpolation
          ocompsp(i)%mass_csp = mass_csp
@@ -513,8 +513,8 @@ SUBROUTINE COMPSP(write_compsp,nzin,outfile,mass_ssp,&
 30 FORMAT('#   SFH: tabulated input, dust=(',F6.2,','F6.2,')')
 31 FORMAT('#   log(age) log(mass) Log(lbol) log(SFR) spectra')
 32 FORMAT('#   log(age) log(mass) Log(lbol) log(SFR) mags (see FILTER_LIST)')
-33 FORMAT('#   SFH: Tage=',F6.2,' Gyr, log(tau)= ',F6.3,&
-        ' Gyr, const= ',F5.3,', fb= ',F5.3,', tb= ',F6.2,&
+33 FORMAT('#   SFH: Tage=',F6.2,' Gyr, log(tau/Gyr)= ',F6.3,&
+        ', const= ',F5.3,', fb= ',F5.3,', tb= ',F6.2,&
         ' Gyr, dust=(',F6.2,','F6.2,')')
 
 END SUBROUTINE COMPSP
@@ -548,10 +548,15 @@ SUBROUTINE COMPSP_WARNING(maxtime, pset, nzin, write_compsp)
   ENDIF
 
   !warn the user about an out-of-bounds burst component
-  IF (pset%tburst*1E9.GT.maxtime.AND.pset%fburst.GT.0.0.AND.&
+  IF (pset%tburst*1E9.GT.maxtime.AND.pset%fburst.GT.tiny_number.AND.&
        (pset%sfh.EQ.1.OR.pset%sfh.EQ.4)) THEN
      WRITE(*,*) 'COMPSP WARNING: burst time > age of system....'//&
           ' the burst component will NOT be added'
+  ENDIF
+
+  IF (pset%tage.LT.pset%sf_start.AND.pset%tage.GT.tiny_number) THEN
+     WRITE(*,*) 'COMPSP ERROR: tage<sf_start  stopping...'
+     STOP
   ENDIF
 
   IF (pset%sf_start.LT.0.0) THEN
@@ -679,13 +684,13 @@ SUBROUTINE SAVE_COMPSP(write_compsp,cspo,time,mass,&
      
   !write to mags file
   IF (write_compsp.EQ.1.OR.write_compsp.EQ.3) &
-       WRITE(10,fmt) time,LOG10(mass),&
+       WRITE(10,fmt) time,LOG10(mass+tiny_number),&
        lbol,LOG10(sfr+tiny_number),mags
   
   !write to spectra file
   IF (write_compsp.EQ.2.OR.write_compsp.EQ.3) THEN
      WRITE(20,'(4(F8.4,1x))') time,&
-          LOG10(mass),lbol,LOG10(sfr+tiny_number)
+          LOG10(mass+tiny_number),lbol,LOG10(sfr+tiny_number)
      WRITE(20,*) spec
   ENDIF
 
