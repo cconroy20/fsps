@@ -39,10 +39,13 @@ REVISION HISTORY
  - Release of v2.2.  Major revisions, including the addition of synthetic 
    post-AGB spectra from Rauch 2003, synthetic OB and WR spectra from 
    Smith et al. 2002, and the Geneva models for massive stars (>70 Msun).  
-   This means that the model predictions are now more accurate at very early ages.
+   This means that the model predictions are now more accurate at very early
+   ages and in the UV.
  - The directory structure has been reorganized.
  - The code is now in a svn repository for easy future updates
  - There was a bug in compsp that effected early ages.  
- - The time array is now much finer, and can be easily modified to be even finer
+ - The time array is now finer, and can be easily modified to be even finer
  - new IMF option: imf_type=5, which allows for tabulated piece-wise power-law IMFs
  - the Miles spectral library is now fully embedded in FSPS
+ - the variable Tuniv is now no longer used in setting SFHs.  The final age output
+   is now set by the maximum age in the isochrones (unless the parameter tage is set).
