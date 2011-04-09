@@ -83,11 +83,10 @@ MODULE SPS_VARS
   !You must change the number of bands here if
   !filters are added to allfilters.dat
   INTEGER, PARAMETER :: nbands=56
-
   !number of indices defined in allindices.dat
-  INTEGER, PARAMETER :: nindsps=27
+  INTEGER, PARAMETER :: nindsps=30
   
-  !The following parameters should never be changed,
+  !The following parameters should never be changed
   !unless you are changing the libraries
 
   !max dimension of mass and time arrays for isochrones
@@ -265,9 +264,10 @@ MODULE SPS_VARS
      REAL, DIMENSION(nspec)  :: spec=0.
   END TYPE COMPSPOUT
   
-  !----the following are not to be included in the public version----!
+  !-----the following structures are not used in the public code-----!
+  !--they are included here because some users of FSPS utilize them--!
 
-  !structure for observational data.  
+  !structure for observational data
   TYPE OBSDAT
      REAL                    :: zred=0.0,logsmass=0.0
      REAL, DIMENSION(nbands) :: mags=0.0,magerr=0.0

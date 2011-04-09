@@ -458,10 +458,8 @@ SUBROUTINE SPS_SETUP(zin)
      sun_spec(i) = splint(tsun_lam,tsun_spec,spl(1:1221),spec_lambda(i))
   ENDDO
 
-  magsun = 0.0
-
   !read in and set up band-pass filters
-  OPEN(99,FILE=TRIM(SPS_HOME)//'/src/allfilters.dat',&
+  OPEN(99,FILE=TRIM(SPS_HOME)//'/data/allfilters.dat',&
        STATUS='OLD',iostat=stat,ACTION='READ')
   READ(99,*)
 
@@ -604,9 +602,9 @@ SUBROUTINE SPS_SETUP(zin)
   !-----------------read in index definitions----------------------!
   !----------------------------------------------------------------!
 
-  OPEN(99,FILE=TRIM(SPS_HOME)//'/src/allindices.dat',&
+  OPEN(99,FILE=TRIM(SPS_HOME)//'/data/allindices.dat',&
        STATUS='OLD',iostat=stat,ACTION='READ')
-  DO i=1,7
+  DO i=1,4
      READ(99,*)
   ENDDO
   DO i=1,nindsps
