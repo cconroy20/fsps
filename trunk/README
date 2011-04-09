@@ -1,33 +1,57 @@
 This is FSPS v2.2
 ---------------------------------
 
-You should not need to update the SVN repository until an update is announced (which is why you need to be on the mailing list).  When an update is announced, you will need to simply type "svn update" in the root fsps directory.  If you have made your own edits to the fsps files, svn will attempt to gracefully merge your local version with the repository version.
+You should not need to update the SVN repository until an update is
+announced (which is why you need to be on the mailing list).  When an
+update is announced, you will need to simply type "svn update" in the
+root fsps directory.  If you have made your own edits to the fsps
+files, svn will attempt to gracefully merge your local version with
+the repository version.
 
-Below is a brief description of the contents of the directories in the fsps root directory:
+Below is a brief description of the contents of the directories in the
+fsps root directory:
 
-ISOCHRONES:
-Contains the isochrone tables for the BaSTI and Padova isochrone sets.  The Geneva isochrones have been pasted onto the BaSTI and Padova tables for high masses (M>70Msun), and the low-mass Lyon models have been pasted on at low masses.  You should not edit these files unless you know what you're doing.
+ISOCHRONES: Contains the isochrone tables for the BaSTI and Padova
+isochrone sets.  The Geneva isochrones have been pasted onto the BaSTI
+and Padova tables for high masses (M>70Msun), and the low-mass Lyon
+models have been pasted on at low masses.  You should not edit these
+files unless you know what you're doing.
 
-OUTPUTS:
-Contains the outputs of a few example calls of the routines autosps and simple.  You may wish to use this directory for all outputs of the fsps routines.
+OUTPUTS: Contains the outputs of a few example calls of the routines
+autosps and simple.  You may wish to use this directory for all
+outputs of the fsps routines.
 
-SPECTRA:
-Contains the spectral libraries and a spectrum of an A0V star used to set the Vega magnitude zero points.  The BaSeL spectra (based on the Kurucz models) are in binary format, primarily to make the read in time faster and to decrease the size of the fsps download.  The Hot_spectra directory contain the libraries for O stars, WR stars, and post-AGB stars, from Smith et al. 2002 and Rauch 2003, respectively.  These files should not be edited.
+SPECTRA: Contains the spectral libraries, the spectrum of an A0V star
+used to set the Vega magnitude zero points, and a spectrum of the Sun.
+The BaSeL spectra (based on the Kurucz models) are in binary format,
+primarily to make the read in time faster and to decrease the size of
+the fsps download.  The Hot_spectra directory contain the libraries
+for O stars, WR stars, and post-AGB stars, from Smith et al. 2002 and
+Rauch 2003, respectively.
 
-SSP:
-Contains the standard release versions of SSPs for a variety of IMFs, spectral libraries, and isochrone sets.  Each tarball contains the full range of metallicities, and each file contains the full range of ages.
+SSP: Contains the standard release versions of SSPs for a variety of
+IMFs, spectral libraries, and isochrone sets.  Each tarball contains
+the full range of metallicities, and each file contains the full range
+of ages.
 
-doc:
-Contains the manual, revision history, and installation instructions
+data: Contains files that define the set of filters and indices used
+in FSPS and the tabulated imfs and sfhs if those options are set.  The
+files in this directory are readily user editable.
 
-dust:
-Contains the dust attenuation curves for the Witt & Gordon (2000) dust model.
+doc: Contains the manual, revision history, and installation
+instructions
 
-pro:
-Contains IDL files for reading in the .mag, .indx, and .spec output files
+dust: Contains the dust attenuation curves for the Witt & Gordon
+(2000) dust model.
 
-src:
-Contains the source files, and contains the input files for tabulated SFHs (sfh.dat) and IMFs (imf.dat).  This directory also contains the index definition file (allindices.dat) and the bandpass filters, both their description (FILTER_LIST) and the actual definitions (allfilters.dat).
+pro: Contains IDL files for reading in the .mag, .indx, and .spec
+output files
+
+src: Contains the source files, and contains the input files for
+tabulated SFHs (sfh.dat) and IMFs (imf.dat).  This directory also
+contains the index definition file (allindices.dat) and the bandpass
+filters, both their description (FILTER_LIST) and the actual
+definitions (allfilters.dat).
 
 
 
