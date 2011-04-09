@@ -125,7 +125,7 @@ SUBROUTINE SSP_GEN(pset,mass_ssp,lbol_ssp,spec_ssp)
 
   !read in user-defined IMF
   IF (imf_type.EQ.5) THEN
-     OPEN(13,FILE='imf.dat',ACTION='READ',STATUS='OLD')
+     OPEN(13,FILE=TRIM(SPS_HOME)//'/data/imf.dat',ACTION='READ',STATUS='OLD')
      DO i=1,100
         READ(13,*,IOSTAT=stat) imf_user_alpha(1,i),imf_user_alpha(2,i),&
              imf_user_alpha(3,i)
@@ -197,18 +197,6 @@ SUBROUTINE SSP_GEN(pset,mass_ssp,lbol_ssp,spec_ssp)
      !IF (pset%pagb.NE.0.AND.MAXVAL(phase(i,:)).GE.5.0) &
      !     CALL STITCH_PAGB(i,mini,mact,logl,logt,logg,wght,nmass,phase)
 
-     !write out isochrones for testing purposes
-     IF (i.GE.10.AND.MOD(i,5).EQ.0.AND.1.EQ.0) THEN
-        WRITE(istr,'(I2)') i
-        WRITE(istr2,'(I2)') 10+pset%zmet
-        OPEN(89,file='isoc_basti_Z'//istr2//'_t'//istr//'.dat')
-        DO j=1,nmass(i)
-           WRITE(89,*) time(i),mini(i,j),logl(i,j),logt(i,j),&
-                wght(j),phase(i,j)
-        ENDDO
-        CLOSE(89)
-     ENDIF
-
      ii = 1 + (i-1)*time_res_incr
 
      !compute IMF-weighted mass of the SSP
@@ -234,19 +222,16 @@ SUBROUTINE SSP_GEN(pset,mass_ssp,lbol_ssp,spec_ssp)
   !-----------------------------------------------------------!
   
   IF (time_res_incr.GT.1) THEN
-
      DO j=1,ntfull
         IF (MOD(j-1,time_res_incr).EQ.0) CYCLE
         klo = MAX(MIN(locate(time,time_full(j)),nt-1),1)
-        dt  = (time_full(j)-time(klo))/&
-             (time(klo+1)-time(klo))
+        dt  = (time_full(j)-time(klo))/(time(klo+1)-time(klo))
         klo = 1+(klo-1)*time_res_incr
         khi = klo+time_res_incr
         spec_ssp(j,:) = (1-dt)*spec_ssp(klo,:) + dt*spec_ssp(khi,:)
         lbol_ssp(j)   = (1-dt)*lbol_ssp(klo) + dt*lbol_ssp(khi)
         mass_ssp(j)   = (1-dt)*mass_ssp(klo) + dt*mass_ssp(khi)
      ENDDO
-
   ENDIF
 
 END SUBROUTINE SSP_GEN
