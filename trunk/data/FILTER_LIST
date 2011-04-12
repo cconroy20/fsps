@@ -1,4 +1,4 @@
-1	Johnson V (from Bessell 1990 via M. Blanton)  --- this defines V=0 for the Vega system
+1	Johnson V (from Bessell 1990 via M. Blanton)  - this defines V=0 for the Vega system
 2	Johnson U (from Bessell 1990 via M. Blanton)
 3	CFHT B-band (from Blanton's kcorrect)
 4	CFHT R-band (from Blanton's kcorrect)
@@ -12,10 +12,10 @@
 12	SDSS Camera i Response Function, airmass = 1.3 (June 2001)
 13	SDSS Camera z Response Function, airmass = 1.3 (June 2001)
 14 	WFC ACS F435W  (http://acs.pha.jhu.edu/instrument/photometry/)
-15	WFC ACS F606W            "
-16	WFC ACS F775W            "
-17	WFC ACS F814W           "
-18	WFC ACS F850LP           "
+15	WFC ACS F606W  (http://acs.pha.jhu.edu/instrument/photometry/)
+16	WFC ACS F775W  (http://acs.pha.jhu.edu/instrument/photometry/)
+17	WFC ACS F814W  (http://acs.pha.jhu.edu/instrument/photometry/)
+18	WFC ACS F850LP  (http://acs.pha.jhu.edu/instrument/photometry/)
 19	IRAC Channel 1
 20	IRAC Channel 2
 21	IRAC Channel 3
@@ -27,30 +27,34 @@
 27	NICMOS F160W
 28	GALEX NUV
 29	GALEX FUV
-30	DES g  (all from Huan Lin, for DES camera)
-31	DES r
-32	DES i
-33	DES z
-34	DES Y
-35	WFCAM Z  (all from Hewett et al. 2006, via A. Smith)
-36	WFCAM Y
-37	WFCAM J
-38	WFCAM H
-39	WFCAM K
+30	DES g  (from Huan Lin, for DES camera)
+31	DES r  (from Huan Lin, for DES camera)
+32	DES i  (from Huan Lin, for DES camera)
+33	DES z  (from Huan Lin, for DES camera)
+34	DES Y  (from Huan Lin, for DES camera)
+35	WFCAM Z  (from Hewett et al. 2006, via A. Smith)
+36	WFCAM Y  (from Hewett et al. 2006, via A. Smith)
+37	WFCAM J  (from Hewett et al. 2006, via A. Smith)
+38	WFCAM H  (from Hewett et al. 2006, via A. Smith)
+39	WFCAM K  (from Hewett et al. 2006, via A. Smith)
 40	Johnson B (from BC03.  This is the B2 filter from Buser)
 41	Cousins R (from Bessell 1990 via M. Blanton) 
 42 	Cousins I (from Bessell 1990 via M. Blanton) 
-43	Johnson B (from Bessell)
-44 	WFPC2 F555W
-45	WFPC2 F814W
-46	Cousins I (from ACS)
-47  	WFC3 F275W
+43	Johnson B (from Bessell 1990 via M. Blanton)
+44 	WFPC2 F555W (http://acs.pha.jhu.edu/instrument/photometry/WFPC2/)
+45	WFPC2 F814W (http://acs.pha.jhu.edu/instrument/photometry/WFPC2/)
+46	Cousins I (http://acs.pha.jhu.edu/instrument/photometry/GROUND/)
+47  	WFC3 F275W (ftp://ftp.stsci.edu/cdbs/comp/wfc3/)
 48  	Steidel Un (via A. Shapley; see Steidel et al. 2003)
-49	Steidel G         " 
-50 	Steidel Rs       "
-51	Steidel I          "
+49	Steidel G  (via A. Shapley; see Steidel et al. 2003)
+50 	Steidel Rs (via A. Shapley; see Steidel et al. 2003)
+51	Steidel I  (via A. Shapley; see Steidel et al. 2003)
 52	CFHT MegaCam u* (http://cadcwww.dao.nrc.ca/megapipe/docs/filters.html, Dec 2010)
 53	CFHT MegaCam g' (http://cadcwww.dao.nrc.ca/megapipe/docs/filters.html)
 54	CFHT MegaCam r' (http://cadcwww.dao.nrc.ca/megapipe/docs/filters.html)
 55	CFHT MegaCam i' (http://cadcwww.dao.nrc.ca/megapipe/docs/filters.html)
 56	CFHT MegaCam z' (http://cadcwww.dao.nrc.ca/megapipe/docs/filters.html)
+57	WISE W1 (http://www.astro.ucla.edu/~wright/WISE/passbands.html)
+58	WISE W2 (http://www.astro.ucla.edu/~wright/WISE/passbands.html)
+59	WFC3 F125W (ftp://ftp.stsci.edu/cdbs/comp/wfc3/)
+60	WFC3 F160W (ftp://ftp.stsci.edu/cdbs/comp/wfc3/)
