@@ -15,6 +15,7 @@
 ;
 ; MODIFICATION HISTORY: 
 ;   ? - created by CFC
+;   04/11 - added near-IR indices
 ;
 ;-
 ;-----------------------------------------------------------------;
@@ -28,7 +29,7 @@ FUNCTION READ_INDX1, file
          Ca4455:0.0,Fe4531:0.0,C4668:0.0,Hb:0.0,Fe5015:0.0,Mg1:0.0,$
          Mg2:0.0,Mgb:0.0,Fe5270:0.0,Fe5335:0.0,Fe5406:0.0,Fe5709:0.0,$ 
          Fe5782:0.0,NaD:0.0,TiO1:0.0,TiO2:0.0,HdA:0.0,HgA:0.0,HdF:0.0,$
-         HgF:0.0,Dn4000:0.0,CO:0.0,mgfe:0.0}
+         HgF:0.0,Dn4000:0.0,MgFe:0.0,CO:0.0,H2O:0.0,cn_ir:0.0,C2:0.0}
   str = replicate(str,nn)
 
   str.agegyr = reform(res[0,*])
@@ -58,7 +59,10 @@ FUNCTION READ_INDX1, file
   str.hdf    = reform(res[24,*])
   str.hgf    = reform(res[25,*])
   str.dn4000 = reform(res[26,*])
-  IF n_elements(res[*,0]) GT 27 THEN str.co = reform(res[27,*])
+  str.co     = reform(res[27,*])
+  str.h2o    = reform(res[28,*])
+  str.cn_ir  = reform(res[29,*])
+  str.c2     = reform(res[30,*])
 
   ;a/fe insensitive index (see Thomas et al. 2003)
   str.mgfe = sqrt(str.mgb*(0.72*str.fe5270+0.28*str.fe5335)) 
