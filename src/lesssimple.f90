@@ -45,8 +45,7 @@ PROGRAM LESSSIMPLE
   !CALL PZ_CONVOL(pset,spec_pz,lbol_pz,mass_pz)
   file2    = 'SSP_pz.out'
   !now compute magnitudes for this SSP
-  !CALL COMPSP(1,1,file2,mass_pz,lbol_pz,&
-  !        spec_pz,pset,ocompsp)
+  CALL COMPSP(1,1,file2,mass_pz,lbol_pz,spec_pz,pset,ocompsp)
 
   !run compsp for a tabulated sfh with a metallicity history
   !NB: one must have setup all the SSPs, as was done in the DO-loop above
