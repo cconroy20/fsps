@@ -15,8 +15,8 @@ SUBROUTINE WRITE_ISOCHRONE(file,zz)
   !-----------------------------------------------------------!
 
   OPEN(55,FILE=TRIM(SPS_HOME)//'OUTPUTS/'//TRIM(file),STATUS='REPLACE')
-  WRITE(55,*) &
-       '# age, log(Z/Zsol), mini, logl, logt, logg, comp, weight, mags'
+  WRITE(55,*) '# log(age/yr), log(Z/Zsol), mini, logl, logt, '//&
+       'logg, phase, IMF weight, mags'
       
   !loop on the age of the isochrone
   DO tt=1,nt
