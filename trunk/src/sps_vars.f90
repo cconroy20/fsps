@@ -50,7 +50,7 @@ MODULE SPS_VARS
   !flag indicating type of isochrones to use
   !'bsti' = BaSTI -> requires nz=10, unless spec_type='miles'
   !'pdva' = Padova 2007 -> requires nz=22, unless spec_type='miles'
-  CHARACTER(4), PARAMETER :: isoc_type = 'bsti'
+  CHARACTER(4), PARAMETER :: isoc_type = 'pdva'
 
   !flag indicating type of spectral library to use
   !'basel' = BaSeL3.1 library + TP-AGB empirical (far-UV through far-IR)
@@ -75,7 +75,7 @@ MODULE SPS_VARS
   
   !number of metallicities in the isochrones
   !22 = Padova+BaseL, 10 = BaSTI+BaSeL, 5 = MILES, 1 = Pickles
-  INTEGER, PARAMETER :: nz=10
+  INTEGER, PARAMETER :: nz=22
   !number of elements per stellar spectrum for BaSeL/MILES/Pickles
   !1221 = BaSeL, 4222 = MILES, 1895 = Pickles
   INTEGER, PARAMETER :: nspec=1221
