@@ -17,8 +17,11 @@ SUBROUTINE IMF_WEIGHT(mini,wght,nmass)
   REAL(SP), INTENT(inout), DIMENSION(nm) :: wght
   REAL(SP), INTENT(in), DIMENSION(nm)    :: mini
   INTEGER, INTENT(in) :: nmass
-  INTEGER  :: i=1
-  REAL(SP) :: m1, m2
+  INTEGER  :: i
+  REAL(SP) :: m1,m2
+
+  !---------------------------------------------------------------!
+  !---------------------------------------------------------------!
 
   wght = 0.0
 
