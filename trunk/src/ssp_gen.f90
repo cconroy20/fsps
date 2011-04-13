@@ -217,9 +217,9 @@ SUBROUTINE SSP_GEN(pset,mass_ssp,lbol_ssp,spec_ssp)
 
   ENDDO
 
-  !-----------------------------------------------------------!
-  !now interpolate the SSPs to fill out the expanded time grid!
-  !-----------------------------------------------------------!
+  !-------------------------------------------------------------!
+  !-now interpolate the SSPs to fill out the expanded time grid-!
+  !-------------------------------------------------------------!
   
   IF (time_res_incr.GT.1) THEN
      DO j=1,ntfull
@@ -229,8 +229,8 @@ SUBROUTINE SSP_GEN(pset,mass_ssp,lbol_ssp,spec_ssp)
         klo = 1+(klo-1)*time_res_incr
         khi = klo+time_res_incr
         spec_ssp(j,:) = (1-dt)*spec_ssp(klo,:) + dt*spec_ssp(khi,:)
-        lbol_ssp(j)   = (1-dt)*lbol_ssp(klo) + dt*lbol_ssp(khi)
-        mass_ssp(j)   = (1-dt)*mass_ssp(klo) + dt*mass_ssp(khi)
+        lbol_ssp(j)   = (1-dt)*lbol_ssp(klo)   + dt*lbol_ssp(khi)
+        mass_ssp(j)   = (1-dt)*mass_ssp(klo)   + dt*mass_ssp(khi)
      ENDDO
   ENDIF
 
