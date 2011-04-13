@@ -82,7 +82,6 @@ MODULE SPS_UTILS
   INTERFACE
      FUNCTION GET_TUNIV(z)
        USE nrtype; USE sps_vars
-       IMPLICIT NONE
        REAL, INTENT(in) :: z
        REAL(SP) :: get_tuniv
      END FUNCTION GET_TUNIV
@@ -90,10 +89,7 @@ MODULE SPS_UTILS
   
   INTERFACE
      SUBROUTINE GETMAGS(zred,spec,mags) 
-       USE sps_vars 
-       USE nrtype; USE nrutil, ONLY : assert_eq
-       USE nr, ONLY : spline, splint
-       IMPLICIT NONE
+       USE sps_vars; USE nrtype
        REAL(SP), INTENT(in), DIMENSION(nspec) :: spec
        REAL(SP), INTENT(in) :: zred
        REAL(SP), DIMENSION(nbands) :: mags
@@ -103,7 +99,6 @@ MODULE SPS_UTILS
   INTERFACE
      SUBROUTINE GETSPEC(zz,mini,mact,logt,lbol,phase,ffco,spec)
        USE sps_vars; USE nrtype
-       IMPLICIT NONE
        REAL(SP), INTENT(in) :: mini,mact,logt,lbol,phase,ffco
        INTEGER,  INTENT(in) :: zz
        REAL(SP), INTENT(inout), DIMENSION(nspec) :: spec 
@@ -129,7 +124,6 @@ MODULE SPS_UTILS
   INTERFACE
      FUNCTION IMF(mass)
        USE sps_vars; USE nrtype
-       IMPLICIT NONE
        REAL(SP), DIMENSION(:), INTENT(in) :: mass
        REAL(SP), DIMENSION(size(mass)) :: imf
      END FUNCTION IMF
@@ -138,7 +132,6 @@ MODULE SPS_UTILS
   INTERFACE
      SUBROUTINE IMF_WEIGHT(mini,wght,nmass)
        USE nrtype; USE sps_vars
-       IMPLICIT NONE
        REAL(SP), INTENT(inout), DIMENSION(nm) :: wght
        REAL(SP), INTENT(in), DIMENSION(nm)    :: mini
        INTEGER, INTENT(in) :: nmass
@@ -149,7 +142,6 @@ MODULE SPS_UTILS
      SUBROUTINE MOD_AGB(zz,t,age,delt,dell,pagb,redgb,&
           nn,logl,logt,phase,wght)
        USE sps_vars; USE nrtype
-       IMPLICIT NONE
        INTEGER,  INTENT(in) :: t, nn,zz
        REAL(SP), INTENT(inout), DIMENSION(nt,nm) :: logl,logt
        REAL(SP), INTENT(in), DIMENSION(nt,nm)    :: phase
@@ -163,7 +155,6 @@ MODULE SPS_UTILS
      SUBROUTINE MOD_HB(f_bhb,t,mini,mact,logl,logt,phase, &
           wght,hb_wght,nmass,hbtime)
        USE sps_vars; USE nrtype
-       IMPLICIT NONE
        REAL(SP), INTENT(inout), DIMENSION(nt,nm) :: mini,mact,&
             logl,logt,phase
        REAL(SP), INTENT(inout), DIMENSION(nm) :: wght
@@ -179,7 +170,6 @@ MODULE SPS_UTILS
   INTERFACE
      SUBROUTINE READ_SPEC(file,lambda,spec,time,mass,lbol,n_isoc)
        USE sps_vars; USE nrtype
-       IMPLICIT NONE
        INTEGER, INTENT(out) :: n_isoc
        CHARACTER(60), INTENT(in) :: file
        REAL(SP), INTENT(out), DIMENSION(nspec) :: lambda
@@ -241,8 +231,8 @@ MODULE SPS_UTILS
      SUBROUTINE ZINTERP(zpos,spec,lbol,mass)
        USE sps_vars; USE nrtype
        REAL(SP),INTENT(in) :: zpos
-       REAL(SP),INTENT(inout),DIMENSION(nt) :: mass, lbol
-       REAL(SP),INTENT(inout),DIMENSION(nt,nspec) :: spec
+       REAL(SP),INTENT(inout),DIMENSION(ntfull) :: mass, lbol
+       REAL(SP),INTENT(inout),DIMENSION(ntfull,nspec) :: spec
      END SUBROUTINE ZINTERP
   END INTERFACE
 

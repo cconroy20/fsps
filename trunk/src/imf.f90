@@ -10,7 +10,7 @@ FUNCTION IMF(mass)
   IMPLICIT NONE
 
   REAL(SP), DIMENSION(:), INTENT(in) :: mass
-  REAL(SP), DIMENSION(size(mass)) :: imf
+  REAL(SP), DIMENSION(SIZE(mass)) :: imf
   INTEGER :: i,n
   REAL(SP) :: imfcu
 

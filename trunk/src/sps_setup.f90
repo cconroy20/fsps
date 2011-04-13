@@ -118,7 +118,7 @@ SUBROUTINE SPS_SETUP(zin)
           spec_type//'.dat',STATUS='OLD',iostat=stat,ACTION='READ')
   ENDIF
   IF (stat.NE.0) THEN
-     WRITE(*,*) 'SPS_SETUP ERROR0: zlegend_*.dat '//&
+     WRITE(*,*) 'SPS_SETUP ERROR: zlegend_*.dat '//&
           'cannot be opened'
      STOP 
   END IF
@@ -158,7 +158,7 @@ SUBROUTINE SPS_SETUP(zin)
   ENDIF
 
   IF (stat.NE.0) THEN
-     WRITE(*,*) 'SPS_SETUP ERROR1: wavelength grid '//&
+     WRITE(*,*) 'SPS_SETUP ERROR: wavelength grid '//&
           'cannot be opened'
      STOP 
   END IF
@@ -206,7 +206,7 @@ SUBROUTINE SPS_SETUP(zin)
              recl=nspec*ndim_logg*ndim_logt*4)
      ENDIF
      IF (stat.NE.0) THEN 
-        WRITE(*,*) 'SPS_SETUP ERROR2: '//spec_type//&
+        WRITE(*,*) 'SPS_SETUP ERROR: '//spec_type//&
              ' spectral library cannot be opened', zstype
         STOP 
      ENDIF
@@ -220,7 +220,7 @@ SUBROUTINE SPS_SETUP(zin)
   OPEN(93,FILE=TRIM(SPS_HOME)//'/SPECTRA/AGB_spectra/Orich_teff_allZ_'//&
        isoc_type//'_'//spec_type//'.dat',STATUS='OLD',iostat=stat,ACTION='READ')
   IF (stat.NE.0) THEN
-     WRITE(*,*) 'SPS_SETUP ERROR3: /SPECTRA/AGB_spectra/Orich_teff_allZ_'&
+     WRITE(*,*) 'SPS_SETUP ERROR: /SPECTRA/AGB_spectra/Orich_teff_allZ_'&
           //isoc_type//'_'//spec_type//'.dat cannot be opened'
      STOP 
   ENDIF
@@ -236,7 +236,7 @@ SUBROUTINE SPS_SETUP(zin)
   OPEN(94,FILE=TRIM(SPS_HOME)//'/SPECTRA/AGB_spectra/Crich_teff_allZ'//&
        '.dat',STATUS='OLD',iostat=stat,ACTION='READ')
   IF (stat.NE.0) THEN
-     WRITE(*,*) 'SPS_SETUP ERROR4: /SPECTRA/AGB_spectra/'//&
+     WRITE(*,*) 'SPS_SETUP ERROR: /SPECTRA/AGB_spectra/'//&
           'Crich_teff_allZ.dat cannot be opened'
      STOP 
   ENDIF
@@ -256,7 +256,7 @@ SUBROUTINE SPS_SETUP(zin)
           STATUS='OLD',iostat=stat,ACTION='READ')
      IF (stat.NE.0) THEN
 
-        WRITE(*,*) 'SPS_SETUP ERROR5: /AGB_spectra/Orich_spec_all_'//&
+        WRITE(*,*) 'SPS_SETUP ERROR: /AGB_spectra/Orich_spec_all_'//&
              spec_type//'.dat '//'cannot be opened'
         STOP 
      ENDIF
@@ -270,7 +270,7 @@ SUBROUTINE SPS_SETUP(zin)
           '/SPECTRA/AGB_spectra/Crich_spec_all_'//spec_type//'.dat',&
           STATUS='OLD',iostat=stat,ACTION='READ')
      IF (stat.NE.0) THEN
-        WRITE(*,*) 'SPS_SETUP ERROR6: /AGB_spectra/SPECTRA/'//&
+        WRITE(*,*) 'SPS_SETUP ERROR: /AGB_spectra/SPECTRA/'//&
              'Crich_spec_all_'//spec_type//'.dat '//'cannot be opened'
         STOP 
      ENDIF
@@ -285,7 +285,7 @@ SUBROUTINE SPS_SETUP(zin)
   OPEN(94,FILE=TRIM(SPS_HOME)//'/SPECTRA/Hot_spectra/iwr.teff',&
        STATUS='OLD',iostat=stat,ACTION='READ')
   IF (stat.NE.0) THEN
-     WRITE(*,*) 'SPS_SETUP ERROR8: Hot_spectra/iwr.teff cannot be opened'
+     WRITE(*,*) 'SPS_SETUP ERROR: Hot_spectra/iwr.teff cannot be opened'
      STOP 
   ENDIF
   DO i=1,ndim_wr
@@ -297,7 +297,7 @@ SUBROUTINE SPS_SETUP(zin)
   OPEN(94,FILE=TRIM(SPS_HOME)//'/SPECTRA/Hot_spectra/ipagb.teff',&
        STATUS='OLD',iostat=stat,ACTION='READ')
   IF (stat.NE.0) THEN
-     WRITE(*,*) 'SPS_SETUP ERROR8: Hot_spectra/ipagb.teff cannot be opened'
+     WRITE(*,*) 'SPS_SETUP ERROR: Hot_spectra/ipagb.teff cannot be opened'
      STOP 
   ENDIF
   DO i=1,ndim_pagb
@@ -312,7 +312,7 @@ SUBROUTINE SPS_SETUP(zin)
      OPEN(97,FILE=TRIM(SPS_HOME)//'/SPECTRA/Hot_spectra/ipagb.spec_solar',&
           STATUS='OLD',iostat=stat,ACTION='READ')
      IF (stat.NE.0) THEN
-        WRITE(*,*) 'SPS_SETUP ERROR7: /SPECTRA/Hot_spectra/'//&
+        WRITE(*,*) 'SPS_SETUP ERROR: /SPECTRA/Hot_spectra/'//&
              'ipagb.spec_solar cannot be opened'
         STOP 
      ENDIF
@@ -325,7 +325,7 @@ SUBROUTINE SPS_SETUP(zin)
      OPEN(97,FILE=TRIM(SPS_HOME)//'/SPECTRA/Hot_spectra/ipagb.spec_halo',&
           STATUS='OLD',iostat=stat,ACTION='READ')
      IF (stat.NE.0) THEN
-        WRITE(*,*) 'SPS_SETUP ERROR7: /SPECTRA/Hot_spectra/'//&
+        WRITE(*,*) 'SPS_SETUP ERROR: /SPECTRA/Hot_spectra/'//&
              'ipagb.spec_halo cannot be opened'
         STOP 
      ENDIF
@@ -338,7 +338,7 @@ SUBROUTINE SPS_SETUP(zin)
      OPEN(97,FILE=TRIM(SPS_HOME)//'/SPECTRA/Hot_spectra/iwr.spec',&
           STATUS='OLD',iostat=stat,ACTION='READ')
      IF (stat.NE.0) THEN
-        WRITE(*,*) 'SPS_SETUP ERROR7: Hot_spectra/iwr.spec '//&
+        WRITE(*,*) 'SPS_SETUP ERROR: Hot_spectra/iwr.spec '//&
              'cannot be opened'
         STOP 
      ENDIF
@@ -371,7 +371,7 @@ SUBROUTINE SPS_SETUP(zin)
           IOSTAT=stat,ACTION='READ')
 
      IF (stat.NE.0) THEN
-        WRITE(*,*) 'SPS_SETUP ERROR7: isochrone files cannot be opened'
+        WRITE(*,*) 'SPS_SETUP ERROR: isochrone files cannot be opened'
         STOP 
      END IF
         
@@ -403,7 +403,7 @@ SUBROUTINE SPS_SETUP(zin)
         
      ENDDO
 
-     WRITE(*,*) 'SPS_SETUP ERROR8: didnt finish reading in the isochrones!'
+     WRITE(*,*) 'SPS_SETUP ERROR: didnt finish reading in the isochrones!'
      STOP
      
 20   CONTINUE
@@ -419,7 +419,7 @@ SUBROUTINE SPS_SETUP(zin)
   OPEN(98,FILE=TRIM(SPS_HOME)//'/SPECTRA/A0V_KURUCZ_92.SED',&
        STATUS='OLD',iostat=stat,ACTION='READ')
   IF (stat.NE.0) THEN
-     WRITE(*,*) 'SPS_SETUP ERROR9: SPECTRA/A0V_KURUCZ_92.SED cannot be opened'
+     WRITE(*,*) 'SPS_SETUP ERROR: SPECTRA/A0V_KURUCZ_92.SED cannot be opened'
      STOP 
   END IF  
   !burn the header
@@ -443,7 +443,7 @@ SUBROUTINE SPS_SETUP(zin)
   OPEN(98,FILE=TRIM(SPS_HOME)//'/SPECTRA/SUN_STScI.SED',&
        STATUS='OLD',iostat=stat,ACTION='READ')
   IF (stat.NE.0) THEN
-     WRITE(*,*) 'SPS_SETUP ERROR9: SPECTRA/SUN_STScI.SED cannot be opened'
+     WRITE(*,*) 'SPS_SETUP ERROR: SPECTRA/SUN_STScI.SED cannot be opened'
      STOP 
   END IF  
   DO i=1,1221
@@ -486,7 +486,7 @@ SUBROUTINE SPS_SETUP(zin)
 
 909  CONTINUE
      IF (j.EQ.50000) THEN
-        WRITE(*,*) 'SPS_SETUP ERROR10: did not finish reading in filters!'
+        WRITE(*,*) 'SPS_SETUP ERROR: did not finish reading in filters!'
         STOP
      ENDIF
 
@@ -617,9 +617,19 @@ SUBROUTINE SPS_SETUP(zin)
   !----------------------------------------------------------------!
 
   DO i=1,ntfull
-     time_full(i) = timestep_isoc(zmin,1)+&
-          (i-1)*(timestep_isoc(zmin,nt)-timestep_isoc(zmin,1))/&
-          (time_res_incr*(nt-1))
+     IF (MOD(i-1,time_res_incr).EQ.0) THEN
+        time_full(i) = timestep_isoc(zmin,(i-1)/time_res_incr+1)
+     ELSE
+        IF ((i-1)/time_res_incr+2.GT.nt) THEN
+           d1 = 0.05
+           IF (isoc_type.EQ.'bsti') d1 = 0.01
+           d1 = d1/time_res_incr
+        ELSE
+           d1 = (timestep_isoc(zmin,(i-1)/time_res_incr+2)-&
+                timestep_isoc(zmin,(i-1)/time_res_incr+1))/time_res_incr
+        ENDIF
+        time_full(i) = timestep_isoc(zmin,(i-1)/time_res_incr+1)+d1
+     ENDIF
   ENDDO
 
   !----------------------------------------------------------------!
