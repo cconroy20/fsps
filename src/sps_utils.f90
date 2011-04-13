@@ -38,6 +38,8 @@ MODULE SPS_UTILS
        REAL(SP), INTENT(in), DIMENSION(nzin,ntfull) :: lbol_ssp,mass_ssp
        REAL(SP), INTENT(in), DIMENSION(nzin,ntfull,nspec) :: spec_ssp
        CHARACTER(100), INTENT(in) :: outfile
+       TYPE(PARAMS), INTENT(in)   :: pset
+       TYPE(COMPSPOUT), INTENT(inout), DIMENSION(ntfull) :: ocompsp
      END SUBROUTINE COMPSP
   END INTERFACE
 

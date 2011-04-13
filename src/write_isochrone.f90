@@ -14,8 +14,7 @@ SUBROUTINE WRITE_ISOCHRONE(file,zz)
 
   !-----------------------------------------------------------!
 
-  OPEN(55,FILE=TRIM(SPS_HOME)//'OUTPUTS/file.isoc',&
-       STATUS='REPLACE')
+  OPEN(55,FILE=TRIM(SPS_HOME)//'OUTPUTS/'//TRIM(file),STATUS='REPLACE')
   WRITE(55,*) &
        '# age, log(Z/Zsol), mini, logl, logt, logg, comp, weight, mags'
       
@@ -24,7 +23,7 @@ SUBROUTINE WRITE_ISOCHRONE(file,zz)
      
      !compute IMF-based weights
      !each point at mass M represents a *bin*: M-dM/2<M<M+dM/2
-     CALL IMF_WEIGHT(mini(tt,:),wght,nmass_isoc(zz,tt))
+     CALL IMF_WEIGHT(mini_isoc(zz,tt,:),wght,nmass_isoc(zz,tt))
      
      !loop on each star in the isochrone
      DO i=1,nmass_isoc(zz,tt)
@@ -36,7 +35,7 @@ SUBROUTINE WRITE_ISOCHRONE(file,zz)
         !calculate magnitudes
         CALL GETMAGS(0.0,spec,mags)
            
-        WRITE(55,10) timestep_ssp(zz,tt),LOG10(zlegend(zz)/0.0190),&
+        WRITE(55,10) timestep_isoc(zz,tt),LOG10(zlegend(zz)/0.0190),&
              mini_isoc(zz,tt,i),logl_isoc(zz,tt,i),logt_isoc(zz,tt,i),&
              logg_isoc(zz,tt,i),phase_isoc(zz,tt,i),wght(i),mags
         
@@ -48,4 +47,4 @@ SUBROUTINE WRITE_ISOCHRONE(file,zz)
 
 10 FORMAT (7(F7.3,1x),ES10.3,1x,60(F7.3,1x))
 
-END PROGRAM WRITE_ISOCHRONE
+END SUBROUTINE WRITE_ISOCHRONE
