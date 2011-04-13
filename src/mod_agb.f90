@@ -14,6 +14,9 @@ SUBROUTINE MOD_AGB(zz,t,age,delt,dell,pagb,redgb,&
   REAL(SP), INTENT(in), DIMENSION(nt) :: age
   INTEGER  :: i
 
+  !---------------------------------------------------------------!
+  !---------------------------------------------------------------!
+ 
   DO i=1,nn
 
      !modify the TP-AGB stars
@@ -45,10 +48,6 @@ SUBROUTINE MOD_AGB(zz,t,age,delt,dell,pagb,redgb,&
           .OR.phase(t,i).EQ.4.OR.phase(t,i).EQ.5) THEN
         wght(i) = wght(i)*redgb
      ENDIF
-
-     !IF (phase(t,i).GE.3) THEN
-     !   wght(i) = 0.0
-     !ENDIF
 
   ENDDO
 
