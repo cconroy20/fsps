@@ -20,7 +20,8 @@ SUBROUTINE GETSPEC(zz,mini,mact,logt,lbol,phase,ffco,spec)
   REAL(SP) :: loggi,t,u,r2,tpagbtdiff,sumtest,tco
   INTEGER  :: klo,jlo,idum=-1,flag
 
-  !-------------------------------------------------------------!
+  !---------------------------------------------------------------!
+  !---------------------------------------------------------------!
 
   spec = 0.0
   flag = 0

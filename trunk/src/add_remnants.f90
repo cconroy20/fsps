@@ -14,6 +14,9 @@ SUBROUTINE ADD_REMNANTS(mass,maxmass)
   REAL(SP), INTENT(in) :: maxmass
   REAL(SP) :: minmass, imfnorm
 
+  !---------------------------------------------------------------!
+  !---------------------------------------------------------------!
+
   !normalize the weights
   imf_type = imf_type + 10
   imfnorm  = qromb(imf,imf_lower_limit,imf_upper_limit)

@@ -248,12 +248,12 @@ MODULE SPS_VARS
   
   !structure for the set of parameters necessary to generate a model
   TYPE PARAMS
-     REAL :: pagb=1.0,dell=0.0,delt=0.0,fbhb=0.0,sbss=0.0,tau=1.0,const=0.0,&
-          tage=0.0,fburst=0.0,tburst=11.0,dust1=0.0,dust2=0.0,logzsol=-0.2,&
-          zred=0.0,pmetals=0.02,imf1=1.3,imf2=2.3,imf3=2.3,vdmc=0.08,&
-          dust_clumps=-99.,frac_nodust=0.0,dust_index=-0.7,dust_tesc=7.0,&
-          frac_obrun=0.0,uvb=1.0,mwr=3.1,redgb=1.0,dust1_index=-1.0,mdave=0.5,&
-          sf_start=0.0
+     REAL :: pagb=1.0,dell=0.0,delt=0.0,fbhb=0.0,sbss=0.0,tau=1.0,&
+          const=0.0,tage=0.0,fburst=0.0,tburst=11.0,dust1=0.0,dust2=0.0,&
+          logzsol=-0.2,zred=0.0,pmetals=0.02,imf1=1.3,imf2=2.3,imf3=2.3,&
+          vdmc=0.08,dust_clumps=-99.,frac_nodust=0.0,dust_index=-0.7,&
+          dust_tesc=7.0,frac_obrun=0.0,uvb=1.0,mwr=3.1,redgb=1.0,&
+          dust1_index=-1.0,mdave=0.5,sf_start=0.0
      INTEGER :: zmet=1,sfh=0,wgp1=1,wgp2=1,wgp3=1
   END TYPE PARAMS
   

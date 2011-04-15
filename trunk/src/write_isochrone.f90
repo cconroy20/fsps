@@ -12,7 +12,8 @@ SUBROUTINE WRITE_ISOCHRONE(file,zz)
   REAL(SP), DIMENSION(nm)     :: wght
   REAL(SP), DIMENSION(nbands) :: mags
 
-  !-----------------------------------------------------------!
+  !---------------------------------------------------------------!
+  !---------------------------------------------------------------!
 
   OPEN(55,FILE=TRIM(SPS_HOME)//'OUTPUTS/'//TRIM(file),STATUS='REPLACE')
   WRITE(55,*) '# log(age/yr), log(Z/Zsol), mini, logl, logt, '//&

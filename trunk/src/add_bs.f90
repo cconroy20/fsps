@@ -36,6 +36,9 @@ SUBROUTINE ADD_BS(s_bs,t,mini,mact,logl,logt,phase, &
   REAL(SP) :: tol=0., msspl=0.
   INTEGER  :: maxt=0, i, k
 
+  !---------------------------------------------------------------!
+  !---------------------------------------------------------------!
+
   tol = 0.0
   bs_wght = s_bs * hb_wght
   

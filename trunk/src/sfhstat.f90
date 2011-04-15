@@ -69,7 +69,5 @@ SUBROUTINE SFHSTAT(pos,model,ssfr6,ssfr7,ssfr8,ave_age)
   ssfr7 = LOG10(MAX(ssfr7/model%mass_csp/1E-2,tiny_number))
   ssfr8 = LOG10(MAX(ssfr8/model%mass_csp/1E-1,tiny_number)) 
 
-  WRITE(*,*) dt,model%mass_csp,ave_age,ssfr6,ssfr7,ssfr8
-
 
 END SUBROUTINE SFHSTAT
