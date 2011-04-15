@@ -17,8 +17,10 @@ PROGRAM LESSSIMPLE
   TYPE(PARAMS) :: pset
   !define structure for CSP spectrum
   TYPE(COMPSPOUT), DIMENSION(ntfull) :: ocompsp
+  REAL(SP) :: zave
 
-  !-----------------------------------------------------------!
+  !---------------------------------------------------------------!
+  !---------------------------------------------------------------!
   
   ! Now we're going to show you how to use full  
   ! metallicity-dependent info                   
@@ -42,7 +44,7 @@ PROGRAM LESSSIMPLE
   !define the yield for a closed box distribution
   pset%pmetals = 0.02
   !compute SSP convolved with a closed box  
-  !CALL PZ_CONVOL(pset,spec_pz,lbol_pz,mass_pz)
+  CALL PZ_CONVOL(pset,zave,spec_pz,lbol_pz,mass_pz)
   file2    = 'SSP_pz.out'
   !now compute magnitudes for this SSP
   CALL COMPSP(1,1,file2,mass_pz,lbol_pz,spec_pz,pset,ocompsp)

@@ -34,6 +34,9 @@ SUBROUTINE MOD_HB(f_bhb,t,mini,mact,logl,logt,phase, &
   REAL(SP) :: tgrad=0., hblum=-999., rnum=0.
   REAL(SP), DIMENSION(nhb) :: dumarr=0.
 
+  !---------------------------------------------------------------!
+  !---------------------------------------------------------------!
+
   hblum   = -999.
   flip    = 0
   hb_wght = 0.

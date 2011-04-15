@@ -1,10 +1,11 @@
-SUBROUTINE PZ_CONVOL(pset,zave,spec_pz,lbol_pz,mass_pz)
+SUBROUTINE PZ_CONVOL(yield,zave,spec_pz,lbol_pz,mass_pz)
 
   !routine to weight SSP(Z) by the MDF: P(Z)=Z**zpow*EXP(-Z/p).  
-  !The yield, pmetals, is set in the pset structure. 
+  !The yield is the only input. 
   !zpow is set in sps_vars.f90; zpow=1 yields a closed-box
   !requires that all the SSPs are set up in the common block
   !variables spec_ssp_zz, mass_ssp_zz, and lbol_ssp_zz
+  !The average metallicity is returned as zave
 
   USE nrtype; USE sps_vars
   USE nrutil, ONLY : assert_eq
@@ -18,7 +19,7 @@ SUBROUTINE PZ_CONVOL(pset,zave,spec_pz,lbol_pz,mass_pz)
   REAL(SP), INTENT(out)    :: zave
   REAL(SP), DIMENSION(nz)  ::  pzz1,spl
   REAL(SP), DIMENSION(100) :: pzz2,zz2,zzspec
-  TYPE(PARAMS), INTENT(in) :: pset
+  REAL(SP), INTENT(in) :: yield
 
   !-----------------------------------------------------------!
 
@@ -32,10 +33,9 @@ SUBROUTINE PZ_CONVOL(pset,zave,spec_pz,lbol_pz,mass_pz)
   IF (nz.EQ.22) THEN
 
      !define P(Z)
-     pzz1 = zlegend**zpow * EXP(-zlegend/pset%pmetals)
+     pzz1 = zlegend**zpow * EXP(-zlegend/yield)
      
-     !integrate over P(Z) - simple trapezoidal rule is enough here
-     !(compared to a 100 element spline the differences are <0.01 mags)
+     !integrate over P(Z)
      DO z=1,nz-1
         spec_pz = spec_pz + (LOG(zlegend(z+1))-LOG(zlegend(z))) * &
              (pzz1(z+1)*spec_ssp_zz(z+1,:,:) + pzz1(z)*spec_ssp_zz(z,:,:))/2.
@@ -57,7 +57,7 @@ SUBROUTINE PZ_CONVOL(pset,zave,spec_pz,lbol_pz,mass_pz)
      ENDDO
 
      !define P(Z)
-     pzz2 = zz2**zpow * EXP(-zz2/pset%pmetals)
+     pzz2 = zz2**zpow * EXP(-zz2/yield)
      !pzz2 = zz2/ (1/zz2 + 1E4*zz2**zpow)
 
      DO t=nt,nt
