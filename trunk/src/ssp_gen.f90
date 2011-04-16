@@ -136,6 +136,10 @@ SUBROUTINE SSP_GEN(pset,mass_ssp,lbol_ssp,spec_ssp)
 29   CONTINUE
      CLOSE(13)
      n_user_imf = i-1
+     !force the lower and upper bounds in the tabulated input
+     !to be the the limits defined in sps_vars.f90
+     imf_user_alpha(3,n_user_imf) = imf_upper_limit
+     imf_user_alpha(1,1)          = imf_lower_limit
   ENDIF
 
   !Dump Padova isochrones into temporary arrays
