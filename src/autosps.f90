@@ -16,15 +16,16 @@ PROGRAM AUTOSPS
   !---------------------------------------------------------------!
   
   !set IMF
-  WRITE(6,*)  'enter IMF [0-3; def:0]:'
-  WRITE(6,*) ' (0=Salpeter, 1=Chabrier 2003, 2=Kroupa 2001, 3=van Dokkum 2008)'
+  WRITE(6,*)  'enter IMF [0-5; def:0]:'
+  WRITE(6,*) ' (0=Salpeter, 1=Chabrier 2003, 2=Kroupa 2001, '//&
+       '3=van Dokkum 2008, 4=Dave 2008, 5=tabulated)'
   READ(5,'(A)')  aux
-  IF (len(trim(aux)).EQ.0) THEN
+  IF (LEN(TRIM(aux)).EQ.0) THEN
      imf_type = 0
   ELSE
      READ(aux,'(I1)') imf_type
   ENDIF
-  IF (imf_type.LT.0.OR.imf_type.GT.3) THEN
+  IF (imf_type.LT.0.OR.imf_type.GT.5) THEN
      WRITE(*,*) 'ERROR: imf out of bounds: ',imf_type
      STOP
   ENDIF
@@ -32,7 +33,7 @@ PROGRAM AUTOSPS
   
 
   !setup directory and metallicity array
-  CALL getenv('SPS_HOME',SPS_HOME)
+  CALL GETENV('SPS_HOME',SPS_HOME)
   IF (LEN_TRIM(SPS_HOME).EQ.0) THEN
      WRITE(*,*) 'SETUP_SPS ERROR: spsdir environment variable not set!'
      STOP
