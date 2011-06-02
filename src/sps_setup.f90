@@ -630,6 +630,7 @@ SUBROUTINE SPS_SETUP(zin)
                 timestep_isoc(zmin,(i-1)/time_res_incr+1))/time_res_incr
         ENDIF
         time_full(i) = timestep_isoc(zmin,(i-1)/time_res_incr+1)+d1
+        time_full(i) = time_full(i-1)+d1
      ENDIF
   ENDDO
 
