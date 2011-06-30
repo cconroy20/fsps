@@ -6,6 +6,20 @@ MODULE SPS_VARS
   IMPLICIT NONE
   SAVE
 
+  !---Parameters not to be distributed in the public verision----!
+
+  !specify magnitude or spectral fitting in fitgal.f90
+  INTEGER, PARAMETER :: fitspec=0
+  !specify whether fitfast or normal fitting is done in powell
+  INTEGER, PARAMETER :: fitfast=1
+  !switch to fit P(z) for photo-z measurements
+  INTEGER, PARAMETER :: fitpzphot = 0
+  !switch for fitgal routine
+  !NB: when hard-wiring isochrone values, set default=1  
+  INTEGER, PARAMETER :: default=0
+  !number of parameters in the fitting
+  INTEGER, PARAMETER :: nfit = 7
+
   !------Common parameters that may be altered by the user-------!
   
   !setup cosmology (WMAP7).  Used only for z(t) relation.
@@ -53,7 +67,7 @@ MODULE SPS_VARS
   CHARACTER(4), PARAMETER :: isoc_type = 'pdva'
 
   !flag indicating type of spectral library to use
-  !'basel' = BaSeL3.1 library + TP-AGB empirical (far-UV through far-IR)
+  !'basel' = BaSeL3.1 library + TP-AGB empirical
   !'miles' = Miles library + TP-AGB empirical (set nz=5)
   !'picks' = Pickles library (set nz=1)
   CHARACTER(5), PARAMETER :: spec_type = 'basel'
@@ -82,7 +96,7 @@ MODULE SPS_VARS
 
   !You must change the number of bands here if
   !filters are added to allfilters.dat
-  INTEGER, PARAMETER :: nbands=60
+  INTEGER, PARAMETER :: nbands=64 !118
   !number of indices defined in allindices.dat
   INTEGER, PARAMETER :: nindsps=30
   
@@ -253,7 +267,7 @@ MODULE SPS_VARS
           logzsol=-0.2,zred=0.0,pmetals=0.02,imf1=1.3,imf2=2.3,imf3=2.3,&
           vdmc=0.08,dust_clumps=-99.,frac_nodust=0.0,dust_index=-0.7,&
           dust_tesc=7.0,frac_obrun=0.0,uvb=1.0,mwr=3.1,redgb=1.0,&
-          dust1_index=-1.0,mdave=0.5,sf_start=0.0
+          dust1_index=-1.0,mdave=0.5,sf_start=0.0,sf_trunc=0.0,sf_theta=0.0
      INTEGER :: zmet=1,sfh=0,wgp1=1,wgp2=1,wgp3=1
   END TYPE PARAMS
   
