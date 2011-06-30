@@ -30,7 +30,7 @@ REAL FUNCTION INTSFR(sfh,tau,const,maxtime,sfstart,t1,t2)
           EXP(-t1/tau/1E9)*(1+t1/tau/1E9)) / &
           (1-EXP(-(maxtime-sfstart)/1E9/tau)*((maxtime-sfstart)/1E9/tau+1))  
      intsfr = intsfr* (1-const) + const*(t1-t2)/(maxtime-sfstart)
-
+   
   ELSE IF (sfh.EQ.2.OR.sfh.EQ.3) THEN
 
      !handle the edges separately
@@ -110,10 +110,26 @@ SUBROUTINE INTSPEC(pset,nti,spec_ssp,csp,mass_ssp,lbol_ssp,&
 
      !set up the integrated SFR array
      DO i=1,indsf
+
         t1   = time(nti)-sfstart-time(i)+time(1)
         IF (i.EQ.indsf) t2 = 0.0
         IF (i.NE.indsf) t2 = time(nti)-sfstart-time(i+1)+time(1)
-        isfr(i) = intsfr(pset%sfh,tau,const,maxtime,sfstart,t1,t2)
+        
+        IF (pset%sfh.EQ.5) THEN
+           IF ((t1+sfstart).LT.pset%sf_trunc*1E9) THEN
+              isfr(i) = (EXP(-t2/tau/1E9)*(1+t2/tau/1E9) - &
+                   EXP(-t1/tau/1E9)*(1+t1/tau/1E9)) * (tau*1E9)**2
+           ELSE
+              isfr(i) = (pset%sf_trunc*1E9-sfstart)*&
+                   EXP(-(pset%sf_trunc-sfstart/1E9)/tau)*(t1-t2)
+              isfr(i) = isfr(i) + TAN(pset%sf_theta)*&
+                   (0.5*(t1**2-t2**2)-(t1-t2)*(pset%sf_trunc*1E9-sfstart))
+           ENDIF
+           isfr(i) = MAX(isfr(i),0.0) / 1E10
+        ELSE
+           isfr(i) = intsfr(pset%sfh,tau,const,maxtime,sfstart,t1,t2)
+        ENDIF
+
      ENDDO
 
      IF (indsf.EQ.1) THEN
@@ -139,8 +155,10 @@ SUBROUTINE INTSPEC(pset,nti,spec_ssp,csp,mass_ssp,lbol_ssp,&
         mass = isfr(1)*mass_ssp(1)
         lbol = LOG10( isfr(1)*10**lbol_ssp(1) )
      ELSE
-        mass = SUM(isfr(1:indsf-1)/2.*(mass_ssp(1:indsf-1)+mass_ssp(2:indsf)))
-        lbol = SUM(isfr(1:indsf-1)/2.*(10**lbol_ssp(1:indsf-1)+10**lbol_ssp(2:indsf)))
+        mass = SUM(isfr(1:indsf-1)/2.*&
+             (mass_ssp(1:indsf-1)+mass_ssp(2:indsf)))
+        lbol = SUM(isfr(1:indsf-1)/2.*&
+             (10**lbol_ssp(1:indsf-1)+10**lbol_ssp(2:indsf)))
         mass = mass + isfr(indsf)*mass_ssp(indsf)
         lbol = lbol + isfr(indsf)*10**lbol_ssp(indsf) 
         lbol = LOG10(lbol)
@@ -191,8 +209,8 @@ SUBROUTINE COMPSP(write_compsp,nzin,outfile,mass_ssp,&
   REAL(SP), INTENT(in), DIMENSION(nzin,ntfull,nspec) :: spec_ssp
   CHARACTER(100), INTENT(in) :: outfile
 
-  INTEGER  :: i,j,n,k,stat,klo,jlo,ilo,imin,imax,indsf
-  REAL(SP) :: tau,const,maxtime,writeage,psfr,sfstart,zhist
+  INTEGER  :: i,j,n,k,stat,klo,jlo,ilo,imin,imax,indsf,indsft
+  REAL(SP) :: tau,const,maxtime,writeage,psfr,sfstart,zhist,sftrunc
   REAL(SP) :: mass_csp,lbol_csp,dtb,dt,dz,zred=0.,t1,t2
   REAL(SP) :: mass_burst=0.0,lbol_burst=0.0,delt_burst=0.0
   REAL(SP), DIMENSION(nbands)       :: mags
@@ -242,6 +260,9 @@ SUBROUTINE COMPSP(write_compsp,nzin,outfile,mass_ssp,&
      CLOSE(3)
      ntabsfh = n-1
      sfh_tab(1,1:ntabsfh) = sfh_tab(1,1:ntabsfh)*1E9 !convert to yrs
+     !special switch to compute only the last time output
+     !in the tabulated file
+     IF (pset%tage.EQ.-99.) imin=imax
 
   ELSE IF (pset%sfh.EQ.3) THEN 
 
@@ -271,10 +292,19 @@ SUBROUTINE COMPSP(write_compsp,nzin,outfile,mass_ssp,&
         sfstart = 0.0
      ENDIF
 
+     !find sf_trunc in the time grid
+     IF (pset%sf_trunc.GT.tiny_number) THEN
+        sftrunc = pset%sf_trunc*1E9 !convert to yrs
+        indsft = MIN(MAX(locate(powtime,sftrunc),1),ntfull)
+     ELSE
+        indsft  = ntfull
+        sftrunc = maxtime
+     ENDIF
+
   ENDIF
 
   !set limits on the parameters tau and const
-  IF (pset%sfh.EQ.1.OR.pset%sfh.EQ.4) THEN
+  IF (pset%sfh.EQ.1.OR.pset%sfh.EQ.4.OR.pset%sfh.EQ.5) THEN
      tau   = MIN(MAX(pset%tau,0.1),100.)
      const = pset%const
   ENDIF
@@ -300,7 +330,7 @@ SUBROUTINE COMPSP(write_compsp,nzin,outfile,mass_ssp,&
         ENDIF
      ENDDO
 
-  ELSE IF (pset%sfh.EQ.1.OR.pset%sfh.EQ.4) THEN
+  ELSE IF (pset%sfh.EQ.1.OR.pset%sfh.EQ.4.OR.pset%sfh.EQ.5) THEN
 
      tsfr  = 0.0
      IF (pset%sfh.EQ.1) &
@@ -311,6 +341,14 @@ SUBROUTINE COMPSP(write_compsp,nzin,outfile,mass_ssp,&
           EXP(-(powtime(indsf:)-sfstart)/tau/1E9 )/tau/1E9 / &
           (1-EXP(-(maxtime-sfstart)/1E9/tau)*((maxtime-sfstart)/1E9/tau+1))
      tsfr(indsf:) = tsfr(indsf:)*(1-const) + const/(maxtime-sfstart)
+
+     IF (pset%sfh.EQ.5) THEN
+        tsfr(indsf:indsft)  = (powtime(indsf:indsft)-sfstart)*&
+             EXP(-(powtime(indsf:indsft)-sfstart)/tau/1E9 )
+        IF (indsft.LT.ntfull) tsfr(indsft+1:) = tsfr(indsft) + &
+             TAN(pset%sf_theta)*(powtime(indsft+1:)-sftrunc)
+        tsfr = MAX(tsfr,0.0) ! set SFR=0.0 if SFR<0
+     ENDIF
 
   ELSE IF (pset%sfh.EQ.0) THEN
      tsfr = 0.0
@@ -452,7 +490,7 @@ SUBROUTINE COMPSP(write_compsp,nzin,outfile,mass_ssp,&
          CALL ADD_DUST(pset,csp1,csp2,spec_csp)
          mass_csp = mass_ssp(1,i)
          lbol_csp = lbol_ssp(1,i)
-      ELSE IF (pset%sfh.EQ.1.OR.pset%sfh.EQ.4) THEN
+      ELSE IF (pset%sfh.EQ.1.OR.pset%sfh.EQ.4.OR.pset%sfh.EQ.5) THEN
          CALL INTSPEC(pset,i,spec_ssp,spec_csp,mass_ssp,lbol_ssp,&
               mass_csp,lbol_csp,spec_burst,mass_burst,&
               lbol_burst,delt_burst,sfstart,tau,const,maxtime)
@@ -667,12 +705,12 @@ SUBROUTINE SAVE_COMPSP(write_compsp,cspo,time,mass,&
   REAL, DIMENSION(nspec), INTENT(in)  :: spec
   REAL, DIMENSION(nbands), INTENT(in) :: mags
   TYPE(COMPSPOUT), INTENT(inout) :: cspo
-  CHARACTER(33) :: fmt
+  CHARACTER(34) :: fmt
 
   !-----------------------------------------------------!
 
-  fmt = '(F7.4,1x,3(F8.4,1x),00(F7.3,1x))'
-  WRITE(fmt(21:22),'(I2)') nbands
+  fmt = '(F7.4,1x,3(F8.4,1x),000(F7.3,1x))'
+  WRITE(fmt(21:23),'(I3)') nbands
 
   !dump info into output structure
   cspo%age      = time
