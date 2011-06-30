@@ -6,20 +6,6 @@ MODULE SPS_VARS
   IMPLICIT NONE
   SAVE
 
-  !---Parameters not to be distributed in the public verision----!
-
-  !specify magnitude or spectral fitting in fitgal.f90
-  INTEGER, PARAMETER :: fitspec=0
-  !specify whether fitfast or normal fitting is done in powell
-  INTEGER, PARAMETER :: fitfast=1
-  !switch to fit P(z) for photo-z measurements
-  INTEGER, PARAMETER :: fitpzphot = 0
-  !switch for fitgal routine
-  !NB: when hard-wiring isochrone values, set default=1  
-  INTEGER, PARAMETER :: default=0
-  !number of parameters in the fitting
-  INTEGER, PARAMETER :: nfit = 7
-
   !------Common parameters that may be altered by the user-------!
   
   !setup cosmology (WMAP7).  Used only for z(t) relation.
