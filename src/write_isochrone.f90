@@ -2,7 +2,7 @@ SUBROUTINE WRITE_ISOCHRONE(file,zz)
 
   !routine to write all isochrones and CMDs at a given metallicity
 
-  USE sps_vars; USE sps_utils; USE nrtype
+  USE sps_vars; USE nrtype
   IMPLICIT NONE
 
   INTEGER :: i,tt
