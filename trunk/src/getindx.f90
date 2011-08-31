@@ -42,7 +42,7 @@ SUBROUTINE GETINDX(lambda,spec,indices)
   !indices are defined in data/allindices.dat
 
   USE nrtype; USE nrutil, ONLY : assert_eq; USE sps_vars
-  USE sps_utils; USE nr, ONLY : locate
+  USE sps_utils, ONLY : intind; USE nr, ONLY : locate
   IMPLICIT NONE
 
   INTEGER :: j
