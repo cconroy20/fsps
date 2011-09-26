@@ -35,7 +35,7 @@ REVISION HISTORY
  - Routines for computing spectral indices, and velocity broadening
    added
  
-02/10/20
+02/10/10
  - Release of v2.2.  Major revisions, including the addition of synthetic 
    post-AGB spectra from Rauch 2003, synthetic OB and WR spectra from 
    Smith et al. 2002, and the Geneva models for massive stars (>70 Msun).  
@@ -49,3 +49,10 @@ REVISION HISTORY
  - the Miles spectral library is now fully embedded in FSPS
  - the variable Tuniv is now no longer used in setting SFHs.  The final age output
    is now set by the maximum age in the isochrones (unless the parameter tage is set).
+
+09/30/10
+
+ - Release of v2.3.  Major update including the addition of dust emission models 
+   from Draine & Li 2007.  The wavelength grid has been expanded to accomodate this
+   new feature.
+ - Addition of many filters, including many in the IR and submm.

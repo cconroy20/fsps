@@ -16,10 +16,10 @@
 16	WFC ACS F775W  (http://acs.pha.jhu.edu/instrument/photometry/)
 17	WFC ACS F814W  (http://acs.pha.jhu.edu/instrument/photometry/)
 18	WFC ACS F850LP  (http://acs.pha.jhu.edu/instrument/photometry/)
-19	IRAC Channel 1
-20	IRAC Channel 2
-21	IRAC Channel 3
-22	ISAAC Js
+19	IRAC Channel 1 (3.6um)
+20	IRAC Channel 2 (4.5um)
+21	IRAC Channel 3 (5.8um)
+22	IRAC Channel 4 (8.0um)
 23	ISAAC Ks
 24	FORS V
 25	FORS R
@@ -40,25 +40,41 @@
 40	Johnson B (from BC03.  This is the B2 filter from Buser)
 41	Cousins R (from Bessell 1990 via M. Blanton) 
 42 	Cousins I (from Bessell 1990 via M. Blanton) 
-43	Johnson B (from Bessell 1990 via M. Blanton)
-44 	WFPC2 F555W (http://acs.pha.jhu.edu/instrument/photometry/WFPC2/)
-45	WFPC2 F814W (http://acs.pha.jhu.edu/instrument/photometry/WFPC2/)
-46	Cousins I (http://acs.pha.jhu.edu/instrument/photometry/GROUND/)
-47  	WFC3 F275W (ftp://ftp.stsci.edu/cdbs/comp/wfc3/)
+43	Cousins I (http://acs.pha.jhu.edu/instrument/photometry/GROUND/)
+44	Johnson B (from Bessell 1990 via M. Blanton)
+45 	WFPC2 F555W (http://acs.pha.jhu.edu/instrument/photometry/WFPC2/)
+46	WFPC2 F814W (http://acs.pha.jhu.edu/instrument/photometry/WFPC2/)
+47  	WFC3  F275W (ftp://ftp.stsci.edu/cdbs/comp/wfc3/)
 48  	Steidel Un (via A. Shapley; see Steidel et al. 2003)
 49	Steidel G  (via A. Shapley; see Steidel et al. 2003)
 50 	Steidel Rs (via A. Shapley; see Steidel et al. 2003)
 51	Steidel I  (via A. Shapley; see Steidel et al. 2003)
-52	CFHT MegaCam u* (http://cadcwww.dao.nrc.ca/megapipe/docs/filters.html, Dec 2010)
-53	CFHT MegaCam g' (http://cadcwww.dao.nrc.ca/megapipe/docs/filters.html)
-54	CFHT MegaCam r' (http://cadcwww.dao.nrc.ca/megapipe/docs/filters.html)
-55	CFHT MegaCam i' (http://cadcwww.dao.nrc.ca/megapipe/docs/filters.html)
-56	CFHT MegaCam z' (http://cadcwww.dao.nrc.ca/megapipe/docs/filters.html)
-57	WISE W1 (http://www.astro.ucla.edu/~wright/WISE/passbands.html)
-58	WISE W2 (http://www.astro.ucla.edu/~wright/WISE/passbands.html)
-59	WISE W3 (http://www.astro.ucla.edu/~wright/WISE/passbands.html)
-60	WFC3 F125W (ftp://ftp.stsci.edu/cdbs/comp/wfc3/)
-61	WFC3 F160W (ftp://ftp.stsci.edu/cdbs/comp/wfc3/)
-62	UVOT W2 (from Erik Hoversten, 2011)
-63	UVOT M2 (from Erik Hoversten, 2011)
-64	UVOT W1 (from Erik Hoversten, 2011)
+52	CFHT MegaCam u* (cadcwww.dao.nrc.ca/megapipe/docs/filters.html, Dec 2010)
+53	CFHT MegaCam g' 
+54	CFHT MegaCam r' 
+55	CFHT MegaCam i' 
+56	CFHT MegaCam z' 
+57	WISE W1, 3.4um (http://www.astro.ucla.edu/~wright/WISE/passbands.html)
+58	WISE W2, 4.6um (http://www.astro.ucla.edu/~wright/WISE/passbands.html)
+59	WISE W3, 12um (http://www.astro.ucla.edu/~wright/WISE/passbands.html)
+60	WISE W4, 22um (http://www.astro.ucla.edu/~wright/WISE/passbands.html)
+61	WFC3 F125W (ftp://ftp.stsci.edu/cdbs/comp/wfc3/)
+62	WFC3 F160W (ftp://ftp.stsci.edu/cdbs/comp/wfc3/)
+63	UVOT W2 (from Erik Hoversten, 2011)
+64	UVOT M2 (from Erik Hoversten, 2011)
+65	UVOT W1 (from Erik Hoversten, 2011)
+66	MIPS 24um
+67	MIPS 70um
+68	MIPS 160um
+69	SCUBA 450WB (www.jach.hawaii.edu/JCMT/continuum/background/background.html)
+70	SCUBA 850WB
+71	Herschel PACS  70um
+72	Herschel PACS 100um
+73	Herschel PACS 160um
+74	Herschel SPIRE 250um
+75	Herschel SPIRE 350um
+76	Herschel SPIRE 500um
+77	IRAS 12um
+78	IRAS 25um
+79	IRAS 60um
+80	IRAS 100um

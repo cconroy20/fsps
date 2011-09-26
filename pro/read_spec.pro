@@ -10,16 +10,19 @@
 ;   res = read_spec(file)
 ;
 ; KEYWORD PARAMETERS:
-;
-; EXAMPLE:
+;   miles - set this keyword when reading in spectra based on Miles 
+;   NB: you should not need to set these keywords if you are running
+;       the latest version of fsps (v2.3)
 ;
 ; MODIFICATION HISTORY: 
 ;   ? - created by CFC
+;   09/09/11 - Updated to read in files that have arbitrary wavelength
+;              arrays and where the first full line is the wavelength array
 ;
 ;-
 ;-----------------------------------------------------------------;
 
-FUNCTION READ_SPEC1, file,lam,nl
+FUNCTION READ_SPEC1, file,lam,nli
 
   openr,lun,file,/get_lun
 
@@ -29,16 +32,32 @@ FUNCTION READ_SPEC1, file,lam,nl
      readf,lun,char
   ENDWHILE 
 
-  nt = FIX(char)
+  ;check if the spec file is of the "new" type, where both 
+  ;the number of age steps and the number of spectral elements are included
+  char = strsplit(char,' ',/extr)
+  IF n_elements(char) GT 1 THEN BEGIN
+     nt = FIX(char[0])
+     nl = FIX(char[1]) 
+  ENDIF ELSE BEGIN
+     nt = fix(char[0])
+     nl = nli
+  ENDELSE
 
-  str = {agegyr:0.0,logmass:0.0,loglbol:0.0,logsfr:0.0,spec:fltarr(nl),$
-         lambda:fltarr(nl)}
-  str  = replicate(str,nt)
+  str  = {agegyr:0.0,logmass:0.0,loglbol:0.0,logsfr:0.0,spec:fltarr(nl),$
+          lambda:fltarr(nl)}
+  str   = replicate(str,nt)
   tspec = fltarr(nl)
   t = 0.
   m = 0.
   l = 0.
   s = 0.
+
+  ;if the number of spectral elements is passed, then the first
+  ;line here is the wavelength array.
+  IF n_elements(char) GT 1 THEN BEGIN
+     readf,lun,tspec
+     lam = tspec
+  ENDIF
 
   FOR i=0,nt-1 DO BEGIN
      
@@ -64,7 +83,8 @@ END
 ;------------------------------------------------------------;
 ;------------------------------------------------------------;
 
-FUNCTION READ_SPEC, file, miles=miles
+FUNCTION READ_SPEC, file, miles=miles,pickles=pickles,$
+                    m42=m42,uvm=uvm,emiles=emiles
 
   ct = n_elements(file)
 
@@ -74,6 +94,7 @@ FUNCTION READ_SPEC, file, miles=miles
            'variable not set, returning...'
      return,0
   ENDIF
+  spsdir = spsdir+'/SPECTRA/'
 
   IF keyword_set(miles) THEN BEGIN
      readcol,spsdir+'/MILES/miles.lambda',lam,/silent
