@@ -27,12 +27,12 @@ FUNCTION IMF(mass)
   
   !Chabrier (2003) IMF
   IF (MOD(imf_type,10).EQ.1) THEN
-     DO i=1,SIZE(mass)
+     DO i=1,size(mass)
         IF (mass(i).LT.1) THEN
-           imf(i) = EXP(-(log10(mass(i))-log10(chab_mc))**2&
+           imf(i) = exp(-(log10(mass(i))-log10(chab_mc))**2&
                 /2/chab_sigma2)
         ELSE
-           imf(i) = EXP(-log10(chab_mc)**2/2./chab_sigma2)*&
+           imf(i) = exp(-log10(chab_mc)**2/2./chab_sigma2)*&
                 mass(i)**(-chab_ind)
         ENDIF
      ENDDO
@@ -43,7 +43,7 @@ FUNCTION IMF(mass)
   
   !Kroupa (2001) IMF
   IF (MOD(imf_type,10).EQ.2) THEN
-     DO i=1,SIZE(mass)
+     DO i=1,size(mass)
         IF (mass(i).GE.0.08.AND.mass(i).LT.0.5) &
              imf(i) = mass(i)**(-imf_alpha(1))
         IF (mass(i).GE.0.5.AND.mass(i).LT.1.0) &
@@ -58,10 +58,10 @@ FUNCTION IMF(mass)
   
   !van Dokkum (2008) IMF
   IF (MOD(imf_type,10).EQ.3) THEN
-     DO i=1,SIZE(mass)
+     DO i=1,size(mass)
         IF (mass(i).LE.vd_nc*imf_vdmc) THEN
            imf(i) = vd_al*(0.5*vd_nc*imf_vdmc)**(-vd_ind)*&
-                EXP(-(log10(mass(i))-log10(imf_vdmc))*&
+                exp(-(log10(mass(i))-log10(imf_vdmc))*&
                 (log10(mass(i))-log10(imf_vdmc))/2./vd_sigma2)
         ELSE
            imf(i) = vd_ah*mass(i)**(-vd_ind)
@@ -74,7 +74,7 @@ FUNCTION IMF(mass)
   
   !Dave (2008) IMF
   IF (MOD(imf_type,10).EQ.4) THEN
-     DO i=1,SIZE(mass)
+     DO i=1,size(mass)
         IF (mass(i).GE.0.08.AND.mass(i).LT.imf_mdave) &
              imf(i) = mass(i)**(-imf_alpha(1))
         IF (mass(i).GE.imf_mdave) &
@@ -86,7 +86,7 @@ FUNCTION IMF(mass)
 
   !user-defined IMF
   IF (MOD(imf_type,10).EQ.5) THEN
-     DO i=1,SIZE(mass)
+     DO i=1,size(mass)
         IF (mass(i).GE.imf_user_alpha(1,1).AND.&
                 mass(i).LT.imf_user_alpha(2,1)) &
                 imf(i) = mass(i)**(-imf_user_alpha(3,1))

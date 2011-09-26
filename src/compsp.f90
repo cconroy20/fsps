@@ -61,7 +61,7 @@ END FUNCTION INTSFR
 !------------------------------------------------------------!
 
 SUBROUTINE INTSPEC(pset,nti,spec_ssp,csp,mass_ssp,lbol_ssp,&
-     mass,lbol,specb,massb,lbolb,deltb,sfstart,tau,const,maxtime)
+     mass,lbol,specb,massb,lbolb,deltb,sfstart,tau,const,maxtime,mdust)
 
   !routine to perform integration of SSP over a SFH,
   !including attenuation by dust.
@@ -76,7 +76,7 @@ SUBROUTINE INTSPEC(pset,nti,spec_ssp,csp,mass_ssp,lbol_ssp,&
   REAL(SP), DIMENSION(ntfull) :: isfr,time
   INTEGER,  INTENT(in)    :: nti
   REAL(SP), INTENT(in)    :: massb,lbolb,deltb,sfstart,tau,const,maxtime
-  REAL(SP), INTENT(inout) :: mass, lbol
+  REAL(SP), INTENT(inout) :: mass, lbol, mdust
   REAL(SP), INTENT(in), DIMENSION(ntfull) :: mass_ssp,lbol_ssp
   REAL(SP), INTENT(in), DIMENSION(ntfull,nspec) :: spec_ssp
   REAL(SP), INTENT(in), DIMENSION(nspec)    :: specb
@@ -180,7 +180,7 @@ SUBROUTINE INTSPEC(pset,nti,spec_ssp,csp,mass_ssp,lbol_ssp,&
      ENDIF
 
      !add dust, combine young and old csp
-     CALL ADD_DUST(pset,csp1,csp2,csp)
+     CALL ADD_DUST(pset,csp1,csp2,csp,mdust)
 
   ENDIF
 
@@ -211,11 +211,11 @@ SUBROUTINE COMPSP(write_compsp,nzin,outfile,mass_ssp,&
 
   INTEGER  :: i,j,n,k,stat,klo,jlo,ilo,imin,imax,indsf,indsft
   REAL(SP) :: tau,const,maxtime,writeage,psfr,sfstart,zhist,sftrunc
-  REAL(SP) :: mass_csp,lbol_csp,dtb,dt,dz,zred=0.,t1,t2
+  REAL(SP) :: mass_csp,lbol_csp,dtb,dt,dz,zred=0.,t1,t2,mdust
   REAL(SP) :: mass_burst=0.0,lbol_burst=0.0,delt_burst=0.0
   REAL(SP), DIMENSION(nbands)       :: mags
   REAL(SP), DIMENSION(ntfull,nspec) :: ispec
-  REAL(SP), DIMENSION(nspec)  :: spec_csp,spec_burst=0.0,csp1,csp2,spec1
+  REAL(SP), DIMENSION(nspec)  :: spec_burst=0.0,csp1,csp2,spec1,spec_csp
   REAL(SP), DIMENSION(ntfull) :: imass,ilbol,powtime
   REAL(SP), DIMENSION(ntfull) :: sfr,tsfr,tzhist
   REAL(SP), DIMENSION(ntabmax) :: tlb
@@ -383,8 +383,9 @@ SUBROUTINE COMPSP(write_compsp,nzin,outfile,mass_ssp,&
         WRITE(20,'("#   Processing SSP")')
         WRITE(20,'("#")') 
         WRITE(20,31) 
-        IF (imax-imin.EQ.1) WRITE(20,'(I3)') 1
-        IF (imax-imin.GT.1) WRITE(20,'(I3)') ntfull
+        IF (imax-imin.EQ.1) WRITE(20,'(I3,1x,I4)') 1,nspec
+        IF (imax-imin.GT.1) WRITE(20,'(I3,1x,I4)') ntfull,nspec
+        WRITE(20,*) spec_lambda
      ENDIF
   ELSE
     IF (pset%sfh.EQ.2.OR.pset%sfh.EQ.3) THEN
@@ -414,8 +415,9 @@ SUBROUTINE COMPSP(write_compsp,nzin,outfile,mass_ssp,&
      IF (write_compsp.EQ.2.OR.write_compsp.EQ.3) THEN
         WRITE(20,'("#")') 
         WRITE(20,31) 
-        IF (imax-imin.EQ.1) WRITE(20,'(I3)') 1
-        IF (imax-imin.GT.1) WRITE(20,'(I3)') ntfull
+        IF (imax-imin.EQ.1) WRITE(20,'(I3,1x,I4)') 1,nspec
+        IF (imax-imin.GT.1) WRITE(20,'(I3,1x,I4)') ntfull,nspec
+        WRITE(20,*) spec_lambda
        ENDIF
    ENDIF
 
@@ -487,17 +489,17 @@ SUBROUTINE COMPSP(write_compsp,nzin,outfile,mass_ssp,&
             csp2 = spec_ssp(1,i,:)
          ENDIF
          !add dust and combine young and old csp
-         CALL ADD_DUST(pset,csp1,csp2,spec_csp)
+         CALL ADD_DUST(pset,csp1,csp2,spec_csp,mdust)
          mass_csp = mass_ssp(1,i)
          lbol_csp = lbol_ssp(1,i)
       ELSE IF (pset%sfh.EQ.1.OR.pset%sfh.EQ.4.OR.pset%sfh.EQ.5) THEN
          CALL INTSPEC(pset,i,spec_ssp,spec_csp,mass_ssp,lbol_ssp,&
               mass_csp,lbol_csp,spec_burst,mass_burst,&
-              lbol_burst,delt_burst,sfstart,tau,const,maxtime)
+              lbol_burst,delt_burst,sfstart,tau,const,maxtime,mdust)
       ELSE IF (pset%sfh.EQ.2.OR.pset%sfh.EQ.3) THEN
          CALL INTSPEC(pset,i,ispec,spec_csp,imass,ilbol,mass_csp,&
               lbol_csp,spec_burst,mass_burst,lbol_burst,&
-              delt_burst,sfstart,tau,const,maxtime)
+              delt_burst,sfstart,tau,const,maxtime,mdust)
       ENDIF
       
       !calculate mags
@@ -511,9 +513,9 @@ SUBROUTINE COMPSP(write_compsp,nzin,outfile,mass_ssp,&
       ENDIF
 
       !only save results if computing all ages
-      IF (imax-imin.GT.1) THEN
+      IF (imax-imin.GT.1.OR.pset%tage.EQ.-99.0) THEN
          CALL SAVE_COMPSP(write_compsp,ocompsp(i),time_full(i),&
-              mass_csp,lbol_csp,tsfr(i),mags,spec_csp)
+              mass_csp,lbol_csp,tsfr(i),mags,spec_csp,mdust)
       ELSE
          !save results temporarily for later interpolation
          ocompsp(i)%mass_csp = mass_csp
@@ -540,7 +542,7 @@ SUBROUTINE COMPSP(write_compsp,nzin,outfile,mass_ssp,&
            dt*ocompsp(imax)%spec
       CALL SAVE_COMPSP(write_compsp,ocompsp(1),&
            LOG10(maxtime),mass_csp,lbol_csp,0.0,mags,&
-           spec_csp)
+           spec_csp,mdust)
    ENDIF
 
    IF (write_compsp.EQ.1.OR.write_compsp.EQ.3) CLOSE(10)
@@ -564,11 +566,11 @@ SUBROUTINE COMPSP_WARNING(maxtime, pset, nzin, write_compsp)
 
   !check that variables are properly set
 
-  USE sps_vars
+  USE sps_vars; USE nrtype
   IMPLICIT NONE
   INTEGER, INTENT(in) :: nzin, write_compsp
-  REAL, INTENT(in) :: maxtime
-  TYPE(PARAMS), INTENT(inout) :: pset
+  REAL(SP), INTENT(in) :: maxtime
+  TYPE(PARAMS), INTENT(in) :: pset
 
   !-----------------------------------------------------!
 
@@ -631,6 +633,15 @@ SUBROUTINE COMPSP_WARNING(maxtime, pset, nzin, write_compsp)
      STOP
   ENDIF
 
+  IF (pset%duste_qpah.LT.0.0) THEN
+     WRITE(*,*) 'COMPSP WARNING: pset%duste_qpah<0.0, '//&
+          'the allowable range is 0-5 and will be set to 0.0'
+  ENDIF
+
+  IF (pset%duste_gamma.LT.0.0) THEN
+     WRITE(*,*) 'COMPSP WARNING: pset%duste_gamma<0.0, '//&
+          'the allowable range is >0, and will be set to 0.0'
+  ENDIF
   IF ((pset%sfh.EQ.0.OR.pset%sfh.EQ.1.OR.pset%sfh.EQ.4).AND.nzin.NE.1) THEN
      WRITE(*,*) 'COMPSP_ERROR: sfh=0,1,or,4 but nzin NE 1'
      STOP
@@ -665,7 +676,7 @@ SUBROUTINE COMPSP_HEADER(unit,pset)
   USE sps_vars
   IMPLICIT NONE
   INTEGER, INTENT(in) :: unit
-  TYPE(PARAMS), INTENT(inout) :: pset
+  TYPE(PARAMS), INTENT(in) :: pset
 
   !-----------------------------------------------------!
 
@@ -694,23 +705,23 @@ END SUBROUTINE COMPSP_HEADER
 !------------------------------------------------------------!
 
 SUBROUTINE SAVE_COMPSP(write_compsp,cspo,time,mass,&
-     lbol,sfr,mags,spec)
+     lbol,sfr,mags,spec,mdust)
 
   !routine to print and save outputs
 
   USE sps_vars; USE nrtype
   IMPLICIT NONE
   INTEGER, INTENT(in) :: write_compsp
-  REAL, INTENT(in)    :: time,mass,lbol,sfr
-  REAL, DIMENSION(nspec), INTENT(in)  :: spec
-  REAL, DIMENSION(nbands), INTENT(in) :: mags
+  REAL(SP), INTENT(in)    :: time,mass,lbol,sfr,mdust
+  REAL(SP), DIMENSION(nspec), INTENT(in)  :: spec
+  REAL(SP), DIMENSION(nbands), INTENT(in) :: mags
   TYPE(COMPSPOUT), INTENT(inout) :: cspo
   CHARACTER(34) :: fmt
 
   !-----------------------------------------------------!
 
   fmt = '(F7.4,1x,3(F8.4,1x),000(F7.3,1x))'
-  WRITE(fmt(21:23),'(I3)') nbands
+  WRITE(fmt(21:23),'(I3,1x,I4)') nbands
 
   !dump info into output structure
   cspo%age      = time
@@ -719,7 +730,8 @@ SUBROUTINE SAVE_COMPSP(write_compsp,cspo,time,mass,&
   cspo%sfr      = sfr
   cspo%mags     = mags
   cspo%spec     = spec
-     
+  cspo%mdust    = mdust
+
   !write to mags file
   IF (write_compsp.EQ.1.OR.write_compsp.EQ.3) &
        WRITE(10,fmt) time,LOG10(mass+tiny_number),&
