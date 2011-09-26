@@ -21,3 +21,11 @@ SETUP INSTRUCTIONS
     systems). If you're running the code on a machine that assumes big
     endianness, then you'll have to swap the bytes!  Email me if this
     is a problem for you.
+
+----------------------------------
+
+NOTES:
+
+1.  It has been reported that the code crashes if compiled with
+    earlier versions of gfortran (specifically v4.2.1).  The code compiles 
+    sucessfully with gfortran v4.4 and later.
