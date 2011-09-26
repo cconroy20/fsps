@@ -25,7 +25,7 @@ SUBROUTINE MOD_AGB(zz,t,age,delt,dell,pagb,redgb,&
         IF (isoc_type.EQ.'pdva') THEN
            IF (age(t).GT.8.0.AND.age(t).LT.9.1) THEN
               logl(t,i) = logl(t,i) - 1.0+(age(t)-8.)/1.5
-              IF (log10(zlegend(zz)/0.0190).LT.-0.25) THEN
+              IF (LOG10(zlegend(zz)/0.0190).LT.-0.25) THEN
                  logt(t,i) = logt(t,i) + 0.10
               ENDIF
            ELSE

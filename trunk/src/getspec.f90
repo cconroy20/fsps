@@ -38,7 +38,6 @@ SUBROUTINE GETSPEC(zz,mini,mact,logt,lbol,phase,ffco,spec)
   !compute radius squared (cm^2) 
   r2    = mact*msun*newton/10**loggi
 
- 
   !post-AGB non-LTE model spectra from Rauch 2003
   !the H-Ni composition spectra are used here.
   !this library has two Zs, Solar and 0.1Solar, simply use one or the other
@@ -58,10 +57,10 @@ SUBROUTINE GETSPEC(zz,mini,mact,logt,lbol,phase,ffco,spec)
   !also use this library for very hot stars that are not post-AGB,
   !such stars come from the Padova isochrones, for which no 
   !phase information is available
+  !NB: there is currently no Z or log(g) dependence in the WR spectra
+  !NB: notice also that currently the WN and WC libraries are the same
   ELSE IF ((phase.EQ.9.0.AND.tco.LT.10.AND.spec_type.NE.'miles').OR.&
        (phase.NE.6.0.AND.logt.GE.4.699)) THEN
-
-     !NB: there is currently no Z or log(g) dependence in the WR spectra
      
      flag = 1
      jlo = MIN(MAX(locate(wr_logt,logt),1),ndim_wr-1)
@@ -152,7 +151,7 @@ SUBROUTINE GETSPEC(zz,mini,mact,logt,lbol,phase,ffco,spec)
           t*(1-u)*speclib(:,zz,jlo+1,klo) + &
           t*u*speclib(:,zz,jlo+1,klo+1) + &
           (1-t)*u*speclib(:,zz,jlo,klo+1) )
- 
+
   ENDIF
  
   !make sure the spectrum never has any zero's

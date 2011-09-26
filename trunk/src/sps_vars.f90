@@ -1,13 +1,37 @@
 MODULE SPS_VARS
 
-  !module to share common varables and to set up a common block
-  !this module contains all of the 'hidden' variables in other routines
+  ! module to share common varables and to set up a common block
+  ! this module contains all of the 'hidden' variables in other routines
 
   IMPLICIT NONE
   SAVE
 
+  !---Parameters not to be distributed in the public verision----!
+
+  !specify magnitude or spectral fitting in fitgal.f90
+  INTEGER, PARAMETER :: fitspec=0
+  !specify whether fitfast or normal fitting is done in powell
+  INTEGER, PARAMETER :: fitfast=0
+  !switch to fit P(z) for photo-z measurements
+  INTEGER, PARAMETER :: fitpzphot = 0
+  !switch for fitgal routine
+  !NB: when hard-wiring isochrone values, set default=1  
+  INTEGER, PARAMETER :: default=1
+  !number of parameters in the fitting
+  INTEGER, PARAMETER :: nfit = 9
+
   !------Common parameters that may be altered by the user-------!
   
+  !flag indicating type of isochrones to use
+  !'bsti' = BaSTI -> requires nz=10, unless spec_type='miles'
+  !'pdva' = Padova 2007 -> requires nz=22, unless spec_type='miles'
+  CHARACTER(4), PARAMETER :: isoc_type = 'pdva'
+
+  !flag indicating type of spectral library to use
+  !'basel' = BaSeL3.1 library + TP-AGB empirical
+  !'miles' = Miles library + TP-AGB empirical (set nz=5)
+  CHARACTER(5), PARAMETER :: spec_type = 'basel'
+
   !setup cosmology (WMAP7).  Used only for z(t) relation.
   REAL, PARAMETER :: om0=0.26, ol0=0.74, thub=13.77
   
@@ -18,11 +42,14 @@ MODULE SPS_VARS
   REAL, PARAMETER :: bhb_sbs_time=9.3
   
   !turn on/off convolution of SSP with P(Z)
-  !NB: P(Z) convolusion has not been tested in some time, use with caution
+  !NB: P(Z) convolution has not been tested in some time, use with caution
   INTEGER, PARAMETER :: pzcon=0
   
   !the factor by which we increase the time array
-  INTEGER, PARAMETER :: time_res_incr = 2
+  INTEGER, PARAMETER :: time_res_incr=2
+
+  !turn on/off the Draine & Lee 2007 dust emission model 
+  INTEGER, PARAMETER :: add_dust_emission=1
 
   !set attenuation-law for the diffuse ISM
   !0 - power-law attenuation.  See dust_index variable below
@@ -30,7 +57,7 @@ MODULE SPS_VARS
   !    with a UV bump strength parameterized by uvb (see params below)
   !2 - Calzetti attenuation law
   !3 - Witt & Gordon 2000 attenuation curve models
-  INTEGER :: dust_type = 0
+  INTEGER :: dust_type=0
 
   !IMF definition
   !0 = Salpeter (parameters defined above)
@@ -46,17 +73,6 @@ MODULE SPS_VARS
   !wlbc = normalized to Teff-color relations
   !see Westera et al. for details
   CHARACTER(4), PARAMETER :: basel_str = 'wlbc'
-
-  !flag indicating type of isochrones to use
-  !'bsti' = BaSTI -> requires nz=10, unless spec_type='miles'
-  !'pdva' = Padova 2007 -> requires nz=22, unless spec_type='miles'
-  CHARACTER(4), PARAMETER :: isoc_type = 'pdva'
-
-  !flag indicating type of spectral library to use
-  !'basel' = BaSeL3.1 library + TP-AGB empirical
-  !'miles' = Miles library + TP-AGB empirical (set nz=5)
-  !'picks' = Pickles library (set nz=1)
-  CHARACTER(5), PARAMETER :: spec_type = 'basel'
 
   !flag specifying zero-point of magnitudes
   !0 - AB system
@@ -74,23 +90,25 @@ MODULE SPS_VARS
   !---------Dimensions of various arrays----------!
   
   !number of metallicities in the isochrones
-  !22 = Padova+BaseL, 10 = BaSTI+BaSeL, 5 = MILES, 1 = Pickles
+  !22 = Padova+BaseL, 10 = BaSTI+BaSeL, 5 = MILES
   INTEGER, PARAMETER :: nz=22
-  !number of elements per stellar spectrum for BaSeL/MILES/Pickles
-  !1221 = BaSeL, 4222 = MILES, 1895 = Pickles
-  INTEGER, PARAMETER :: nspec=1221
+  !number of elements per stellar spectrum for BaSeL/MILES
+  !1963 = BaSeL+dust, 4222 = MILES
+  INTEGER, PARAMETER :: nspec=1963
 
   !You must change the number of bands here if
   !filters are added to allfilters.dat
-  INTEGER, PARAMETER :: nbands=64 !118
+  INTEGER, PARAMETER :: nbands=80
   !number of indices defined in allindices.dat
   INTEGER, PARAMETER :: nindsps=30
   
   !The following parameters should never be changed
-  !unless you are changing the libraries
+   !unless you are changing the libraries
 
   !max dimension of mass and time arrays for isochrones
   INTEGER, PARAMETER :: nm=1500, nt=94
+  !dimension of Kurucz/BaSeL atlas
+  INTEGER, PARAMETER :: ndim_basel=1221
   !max number of lines to read in
   INTEGER, PARAMETER ::  nlines=100000
   !max number of lines in tabulated SFH
@@ -105,6 +123,10 @@ MODULE SPS_VARS
   INTEGER, PARAMETER :: ndim_pagb=14
   !number of WR spectra (WN only)
   INTEGER, PARAMETER :: ndim_wr=12
+  !wavelength dimension of the Draine & Lee 2007 dust model
+  INTEGER, PARAMETER :: ndim_dl07=1001
+  !number of Umin models from Drain & Lee 2007 dust model
+  INTEGER, PARAMETER :: numin_dl07=22
 
   !------------IMF-related Constants--------------!
   
@@ -227,6 +249,11 @@ MODULE SPS_VARS
   REAL, DIMENSION(nspec,ndim_wr) :: wr_spec=0.0
   REAL, DIMENSION(ndim_wr)       :: wr_logt=0.0
 
+  !dust emission model (Draine & Lee 2007)
+  REAL, DIMENSION(ndim_dl07)              :: lambda_dl07=0.0
+  REAL, DIMENSION(ndim_dl07,numin_dl07*2) :: dustem_dl07=0.0
+  REAL, DIMENSION(nspec,7,numin_dl07*2)   :: dustem2_dl07=0.0
+
   !arrays for the isochrone data
   REAL, DIMENSION(nz,nt,nm) :: mact_isoc=0.,logl_isoc=0.,&
        logt_isoc=0.,logg_isoc=0.,ffco_isoc=0.,phase_isoc=0.
@@ -253,15 +280,16 @@ MODULE SPS_VARS
           logzsol=-0.2,zred=0.0,pmetals=0.02,imf1=1.3,imf2=2.3,imf3=2.3,&
           vdmc=0.08,dust_clumps=-99.,frac_nodust=0.0,dust_index=-0.7,&
           dust_tesc=7.0,frac_obrun=0.0,uvb=1.0,mwr=3.1,redgb=1.0,&
-          dust1_index=-1.0,mdave=0.5,sf_start=0.0,sf_trunc=0.0,sf_theta=0.0
+          dust1_index=-1.0,mdave=0.5,sf_start=0.0,sf_trunc=0.0,sf_theta=0.0,&
+          duste_gamma=0.01,duste_umin=1.0,duste_qpah=3.5
      INTEGER :: zmet=1,sfh=0,wgp1=1,wgp2=1,wgp3=1
   END TYPE PARAMS
   
   !structure for the output of the compsp routine
   TYPE COMPSPOUT
-     REAL :: age=0.,mass_csp=0.,lbol_csp=0.,sfr=0.
+     REAL :: age=0.,mass_csp=0.,lbol_csp=0.,sfr=0.,mdust=0.0
      REAL, DIMENSION(nbands) :: mags=0.
-     REAL, DIMENSION(nspec)  :: spec=0.
+     REAL, DIMENSION(nspec) :: spec=0.
   END TYPE COMPSPOUT
   
   !-----the following structures are not used in the public code-----!

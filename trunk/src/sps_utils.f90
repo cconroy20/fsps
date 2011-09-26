@@ -14,8 +14,9 @@ MODULE SPS_UTILS
   END INTERFACE
 
   INTERFACE
-     SUBROUTINE ADD_DUST(pset,csp1,csp2,specdust)
+     SUBROUTINE ADD_DUST(pset,csp1,csp2,specdust,mdust)
        USE nrtype; USE sps_vars
+       REAL(SP), INTENT(out) :: mdust
        REAL(SP), DIMENSION(nspec), INTENT(in) :: csp1,csp2
        TYPE(PARAMS), INTENT(in) :: pset
        REAL(SP), DIMENSION(nspec), INTENT(out) :: specdust
