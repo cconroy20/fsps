@@ -197,7 +197,7 @@ SUBROUTINE ADD_DUST(pset,csp1,csp2,specdust,mdust)
   !-----------------Add dust emission-------------------!
   !-----------------------------------------------------!
   
-  !the dust spectrum is computed according to Draine & Lee 2007
+  !the dust spectrum is computed according to Draine & Li 2007
   !we are computing the integral of the dust spectrum over P(U)dU
   !by considering two components, a delta function at Umin and 
   !a power-law distribution from Umin to Umax=1E6 and alpha=2

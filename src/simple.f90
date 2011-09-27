@@ -51,7 +51,8 @@
   CALL COMPSP(3,1,file1,mass_ssp,lbol_ssp,spec_ssp,pset,ocompsp)
 
   ! Now lets compute a 1 Gyr tau model SFH with a van Dokkum 2008 IMF,
-  ! with a simple dust model, for a Universe that is 10 Gyr old
+  ! with a simple dust model, at a particular time 
+  ! (rather than outputing all the time info)
 
   imf_type  = 3                !define the IMF (3=van Dokkum 2003)
                                !see sps_vars.f90 for details of this var
@@ -65,6 +66,7 @@
   pset%tau   = 2.0   !tau units are Gyr
   pset%dust1 = 1.0   !dust parameter 1
   pset%dust2 = 0.3   !dust parameter 2
+  pset%tage  = 12.5  !age at which we want the mags
 
   !compute the CSP
   CALL SSP_GEN(pset,mass_ssp,lbol_ssp,spec_ssp)
@@ -73,6 +75,7 @@
   CALL COMPSP(3,1,file1,mass_ssp,lbol_ssp,spec_ssp,pset,ocompsp)
 
   !compute basic SFH statistics for the last entry in the ocompsp array
-  CALL SFHSTAT(pset,ocompsp(ntfull),ssfr6,ssfr7,ssfr8,ave_age)
+  !results are returned in the variables ssfr6,...,ave_age
+  CALL SFHSTAT(pset,ocompsp(1),ssfr6,ssfr7,ssfr8,ave_age)
 
 END PROGRAM SIMPLE

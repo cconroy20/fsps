@@ -40,7 +40,6 @@ PROGRAM LESSSIMPLE
           lbol_ssp_zz(i,:),spec_ssp_zz(i,:,:))
   ENDDO
 
-
   !define the yield for a closed box distribution
   pset%pmetals = 0.02
   !compute SSP convolved with a closed box  

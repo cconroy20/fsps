@@ -403,7 +403,7 @@ SUBROUTINE SPS_SETUP(zin)
   ENDDO
 
   !----------------------------------------------------------------!
-  !--------Read in dust emission spectra from Draine & Lee---------!
+  !--------Read in dust emission spectra from Draine & Li----------!
   !----------------------------------------------------------------!
   
   !NB: we need to do this before other things b/c the wavelength

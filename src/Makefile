@@ -31,25 +31,18 @@ F90 = gfortran
 #  (Uncomment only one)
 #========================
 # GNU (version < 4.3.0)
-F90FLAGS = -O
+F90FLAGS = -O -cpp
 # GNU (version >= 4.3.0)
-#F90FLAGS = -O3 -march=native
+#F90FLAGS = -O3 -march=native -cpp
 #---------------------
 # Intel (Itanium 2 processor)
-#F90FLAGS = -O3 -mcpu=itanium2
+#F90FLAGS = -O3 -mcpu=itanium2 -cpp
 # Intel (EM64T/AMD64 processor)
-#F90FLAGS = -O3 -funroll-loops -xP
+#F90FLAGS = -O3 -funroll-loops -xP -cpp
 #---------------------
 # PGI
-#F90FLAGS = -O3 -fastsse -Mcache_align
+#F90FLAGS = -O3 -fastsse -Mcache_align -cpp
 #---------------------
-# Pathscale
-#F90FLAGS = -O3 -march=auto
-#---------------------
-# IBM
-#F90FLAGS = -O3 -qarch=auto -qtune=auto
-#---------------------
-
 
 PROGS = simple lesssimple autosps 
 
