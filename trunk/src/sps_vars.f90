@@ -1,37 +1,19 @@
 MODULE SPS_VARS
 
-  ! module to share common varables and to set up a common block
-  ! this module contains all of the 'hidden' variables in other routines
+  ! module to set up most arrays and variables
 
   IMPLICIT NONE
   SAVE
 
-  !---Parameters not to be distributed in the public verision----!
-
-  !specify magnitude or spectral fitting in fitgal.f90
-  INTEGER, PARAMETER :: fitspec=0
-  !specify whether fitfast or normal fitting is done in powell
-  INTEGER, PARAMETER :: fitfast=0
-  !switch to fit P(z) for photo-z measurements
-  INTEGER, PARAMETER :: fitpzphot = 0
-  !switch for fitgal routine
-  !NB: when hard-wiring isochrone values, set default=1  
-  INTEGER, PARAMETER :: default=1
-  !number of parameters in the fitting
-  INTEGER, PARAMETER :: nfit = 9
+!define either BaSeL/Kurucz or MILES spectral library
+#define BASEL 1
+#define MILES 0
+!define either Padova or BaSTI isochrones
+#define PADOVA 1
+#define BASTI 0
 
   !------Common parameters that may be altered by the user-------!
   
-  !flag indicating type of isochrones to use
-  !'bsti' = BaSTI -> requires nz=10, unless spec_type='miles'
-  !'pdva' = Padova 2007 -> requires nz=22, unless spec_type='miles'
-  CHARACTER(4), PARAMETER :: isoc_type = 'pdva'
-
-  !flag indicating type of spectral library to use
-  !'basel' = BaSeL3.1 library + TP-AGB empirical
-  !'miles' = Miles library + TP-AGB empirical (set nz=5)
-  CHARACTER(5), PARAMETER :: spec_type = 'basel'
-
   !setup cosmology (WMAP7).  Used only for z(t) relation.
   REAL, PARAMETER :: om0=0.26, ol0=0.74, thub=13.77
   
@@ -48,7 +30,7 @@ MODULE SPS_VARS
   !the factor by which we increase the time array
   INTEGER, PARAMETER :: time_res_incr=2
 
-  !turn on/off the Draine & Lee 2007 dust emission model 
+  !turn on/off the Draine & Li 2007 dust emission model 
   INTEGER, PARAMETER :: add_dust_emission=1
 
   !set attenuation-law for the diffuse ISM
@@ -68,12 +50,6 @@ MODULE SPS_VARS
   !5 = user-defined piece-wise power-law, specified in imf.dat
   INTEGER :: imf_type=2
 
-  !flag indicating the type of normalization used in the BaSeL library
-  !pdva = normalized to Padova isochrones
-  !wlbc = normalized to Teff-color relations
-  !see Westera et al. for details
-  CHARACTER(4), PARAMETER :: basel_str = 'wlbc'
-
   !flag specifying zero-point of magnitudes
   !0 - AB system
   !1 - Vega system
@@ -87,18 +63,48 @@ MODULE SPS_VARS
   !1 - colors redshifted according to the age of the SSP or CSP
   INTEGER :: redshift_colors=0
 
-  !---------Dimensions of various arrays----------!
+  !------------Pre-compiler defintions------------!
   
+  !flag indicating type of isochrones to use
+  !'bsti' = BaSTI, 'pdva' = Padova 2007
+#if (BASTI)
+  CHARACTER(4), PARAMETER :: isoc_type = 'bsti'
+#else
+  CHARACTER(4), PARAMETER :: isoc_type = 'pdva'
+#endif
+
+  !flag indicating type of spectral library to use
+#if (MILES)
+  CHARACTER(5), PARAMETER :: spec_type = 'miles'
+#else
+  CHARACTER(5), PARAMETER :: spec_type = 'basel'
+#endif
+
   !number of metallicities in the isochrones
-  !22 = Padova+BaseL, 10 = BaSTI+BaSeL, 5 = MILES
-  INTEGER, PARAMETER :: nz=22
-  !number of elements per stellar spectrum for BaSeL/MILES
-  !1963 = BaSeL+dust, 4222 = MILES
+  !number of elements per stellar spectrum
+#if (MILES)
+  INTEGER, PARAMETER :: nz=5
+  INTEGER, PARAMETER :: nspec=4222
+#else
   INTEGER, PARAMETER :: nspec=1963
+#if (BASTI)
+  INTEGER, PARAMETER :: nz=10
+#else   
+  INTEGER, PARAMETER :: nz=22
+#endif
+#endif
+
+  !flag indicating the type of normalization used in the BaSeL library
+  !pdva = normalized to Padova isochrones
+  !wlbc = normalized to Teff-color relations
+  !NB: currently only the wlbc option is included in the public release
+  CHARACTER(4), PARAMETER :: basel_str = 'wlbc'
+
+  !---------Dimensions of various arrays----------!
 
   !You must change the number of bands here if
   !filters are added to allfilters.dat
-  INTEGER, PARAMETER :: nbands=80
+  INTEGER, PARAMETER :: nbands=83
   !number of indices defined in allindices.dat
   INTEGER, PARAMETER :: nindsps=30
   
@@ -123,9 +129,9 @@ MODULE SPS_VARS
   INTEGER, PARAMETER :: ndim_pagb=14
   !number of WR spectra (WN only)
   INTEGER, PARAMETER :: ndim_wr=12
-  !wavelength dimension of the Draine & Lee 2007 dust model
+  !wavelength dimension of the Draine & Li 2007 dust model
   INTEGER, PARAMETER :: ndim_dl07=1001
-  !number of Umin models from Drain & Lee 2007 dust model
+  !number of Umin models from Drain & Li 2007 dust model
   INTEGER, PARAMETER :: numin_dl07=22
 
   !------------IMF-related Constants--------------!
@@ -249,7 +255,7 @@ MODULE SPS_VARS
   REAL, DIMENSION(nspec,ndim_wr) :: wr_spec=0.0
   REAL, DIMENSION(ndim_wr)       :: wr_logt=0.0
 
-  !dust emission model (Draine & Lee 2007)
+  !dust emission model (Draine & Li 2007)
   REAL, DIMENSION(ndim_dl07)              :: lambda_dl07=0.0
   REAL, DIMENSION(ndim_dl07,numin_dl07*2) :: dustem_dl07=0.0
   REAL, DIMENSION(nspec,7,numin_dl07*2)   :: dustem2_dl07=0.0
