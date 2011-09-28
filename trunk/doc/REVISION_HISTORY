@@ -1,7 +1,7 @@
 REVISION HISTORY
 
 01/10/09 
- - Release of v0.9
+ - Release of FSPS v0.9
 
 1/18/09
  - small bug in compsp.f90 fixed.  effected tabulated SFH outputs
@@ -56,3 +56,12 @@ REVISION HISTORY
    from Draine & Li 2007.  The wavelength grid has been expanded to accomodate this
    new feature.
  - Addition of many filters, including many in the IR and submm.
+ - The empirical Carbon star spectra are now extrapolated beyond 2.4um with the 
+   Aringer et al. 2009 synthetic stellar library.
+ - The empirical M star spectra are now extrapolated beyond 2.4um with the latest
+   PHOENIX theoretical stellar library (the BT-SETTL grid).
+ - Switching between different isochrones and stellar libaries is now more transparent
+   in the sps_vars.f90 module.
+
+
+

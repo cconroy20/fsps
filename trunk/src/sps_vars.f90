@@ -1,6 +1,6 @@
 MODULE SPS_VARS
 
-  ! module to set up most arrays and variables
+  ! module to set up most arrays and variables 
 
   IMPLICIT NONE
   SAVE
