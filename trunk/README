@@ -1,4 +1,4 @@
-This is FSPS v2.2
+This is FSPS v2.3
 ---------------------------------
 
 You should not need to update the SVN repository until an update is
@@ -39,19 +39,16 @@ in FSPS and the tabulated imfs and sfhs if those options are set.  The
 files in this directory are readily user editable.
 
 doc: Contains the manual, revision history, and installation
-instructions
+instructions.
 
 dust: Contains the dust attenuation curves for the Witt & Gordon
-(2000) dust model.
+(2000) dust model and the dust emission spectra from the Draine & Li
+2007 grain model.
 
 pro: Contains IDL files for reading in the .mag, .indx, and .spec
 output files
 
-src: Contains the source files, and contains the input files for
-tabulated SFHs (sfh.dat) and IMFs (imf.dat).  This directory also
-contains the index definition file (allindices.dat) and the bandpass
-filters, both their description (FILTER_LIST) and the actual
-definitions (allfilters.dat).
+src: Contains the source files and routines from Numerical Recipes.
 
 
 
