@@ -1,7 +1,7 @@
  PROGRAM SIMPLE
 
   !set up modules
-  USE sps_vars; USE nrtype; USE sps_utils  
+  USE sps_vars; USE sps_utils  
   IMPLICIT NONE
 
   !NB: the various structure types are defined in sps_vars.f90

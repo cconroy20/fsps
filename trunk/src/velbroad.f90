@@ -5,7 +5,7 @@ SUBROUTINE VELBROAD(lambda,spec,sigma)
   !in dlambda with lambda within each integration
   !this routine was inspired by a similar routine in the BC03 code
 
-  USE sps_vars; USE nr, ONLY : locate; USE nrtype
+  USE sps_vars; USE nr, ONLY : locate
   IMPLICIT NONE
   
   REAL(SP), INTENT(inout), DIMENSION(nspec) :: spec

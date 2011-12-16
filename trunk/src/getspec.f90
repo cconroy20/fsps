@@ -1,24 +1,20 @@
-SUBROUTINE GETSPEC(zz,mini,mact,logt,lbol,phase,ffco,spec)
+SUBROUTINE GETSPEC(zz,mact,logt,lbol,logg,phase,ffco,spec)
 
-  ! Use the theoretical/empirical stellar spectra library
-  ! BaSeL to compute IMF-weighted spectra of SSPs.
-  ! For very hot stars, assume a Blackbody.  For TP-AGB
-  ! stars, use the empirical library of Lancon & Mouhcine 2002.
-  ! Luminosities are in solar units; Fluxes are in Fnu units (Lsun/Hz)
-  ! BS spectra from M67 look like MS stars (Liu et al. 2008)
+  ! Routine to return the spectrum of a star with an input logg,logt
+  ! the phase flag determines if the star is a WR, P-AGB, or TP-AGB star
+  ! ffco specifies the chemical composition of WR and TP-AGB stars
 
-  !This subroutine is a major bottleneck.  We must re-compute
-  !spectra each time the IMF or isochrone parameters change.
+  !This subroutine is a major bottleneck.  The spectra must be
+  !recomputed each time the IMF or isochrone parameters change.
 
-  USE sps_vars; USE nrtype
-  USE nr, ONLY: locate, ran
+  USE sps_vars; USE nr, ONLY: locate
   IMPLICIT NONE
 
-  REAL(SP), INTENT(in) :: mini,mact,logt,lbol,phase,ffco
+  REAL(SP), INTENT(in) :: mact,logt,lbol,logg,phase,ffco
   INTEGER,  INTENT(in) :: zz
   REAL(SP), INTENT(inout), DIMENSION(nspec) :: spec  
-  REAL(SP) :: loggi,t,u,r2,tpagbtdiff,sumtest,tco
-  INTEGER  :: klo,jlo,idum=-1,flag
+  REAL(SP) :: t,u,r2,tpagbtdiff,sumtest,loggi
+  INTEGER  :: klo,jlo,flag
 
   !---------------------------------------------------------------!
   !---------------------------------------------------------------!
@@ -26,16 +22,10 @@ SUBROUTINE GETSPEC(zz,mini,mact,logt,lbol,phase,ffco,spec)
   spec = 0.0
   flag = 0
 
-  tco = ffco
-  !allows us to dilute the C star fraction
-  !IF (tco.GT.1.0) THEN
-  !   IF (ran(idum).LT.1.0) tco = 0.0
-  !ENDIF
-
-  !convert lum, temp, and mass into surface gravity
-  !we only really need to do this for the added BHB and SBS stars
-  loggi = LOG10( gsig4pi*mact/lbol ) + 4*logt
   !compute radius squared (cm^2) 
+  !we need to re-compute logg becuase we modify the logt,logl
+  !of AGB stars
+  loggi = LOG10( gsig4pi*mact/lbol ) + 4*logt
   r2    = mact*msun*newton/10**loggi
 
   !post-AGB non-LTE model spectra from Rauch 2003
@@ -59,7 +49,7 @@ SUBROUTINE GETSPEC(zz,mini,mact,logt,lbol,phase,ffco,spec)
   !phase information is available
   !NB: there is currently no Z or log(g) dependence in the WR spectra
   !NB: notice also that currently the WN and WC libraries are the same
-  ELSE IF ((phase.EQ.9.0.AND.tco.LT.10.AND.spec_type.NE.'miles').OR.&
+  ELSE IF ((phase.EQ.9.0.AND.ffco.LT.10.AND.spec_type.NE.'miles').OR.&
        (phase.NE.6.0.AND.logt.GE.4.699)) THEN
      
      flag = 1
@@ -72,7 +62,7 @@ SUBROUTINE GETSPEC(zz,mini,mact,logt,lbol,phase,ffco,spec)
           t*(wr_spec(:,jlo+1)-wr_spec(:,jlo)) )
 
   !WC WR stars (C-rich), from Smith et al. 2002
-  ELSE IF (phase.EQ.9.0.AND.tco.GE.10.AND.spec_type.NE.'miles') THEN
+  ELSE IF (phase.EQ.9.0.AND.ffco.GE.10.AND.spec_type.NE.'miles') THEN
      
      flag = 1
      jlo = MIN(MAX(locate(wr_logt,logt),1),ndim_wr-1)
@@ -84,7 +74,7 @@ SUBROUTINE GETSPEC(zz,mini,mact,logt,lbol,phase,ffco,spec)
           t*(wr_spec(:,jlo+1)-wr_spec(:,jlo)) )
 
   !O-rich TP-AGB spectra, from Lancon & Mouhcine 2002
-  ELSE IF (phase.EQ.5.0.AND.logt.LT.3.6.AND.tco.LE.1.0) THEN
+  ELSE IF (phase.EQ.5.0.AND.logt.LT.3.6.AND.ffco.LE.1.0) THEN
      
      flag = 1
      jlo = MAX(MIN(locate(agb_logt_o(zz,:),logt),n_agb_o-1),1)
@@ -104,7 +94,7 @@ SUBROUTINE GETSPEC(zz,mini,mact,logt,lbol,phase,ffco,spec)
           agb_spec_o(:,jlo))/(agb_logt_o(zz,jlo+1)-agb_logt_o(zz,jlo)) )
 
   !C-rich TP-AGB spectra, from Lancon & Mouhcine 2002
-  ELSE IF (phase.EQ.5.0.AND.logt.LT.3.6.AND.tco.GT.1.0) THEN
+  ELSE IF (phase.EQ.5.0.AND.logt.LT.3.6.AND.ffco.GT.1.0) THEN
      
      flag = 1
      jlo = MAX(MIN(locate(agb_logt_c,logt),n_agb_c-1),1)
@@ -133,7 +123,7 @@ SUBROUTINE GETSPEC(zz,mini,mact,logt,lbol,phase,ffco,spec)
 
      t   = (logt-basel_logt(jlo)) / &
           (basel_logt(jlo+1)-basel_logt(jlo))
-     u   = (loggi-basel_logg(klo))   / &
+     u   = (logg-basel_logg(klo))   / &
           (basel_logg(klo+1)-basel_logg(klo))
      
      !catch stars that fall off the grid
@@ -141,7 +131,7 @@ SUBROUTINE GETSPEC(zz,mini,mact,logt,lbol,phase,ffco,spec)
      IF (sumtest.EQ.0.0) write(*,*) 'GETSPEC WARNING: you '//&
           'have somehow managed to place part of an isochrone '//&
           'off of the spectral grid.  This is not good.  Z=',&
-          zz,'(logt,logg)=',logt,loggi
+          zz,'(logt,logg)=',logt,loggi,phase
      
      !bilinear interpolation over every spectral element
      !NB: extra factor of 4pi, that I can't explain,

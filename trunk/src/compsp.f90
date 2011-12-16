@@ -9,8 +9,7 @@ REAL FUNCTION INTSFR(sfh,tau,const,maxtime,sfstart,t1,t2)
 
   !routine to integrate an analytic SFH from t1 to t2
 
-  USE nrtype; USE sps_vars
-  USE nr, ONLY : locate
+  USE sps_vars; USE nr, ONLY : locate
   IMPLICIT NONE
 
   INTEGER, INTENT(in)  :: sfh
@@ -66,8 +65,7 @@ SUBROUTINE INTSPEC(pset,nti,spec_ssp,csp,mass_ssp,lbol_ssp,&
   !routine to perform integration of SSP over a SFH,
   !including attenuation by dust.
 
-  USE nrtype; USE sps_vars
-  USE nr, ONLY : locate
+  USE sps_vars; USE nr, ONLY : locate
   USE sps_utils, ONLY : add_dust
   IMPLICIT NONE
   
@@ -197,10 +195,8 @@ SUBROUTINE COMPSP(write_compsp,nzin,outfile,mass_ssp,&
   !If tage >0  -> run only one integration to t=tage
   !If tage<=0  -> produce outputs from tmin<t<tmax
 
-  USE sps_vars; USE nrtype
-  USE sps_utils, ONLY : getmags, add_dust
-  USE nrutil, ONLY : assert_eq 
-  USE nr, ONLY : locate, splint, spline
+  USE sps_vars; USE nr, ONLY : locate
+  USE sps_utils, ONLY : getmags, add_dust, linterp
   IMPLICIT NONE
  
   !write_compsp = (1->write mags), (2->write spectra), (3->write both) 
@@ -507,8 +503,8 @@ SUBROUTINE COMPSP(write_compsp,nzin,outfile,mass_ssp,&
          CALL GETMAGS(pset%zred,spec_csp,mags)
       ELSE
          !here we compute the redshift at the corresponding age
-         zred = MIN(MAX(splint(zagespl(:,2),zagespl(:,1),&
-              zagespl(:,3),powtime(i)/1E9),0.0),20.0)
+         zred = MIN(MAX(linterp(zagespl(:,2),zagespl(:,1),&
+              powtime(i)/1E9),0.0),20.0)
          CALL GETMAGS(zred,spec_csp,mags)
       ENDIF
 
@@ -566,7 +562,7 @@ SUBROUTINE COMPSP_WARNING(maxtime, pset, nzin, write_compsp)
 
   !check that variables are properly set
 
-  USE sps_vars; USE nrtype
+  USE sps_vars
   IMPLICIT NONE
   INTEGER, INTENT(in) :: nzin, write_compsp
   REAL(SP), INTENT(in) :: maxtime
@@ -709,7 +705,7 @@ SUBROUTINE SAVE_COMPSP(write_compsp,cspo,time,mass,&
 
   !routine to print and save outputs
 
-  USE sps_vars; USE nrtype
+  USE sps_vars
   IMPLICIT NONE
   INTEGER, INTENT(in) :: write_compsp
   REAL(SP), INTENT(in)    :: time,mass,lbol,sfr,mdust

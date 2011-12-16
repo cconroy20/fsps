@@ -6,7 +6,7 @@ FUNCTION IMF(mass)
   !if the imf_type var is +10 then we calculate dn/dm*m
   !if the imf_type var is <10 then we calculate dn/dm
   
-  USE sps_vars; USE nrtype
+  USE sps_vars
   IMPLICIT NONE
 
   REAL(SP), DIMENSION(:), INTENT(in) :: mass

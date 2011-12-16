@@ -3,7 +3,7 @@ SUBROUTINE MOD_AGB(zz,t,age,delt,dell,pagb,redgb,&
 
   !routine to modify TP-AGB stars and post-AGB stars. 
 
-  USE sps_vars; USE nrtype
+  USE sps_vars
   IMPLICIT NONE
 
   INTEGER,  INTENT(in) :: t, nn,zz

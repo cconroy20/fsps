@@ -8,8 +8,7 @@ SUBROUTINE SPS_SETUP(zin)
   !metallicity corresponding to zin in the look-up table zlegend.dat
   !is read.
 
-  USE sps_vars; USE nrtype; USE sps_utils
-  USE nr, ONLY : spline,splint
+  USE sps_vars; USE sps_utils
   IMPLICIT NONE
   INTEGER, INTENT(in) :: zin
   INTEGER :: stat,n,i,j,m,jj,k,tnspec
@@ -18,7 +17,7 @@ SUBROUTINE SPS_SETUP(zin)
   CHARACTER(6) :: zstype
   REAL(SP) :: dumr1,d1,d2,logage,x,a
   REAL(SP), DIMENSION(1221) :: tvega_lam,tvega_spec,tsun_lam,tsun_spec
-  REAL(SP), DIMENSION(50000) :: readlamb,readband,spl
+  REAL(SP), DIMENSION(50000) :: readlamb,readband
   REAL(SP), DIMENSION(25) :: wglam
   REAL(SP), DIMENSION(25,18,2,6) :: wgtmp
 
@@ -446,13 +445,11 @@ SUBROUTINE SPS_SETUP(zin)
         
         !now interpolate the dust spectra onto the master wavelength array
         DO j=1,numin_dl07*2
-           CALL SPLINE(lambda_dl07,dustem_dl07(:,j),1.0e30_sp,&
-                1.0e30_sp,spl(1:ndim_dl07))
            DO i=1,nspec
               !the dust models only extend to 1um
               IF (spec_lambda(i)/1E4.GT.1) THEN
-                 dustem2_dl07(i,k+1,j) = splint(lambda_dl07,dustem_dl07(:,j),&
-                      spl(1:ndim_dl07),spec_lambda(i))
+                 dustem2_dl07(i,k+1,j) = linterp(lambda_dl07,&
+                      dustem_dl07(:,j),spec_lambda(i))
               ENDIF
            ENDDO
         ENDDO
@@ -481,13 +478,11 @@ SUBROUTINE SPS_SETUP(zin)
   CLOSE(98)
 
   !interpolate the Vega spectrum onto the wavelength grid
-  CALL SPLINE(LOG10(tvega_lam),LOG10(tvega_spec+tiny_number),&
-       1.0e30_sp,1.0e30_sp,spl(1:ndim_basel))
   DO i=1,nspec
-     vega_spec(i) = 10**splint(LOG10(tvega_lam),LOG10(tvega_spec+tiny_number),&
-          spl(1:ndim_basel),LOG10(spec_lambda(i)))
+     vega_spec(i) = 10**linterp(LOG10(tvega_lam),&
+          LOG10(tvega_spec+tiny_number),LOG10(spec_lambda(i)))
      !convert to fnu
-     vega_spec(i) = vega_spec(i)*spec_lambda(i)**2
+     vega_spec(i) =  vega_spec(i)*spec_lambda(i)**2
      IF (spec_lambda(i).GT.tvega_lam(ndim_basel)) vega_spec(i)=tiny_number
   ENDDO
 
@@ -506,11 +501,9 @@ SUBROUTINE SPS_SETUP(zin)
   CLOSE(98)
 
   !interpolate the Solar spectrum onto the wavelength grid
-  CALL SPLINE(LOG10(tsun_lam),LOG10(tsun_spec+tiny_number),&
-       1.0e30_sp,1.0e30_sp,spl(1:ndim_basel))
   DO i=1,nspec
-     sun_spec(i) = 10**splint(LOG10(tsun_lam),LOG10(tsun_spec+tiny_number),&
-          spl(1:ndim_basel),LOG10(spec_lambda(i)))
+     sun_spec(i) = 10**linterp(LOG10(tsun_lam),LOG10(tsun_spec+tiny_number),&
+          LOG10(spec_lambda(i)))
      IF (spec_lambda(i).GT.tsun_lam(ndim_basel)) sun_spec(i)=tiny_number
   ENDDO
 
@@ -554,12 +547,10 @@ SUBROUTINE SPS_SETUP(zin)
      ENDIF
 
      !interpolate the filter onto the master wavelength array
-     CALL SPLINE(readlamb(1:jj),readband(1:jj),1.0e30_sp,1.0e30_sp,spl(1:jj))
      DO j=1,nspec
         IF (spec_lambda(j).GE.readlamb(1).AND.&
              spec_lambda(j).LE.readlamb(jj)) &
-             bands(i,j) = &
-             splint(readlamb(1:jj),readband(1:jj),spl(1:jj),spec_lambda(j))
+             bands(i,j) = linterp(readlamb(1:jj),readband(1:jj),spec_lambda(j))
      ENDDO
 
      !normalize
@@ -636,19 +627,17 @@ SUBROUTINE SPS_SETUP(zin)
   ENDDO
   CLOSE(99)
 
-  !spline the WG00 models onto the spectral grid
+  !interpolate the WG00 models onto the spectral grid
   DO k=1,2
      DO i=1,18
         DO j=1,6
-           CALL spline(wglam,wgtmp(:,i,k,j),1.0e30_sp,&
-                1.0e30_sp,spl(1:25))
            DO n=1,nspec
               IF (spec_lambda(n).GT.wglam(25)) THEN
                  wgdust(n,i,j,k)=0.0
               ELSE IF (spec_lambda(n).LT.wglam(1)) THEN
                  wgdust(n,i,j,k) = wgtmp(1,i,k,j)
               ELSE
-                 wgdust(n,i,j,k) = splint(wglam,wgtmp(:,i,k,j),spl(1:25),&
+                 wgdust(n,i,j,k) = linterp(wglam,wgtmp(:,i,k,j),&
                       spec_lambda(n))
               ENDIF
            ENDDO
@@ -662,11 +651,9 @@ SUBROUTINE SPS_SETUP(zin)
 
   DO i=1,500
      a = (i-1)/499.*(1-1/1001.)+1/1001.
-     zagespl(i,1) = 1/a-1
-     zagespl(i,2) = get_tuniv(zagespl(i,1))
+     zagespl(i,1) = 1/a-1  !redshift
+     zagespl(i,2) = get_tuniv(zagespl(i,1))  !Tuniv(z)
   ENDDO
-  CALL spline(zagespl(:,2),zagespl(:,1),1.0e30_sp,&
-             1.0e30_sp,zagespl(:,3))
 
   !set Tuniv
   tuniv = get_tuniv(0.0)

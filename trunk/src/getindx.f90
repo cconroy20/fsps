@@ -2,7 +2,7 @@ REAL FUNCTION INTIND(lam,func,lo,hi)
 
   !perform integral over spectrum for index computation
 
-  USE sps_vars; USE nrtype; USE nr, ONLY : locate
+  USE sps_vars; USE nr, ONLY : locate
   IMPLICIT NONE
 
   INTEGER :: l1,l2,i
@@ -41,7 +41,7 @@ SUBROUTINE GETINDX(lambda,spec,indices)
   !routine to calculate indices from an input spectrum
   !indices are defined in data/allindices.dat
 
-  USE nrtype; USE nrutil, ONLY : assert_eq; USE sps_vars
+  USE sps_vars
   USE sps_utils, ONLY : intind; USE nr, ONLY : locate
   IMPLICIT NONE
 

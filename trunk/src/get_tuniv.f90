@@ -4,7 +4,7 @@ FUNCTION GET_TUNIV(z)
   !assumes flat universe w/ only matter and lambda
   !assumes om0,ol0,thub set in sps_vars.f90
   
-  USE nrtype; USE sps_vars
+  USE sps_vars
   IMPLICIT NONE
   INTEGER :: i
   INTEGER, PARAMETER :: ii=10000

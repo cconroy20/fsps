@@ -4,7 +4,7 @@ SUBROUTINE ADD_REMNANTS(mass,maxmass)
   !of the SSP.  These initial-mass-dependent remnant 
   !formulae are taken from Renzini & Ciotti 1993.
   
-  USE sps_vars; USE nrtype
+  USE sps_vars
   USE nr, ONLY : qromb
   USE sps_utils, ONLY : imf
   IMPLICIT NONE

@@ -1,4 +1,4 @@
-SUBROUTINE MOD_HB(f_bhb,t,mini,mact,logl,logt,phase, &
+SUBROUTINE MOD_HB(f_bhb,t,mini,mact,logl,logt,logg,phase, &
      wght,hb_wght,nmass,hbtime)
 
   !routine to modify the horizontal branch to include bluer 
@@ -14,12 +14,11 @@ SUBROUTINE MOD_HB(f_bhb,t,mini,mact,logl,logt,phase, &
   !Note that the parameter bhb_sbs_time, set in sps_vars.f90,
   !sets the turn-on time for this modification.
 
-  USE sps_vars; USE nrtype
-  USE nr, ONLY : ran
+  USE sps_vars; USE nr, ONLY : ran
   IMPLICIT NONE
 
   REAL(SP), INTENT(inout), DIMENSION(nt,nm) :: mini,mact,&
-       logl,logt,phase
+       logl,logt,logg,phase
   REAL(SP), INTENT(inout), DIMENSION(nm) :: wght
   REAL(SP), DIMENSION(nm) :: tphase=0.0
   INTEGER, INTENT(inout), DIMENSION(nt) :: nmass
@@ -74,7 +73,12 @@ SUBROUTINE MOD_HB(f_bhb,t,mini,mact,logl,logt,phase, &
                     phase(t,nmass(t)+1:nmass(t)+nhb) = dumarr+8.
                     DO i=1,nhb
                        rnum = ran(idum)
+                       !distribute Teff uniformly to high T
                        logt(t,nmass(t)+i) = logt(t,j)+(4.2-logt(t,j))*rnum !3.86
+                       !compute logg
+                       logg(t,nmass(t)+i) = LOG10( gsig4pi*mact(t,nmass(t)+i)/&
+                            10**logl(t,nmass(t)+i) ) + 4*logt(t,nmass(t)+i) 
+
                     ENDDO
                     wght(nmass(t)+1:nmass(t)+nhb)   = dumarr + &
                          f_bhb*wght(j)/nhb
@@ -109,10 +113,14 @@ SUBROUTINE MOD_HB(f_bhb,t,mini,mact,logl,logt,phase, &
            logl(t,nmass(t))  = logl(t,j)
            phase(t,nmass(t)) = 8.
            rnum = ran(idum)
+           !distribute Teff uniformly to high T
            logt(t,nmass(t)) = logt(t,j)+(4.2-logt(t,j))*rnum
            wght(nmass(t)) = f_bhb*wght(j)
            !modify the weight of the existing HB stars
-           wght(j)   = wght(j) * (1-f_bhb)                 
+           wght(j)   = wght(j) * (1-f_bhb)                
+           !compute logg
+           logg(t,nmass(t)) = LOG10( gsig4pi*mact(t,nmass(t))/&
+                10**logl(t,nmass(t)) ) + 4*logt(t,nmass(t)) 
            
         ENDIF
 
