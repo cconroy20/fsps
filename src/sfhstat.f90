@@ -4,7 +4,7 @@ SUBROUTINE SFHSTAT(pos,model,ssfr6,ssfr7,ssfr8,ave_age)
   !required inputs are the parameter set and a single element output
   !structure from compsp
   
-  USE sps_vars; USE nrtype
+  USE sps_vars
   IMPLICIT NONE
 
   TYPE(PARAMS), INTENT(in)    :: pos

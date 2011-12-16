@@ -1,11 +1,11 @@
 MODULE SPS_UTILS
 
   INTERFACE
-     SUBROUTINE ADD_BS(s_bs,t,mini,mact,logl,logt,phase, &
+     SUBROUTINE ADD_BS(s_bs,t,mini,mact,logl,logt,logg,phase, &
           wght,hb_wght,nmass)
-       USE nrtype; USE sps_vars
+       USE sps_vars
        REAL(SP), INTENT(inout), DIMENSION(nt,nm) :: mini,mact,&
-            logl,logt,phase
+            logl,logt,logg,phase
        REAL(SP), INTENT(inout), DIMENSION(nm) :: wght
        REAL(SP), INTENT(in) :: hb_wght,s_bs
        INTEGER, INTENT(in)  :: t
@@ -15,7 +15,7 @@ MODULE SPS_UTILS
 
   INTERFACE
      SUBROUTINE ADD_DUST(pset,csp1,csp2,specdust,mdust)
-       USE nrtype; USE sps_vars
+       USE sps_vars
        REAL(SP), INTENT(out) :: mdust
        REAL(SP), DIMENSION(nspec), INTENT(in) :: csp1,csp2
        TYPE(PARAMS), INTENT(in) :: pset
@@ -25,7 +25,7 @@ MODULE SPS_UTILS
 
   INTERFACE
      SUBROUTINE ADD_REMNANTS(mass,maxmass)
-       USE nrtype
+       USE sps_vars
        REAL(SP), INTENT(inout) :: mass
        REAL(SP), INTENT(in) :: maxmass
      END SUBROUTINE ADD_REMNANTS
@@ -34,7 +34,7 @@ MODULE SPS_UTILS
   INTERFACE
      SUBROUTINE COMPSP(write_compsp,nzin,outfile,mass_ssp,&
           lbol_ssp,spec_ssp,pset,ocompsp)
-       USE sps_vars; USE nrtype
+       USE sps_vars
        INTEGER, INTENT(in) :: write_compsp,nzin
        REAL(SP), INTENT(in), DIMENSION(nzin,ntfull) :: lbol_ssp,mass_ssp
        REAL(SP), INTENT(in), DIMENSION(nzin,ntfull,nspec) :: spec_ssp
@@ -46,7 +46,7 @@ MODULE SPS_UTILS
 
   INTERFACE
      SUBROUTINE GETZMET(smass,pos)
-       USE nrtype; USE sps_vars
+       USE sps_vars
        REAL(SP), INTENT(in) :: smass
        TYPE(PARAMS), INTENT(inout) :: pos
      END SUBROUTINE GETZMET
@@ -54,7 +54,7 @@ MODULE SPS_UTILS
 
   INTERFACE
      SUBROUTINE GETINDX(lambda,spec,indices)
-       USE sps_vars; USE nrtype
+       USE sps_vars
        REAL(SP), INTENT(in), DIMENSION(nspec) :: spec,lambda
        REAL(SP), INTENT(inout), DIMENSION(nindsps) :: indices
      END SUBROUTINE GETINDX
@@ -63,7 +63,7 @@ MODULE SPS_UTILS
   !this is a private routine not included in the public release
   INTERFACE
      SUBROUTINE FITGAL_INIT(switch,pos,powell_pos)
-       USE sps_vars; USE nrtype
+       USE sps_vars
        INTEGER, INTENT(in) :: switch
        TYPE(PARAMS), INTENT(inout) :: pos
        REAL(SP), OPTIONAL, DIMENSION(:), INTENT(inout) :: powell_pos
@@ -73,7 +73,7 @@ MODULE SPS_UTILS
   !this is a private routine not included in the public release
   INTERFACE
      SUBROUTINE FITFAST_INIT(switch,pos,powell_pos)
-       USE sps_vars; USE nrtype
+       USE sps_vars
        INTEGER, INTENT(in) :: switch
        TYPE(PARAMS), INTENT(inout) :: pos
        REAL(SP), OPTIONAL, DIMENSION(:), INTENT(inout) :: powell_pos
@@ -82,15 +82,24 @@ MODULE SPS_UTILS
 
   INTERFACE
      FUNCTION GET_TUNIV(z)
-       USE nrtype; USE sps_vars
+       USE sps_vars
        REAL, INTENT(in) :: z
        REAL(SP) :: get_tuniv
      END FUNCTION GET_TUNIV
   END INTERFACE
   
   INTERFACE
+     FUNCTION LINTERP(xin,yin,xout)
+       USE sps_vars
+       REAL(SP), DIMENSION(:), INTENT(in) :: xin,yin
+       REAL(SP), INTENT(in)  :: xout
+       REAL(SP) :: linterp
+     END FUNCTION LINTERP
+  END INTERFACE
+
+  INTERFACE
      SUBROUTINE GETMAGS(zred,spec,mags) 
-       USE sps_vars; USE nrtype
+       USE sps_vars
        REAL(SP), INTENT(in), DIMENSION(nspec) :: spec
        REAL(SP), INTENT(in) :: zred
        REAL(SP), DIMENSION(nbands) :: mags
@@ -98,9 +107,9 @@ MODULE SPS_UTILS
   END INTERFACE
   
   INTERFACE
-     SUBROUTINE GETSPEC(zz,mini,mact,logt,lbol,phase,ffco,spec)
-       USE sps_vars; USE nrtype
-       REAL(SP), INTENT(in) :: mini,mact,logt,lbol,phase,ffco
+     SUBROUTINE GETSPEC(zz,mact,logt,lbol,logg,phase,ffco,spec)
+       USE sps_vars
+       REAL(SP), INTENT(in) :: mact,logt,lbol,logg,phase,ffco
        INTEGER,  INTENT(in) :: zz
        REAL(SP), INTENT(inout), DIMENSION(nspec) :: spec 
      END SUBROUTINE GETSPEC
@@ -108,7 +117,7 @@ MODULE SPS_UTILS
 
   INTERFACE
      REAL FUNCTION INTIND(lam,func,lo,hi)
-       USE sps_vars; USE nrtype; USE nr, ONLY : locate
+       USE sps_vars; USE nr, ONLY : locate
        REAL(SP), INTENT(in), DIMENSION(nspec) :: lam,func
        REAL(SP), INTENT(in) :: lo,hi
      END FUNCTION INTIND
@@ -116,7 +125,7 @@ MODULE SPS_UTILS
 
   INTERFACE
      REAL FUNCTION INTSFR(sfh,tau,const,maxtime,sfstart,t1,t2)
-       USE nrtype; USE sps_vars
+       USE sps_vars
        INTEGER, INTENT(in)  :: sfh
        REAL(SP), INTENT(in) :: t1,t2,tau,const,maxtime,sfstart
      END FUNCTION INTSFR
@@ -124,7 +133,7 @@ MODULE SPS_UTILS
 
   INTERFACE
      FUNCTION IMF(mass)
-       USE sps_vars; USE nrtype
+       USE sps_vars
        REAL(SP), DIMENSION(:), INTENT(in) :: mass
        REAL(SP), DIMENSION(size(mass)) :: imf
      END FUNCTION IMF
@@ -132,7 +141,7 @@ MODULE SPS_UTILS
 
   INTERFACE
      SUBROUTINE IMF_WEIGHT(mini,wght,nmass)
-       USE nrtype; USE sps_vars
+       USE sps_vars
        REAL(SP), INTENT(inout), DIMENSION(nm) :: wght
        REAL(SP), INTENT(in), DIMENSION(nm)    :: mini
        INTEGER, INTENT(in) :: nmass
@@ -142,7 +151,7 @@ MODULE SPS_UTILS
   INTERFACE
      SUBROUTINE MOD_AGB(zz,t,age,delt,dell,pagb,redgb,&
           nn,logl,logt,phase,wght)
-       USE sps_vars; USE nrtype
+       USE sps_vars
        INTEGER,  INTENT(in) :: t, nn,zz
        REAL(SP), INTENT(inout), DIMENSION(nt,nm) :: logl,logt
        REAL(SP), INTENT(in), DIMENSION(nt,nm)    :: phase
@@ -153,11 +162,11 @@ MODULE SPS_UTILS
   END INTERFACE
 
   INTERFACE
-     SUBROUTINE MOD_HB(f_bhb,t,mini,mact,logl,logt,phase, &
+     SUBROUTINE MOD_HB(f_bhb,t,mini,mact,logl,logt,logg,phase, &
           wght,hb_wght,nmass,hbtime)
-       USE sps_vars; USE nrtype
+       USE sps_vars
        REAL(SP), INTENT(inout), DIMENSION(nt,nm) :: mini,mact,&
-            logl,logt,phase
+            logl,logt,logg,phase
        REAL(SP), INTENT(inout), DIMENSION(nm) :: wght
        REAL(SP), DIMENSION(nm) :: tphase=0.0
        INTEGER, INTENT(inout), DIMENSION(nt) :: nmass
@@ -170,7 +179,7 @@ MODULE SPS_UTILS
   !this is a private routine not included in the public release
   INTERFACE
      SUBROUTINE READ_SPEC(file,lambda,spec,time,mass,lbol,n_isoc)
-       USE sps_vars; USE nrtype
+       USE sps_vars
        INTEGER, INTENT(out) :: n_isoc
        CHARACTER(60), INTENT(in) :: file
        REAL(SP), INTENT(out), DIMENSION(nspec) :: lambda
@@ -189,11 +198,12 @@ MODULE SPS_UTILS
   
   !this is a private routine not included in the public release
   INTERFACE
-     FUNCTION SPS_CHI2(data,pos,csp)
-       USE sps_vars; USE nrtype
+     FUNCTION SPS_CHI2(data,pos,csp,c)
+       USE sps_vars
        TYPE(OBSDAT), INTENT(in)       :: data
        TYPE(COMPSPOUT), INTENT(inout) :: csp
        TYPE(PARAMS), INTENT(in)       :: pos
+       REAL(SP), INTENT(out), OPTIONAL :: c
        REAL(SP) :: sps_chi2
      END FUNCTION SPS_CHI2
   END INTERFACE
@@ -201,7 +211,7 @@ MODULE SPS_UTILS
   !this is a private routine not included in the public release
   INTERFACE
      FUNCTION SPS_CHI2_PHOTZ(data,pos,csp,pzphot)
-       USE sps_vars; USE nrtype
+       USE sps_vars
        TYPE(OBSDAT), INTENT(in)       :: data
        TYPE(COMPSPOUT), INTENT(inout) :: csp
        TYPE(PARAMS), INTENT(in)       :: pos
@@ -212,7 +222,7 @@ MODULE SPS_UTILS
 
   INTERFACE
      SUBROUTINE VELBROAD(lambda,spec,sigma)
-       USE sps_vars; USE nrtype
+       USE sps_vars
        REAL(SP), INTENT(inout), DIMENSION(nspec) :: spec
        REAL(SP), INTENT(in), DIMENSION(nspec) :: lambda
        REAL(SP), INTENT(in) :: sigma
@@ -221,7 +231,7 @@ MODULE SPS_UTILS
 
   INTERFACE
      SUBROUTINE WRITE_ISOCHRONE(file,zz)
-       USE nrtype
+       USE sps_vars
        INTEGER, INTENT(in) :: zz
        CHARACTER(100), INTENT(in)  :: file
      END SUBROUTINE WRITE_ISOCHRONE
@@ -230,7 +240,7 @@ MODULE SPS_UTILS
   !this is a private routine not included in the public release
   INTERFACE
      SUBROUTINE ZINTERP(zpos,spec,lbol,mass)
-       USE sps_vars; USE nrtype
+       USE sps_vars
        REAL(SP),INTENT(in) :: zpos
        REAL(SP),INTENT(inout),DIMENSION(ntfull) :: mass, lbol
        REAL(SP),INTENT(inout),DIMENSION(ntfull,nspec) :: spec

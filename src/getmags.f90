@@ -5,9 +5,7 @@ SUBROUTINE GETMAGS(zred,spec,mags)
   !see parameter compute_vega_mags in sps_vars.f90
   !magnitudes defined in accordance with Fukugita et al. 1996, Eqn 7
 
-  USE sps_vars 
-  USE nrtype; USE nrutil, ONLY : assert_eq
-  USE nr, ONLY : spline, splint
+  USE sps_vars; USE sps_utils, ONLY : linterp
   IMPLICIT NONE
 
   INTEGER  :: i
@@ -25,10 +23,9 @@ SUBROUTINE GETMAGS(zred,spec,mags)
   !redshift the spectra
   IF (zred.NE.0.0) THEN
      tmpspl = 0.0
-     CALL SPLINE(spec_lambda*(1+zred),spec,1.0e30_sp,1.0e30_sp,tmpspl)
      DO i=1,nspec
-        tspec(i) = splint(spec_lambda*(1+zred),spec,tmpspl,spec_lambda(i))
-        tspec(i) = MAX(tspec(i),0.0)
+        tspec(i) = MAX(linterp(spec_lambda*(1+zred),spec,&
+        spec_lambda(i)),0.0)
      ENDDO
   ELSE
      tspec = spec  

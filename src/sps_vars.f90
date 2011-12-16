@@ -12,16 +12,18 @@ MODULE SPS_VARS
 #define PADOVA 1
 #define BASTI 0
 
+  INTEGER, PARAMETER :: SP = KIND(1.0)
+
   !------Common parameters that may be altered by the user-------!
   
   !setup cosmology (WMAP7).  Used only for z(t) relation.
-  REAL, PARAMETER :: om0=0.26, ol0=0.74, thub=13.77
+  REAL(SP), PARAMETER :: om0=0.26, ol0=0.74, thub=13.77
   
   !controls the level of output (0 = no output to screen)
   INTEGER, PARAMETER :: verbose=0
 
   !Turn-on time for BHB and SBS phases, time is in log(yrs)
-  REAL, PARAMETER :: bhb_sbs_time=9.3
+  REAL(SP), PARAMETER :: bhb_sbs_time=9.3
   
   !turn on/off convolution of SSP with P(Z)
   !NB: P(Z) convolution has not been tested in some time, use with caution
@@ -137,40 +139,41 @@ MODULE SPS_VARS
   !------------IMF-related Constants--------------!
   
   !Salpeter IMF index
-  REAL :: salp_ind= 2.35
+  REAL(SP) :: salp_ind= 2.35
   !min/max masses for the IMF
-  REAL :: imf_lower_limit = 0.08, imf_upper_limit=120.
+  REAL(SP) :: imf_lower_limit = 0.08, imf_upper_limit=120.
   !Chabrier 2003 IMF parameters
-  REAL, PARAMETER :: chab_mc=0.08, chab_sigma2=0.69*0.69,&
+  REAL(SP), PARAMETER :: chab_mc=0.08, chab_sigma2=0.69*0.69,&
        chab_ind=1.3
   !van Dokkum 2008 IMF parameters
-  REAL, PARAMETER :: vd_sigma2=0.69*0.69, vd_ah=0.0443,&
+  REAL(SP), PARAMETER :: vd_sigma2=0.69*0.69, vd_ah=0.0443,&
        vd_ind=1.3, vd_al=0.14, vd_nc=25.
 
   !-------------Physical Constants---------------!
   !-------in cgs units where applicable----------!
 
   !constant such that g = C MT^4/L
-  REAL, PARAMETER :: gsig4pi = 1/4.13E10
+  REAL(SP), PARAMETER :: gsig4pi = 1/4.13E10
   !pi
-  REAL, PARAMETER :: mypi    = 3.14159265
+  REAL(SP), PARAMETER :: mypi    = 3.14159265
   !hc/k (Ang*K)
-  REAL, PARAMETER :: hck     = 1.43878E8
+  REAL(SP), PARAMETER :: hck     = 1.43878E8
   !speed of light (Ang/s)
-  REAL, PARAMETER :: clight  = 2.9979E18
+  REAL(SP), PARAMETER :: clight  = 2.9979E18
   !hc^2/sigma_SB
-  REAL, PARAMETER :: hc2sig  = 0.105021
+  REAL(SP), PARAMETER :: hc2sig  = 0.105021
   !Solar mass in grams
-  REAL, PARAMETER :: msun    = 1.989E33
+  REAL(SP), PARAMETER :: msun    = 1.989E33
   !Solar luminosity in erg/s
-  REAL, PARAMETER :: lsun    = 3.839E33
+  REAL(SP), PARAMETER :: lsun    = 3.839E33
   !Newton's constant
-  REAL, PARAMETER :: newton  = 6.67428E-8
+  REAL(SP), PARAMETER :: newton  = 6.67428E-8
   !cm in a pc
-  REAL, PARAMETER :: pc2cm   = 3.08568E18
+  REAL(SP), PARAMETER :: pc2cm   = 3.08568E18
   
-  REAL, PARAMETER :: huge_number = 1E33
-  REAL, PARAMETER :: tiny_number = 1E-33
+  !other important parameters
+  REAL(SP), PARAMETER    :: huge_number = 1E33
+  REAL(SP), PARAMETER    :: tiny_number = 1E-33
   
   !---------------Common Block-------------------!
     
@@ -180,122 +183,122 @@ MODULE SPS_VARS
   !the user does not set these vars explicitly.  They
   !are set in the PARAMS structure below and are 
   !copied internally
-  REAL, DIMENSION(3) :: imf_alpha=1.3
+  REAL(SP), DIMENSION(3) :: imf_alpha=1.3
   !IMF cut-off for van Dokkum parameterization
   !the user does not set this var explicitly.  It
   !is set in the PARAMS structure below and 
   !copied internally
-  REAL :: imf_vdmc  = 0.08
+  REAL(SP) :: imf_vdmc  = 0.08
   !IMF transition mass for Dave parameterization
   !the user does not set this var explicitly.  It
   !is set in the PARAMS structure below and 
   !copied internally
-  REAL :: imf_mdave = 0.5
+  REAL(SP) :: imf_mdave = 0.5
   !parameters for user-defined IMF
   INTEGER :: n_user_imf = 0
-  REAL, DIMENSION(3,100) :: imf_user_alpha=0.0
+  REAL(SP), DIMENSION(3,100) :: imf_user_alpha=0.0
 
   !environment variable for SPS home directory
   CHARACTER(250) :: SPS_HOME=''
 
   !Age of Universe in Gyr (set in sps_setup.f90, based on cosmo params)
-  REAL :: tuniv = thub
+  REAL(SP) :: tuniv = thub
   
   !this specifies the size of the full time grid
   INTEGER, PARAMETER :: ntfull = time_res_incr*nt
 
   !array of index definitions
-  REAL, DIMENSION(7,nindsps) :: indexdefined=0.0
+  REAL(SP), DIMENSION(7,nindsps) :: indexdefined=0.0
 
   !array holding MW extinction curve indices
   INTEGER, DIMENSION(6) :: mwdindex=0
 
   !array holding Witt & Gordon dust models
   !wgdust(lam,tau,model,homo/clump)
-  REAL, DIMENSION(nspec,18,6,2) :: wgdust=0.0
+  REAL(SP), DIMENSION(nspec,18,6,2) :: wgdust=0.0
 
   !Index for P(Z) distribution.  1=closed box;
   !P(Z) = z^zpow*exp(-z/pmetals)  (see pz_convol.f90)
   !pmetals set in PARAMS structure
-  REAL :: zpow=1.0
+  REAL(SP) :: zpow=1.0
 
-  !array holding redshift-age relation and spline info
-  REAL, DIMENSION(500,3) :: zagespl=0.0
+  !array holding redshift-age relation
+  REAL(SP), DIMENSION(500,2) :: zagespl=0.0
  
   !array holding tabulated SFH 
-  REAL, DIMENSION(3,ntabmax) :: sfh_tab=0.0
+  REAL(SP), DIMENSION(3,ntabmax) :: sfh_tab=0.0
   INTEGER :: ntabsfh=0
 
   !bandpass filters 
-  REAL, DIMENSION(nbands,nspec) :: bands
+  REAL(SP), DIMENSION(nbands,nspec) :: bands
   !magnitude of the Sun in all filters
-  REAL, DIMENSION(nbands) :: magsun,magvega
+  REAL(SP), DIMENSION(nbands) :: magsun,magvega
   !Vega-like star spectrum for Vega magnitude zero-point
   !spectrum of Sun, for absolute mags of Sun
-  REAL, DIMENSION(nspec)  :: vega_spec=0.,sun_spec=0.0
+  REAL(SP), DIMENSION(nspec)  :: vega_spec=0.,sun_spec=0.0
   !common wavelength array
-  REAL, DIMENSION(nspec)  :: spec_lambda=0.0
+  REAL(SP), DIMENSION(nspec)  :: spec_lambda=0.0
 
   !arrays for stellar spectral information in HR diagram
-  REAL, DIMENSION(ndim_logt) :: basel_logt=0.0
-  REAL, DIMENSION(ndim_logg) :: basel_logg=0.0
-  REAL, DIMENSION(nspec,nz,ndim_logt,ndim_logg) :: speclib=0.0
+  REAL(SP), DIMENSION(ndim_logt) :: basel_logt=0.0
+  REAL(SP), DIMENSION(ndim_logg) :: basel_logg=0.0
+  REAL(SP), DIMENSION(nspec,nz,ndim_logt,ndim_logg) :: speclib=0.0
   
   !AGB library (Lancon & Mouhcine 2002)
-  REAL, DIMENSION(nspec,n_agb_o) :: agb_spec_o=0.
-  REAL, DIMENSION(nz,n_agb_o)    :: agb_logt_o=0.
-  REAL, DIMENSION(nspec,n_agb_c) :: agb_spec_c=0.
-  REAL, DIMENSION(n_agb_c)       :: agb_logt_c=0.
+  REAL(SP), DIMENSION(nspec,n_agb_o) :: agb_spec_o=0.
+  REAL(SP), DIMENSION(nz,n_agb_o)    :: agb_logt_o=0.
+  REAL(SP), DIMENSION(nspec,n_agb_c) :: agb_spec_c=0.
+  REAL(SP), DIMENSION(n_agb_c)       :: agb_logt_c=0.
   
   !post-AGB library (Rauch 2003)
-  REAL, DIMENSION(nspec,ndim_pagb,2) :: pagb_spec=0.0
-  REAL, DIMENSION(ndim_pagb)         :: pagb_logt=0.0
+  REAL(SP), DIMENSION(nspec,ndim_pagb,2) :: pagb_spec=0.0
+  REAL(SP), DIMENSION(ndim_pagb)         :: pagb_logt=0.0
 
   !WR library (Smith et al. 2002)
-  REAL, DIMENSION(nspec,ndim_wr) :: wr_spec=0.0
-  REAL, DIMENSION(ndim_wr)       :: wr_logt=0.0
+  REAL(SP), DIMENSION(nspec,ndim_wr) :: wr_spec=0.0
+  REAL(SP), DIMENSION(ndim_wr)       :: wr_logt=0.0
 
   !dust emission model (Draine & Li 2007)
-  REAL, DIMENSION(ndim_dl07)              :: lambda_dl07=0.0
-  REAL, DIMENSION(ndim_dl07,numin_dl07*2) :: dustem_dl07=0.0
-  REAL, DIMENSION(nspec,7,numin_dl07*2)   :: dustem2_dl07=0.0
+  REAL(SP), DIMENSION(ndim_dl07)              :: lambda_dl07=0.0
+  REAL(SP), DIMENSION(ndim_dl07,numin_dl07*2) :: dustem_dl07=0.0
+  REAL(SP), DIMENSION(nspec,7,numin_dl07*2)   :: dustem2_dl07=0.0
 
   !arrays for the isochrone data
-  REAL, DIMENSION(nz,nt,nm) :: mact_isoc=0.,logl_isoc=0.,&
+  REAL(SP), DIMENSION(nz,nt,nm) :: mact_isoc=0.,logl_isoc=0.,&
        logt_isoc=0.,logg_isoc=0.,ffco_isoc=0.,phase_isoc=0.
-  REAL, DIMENSION(nz,nt,nm) :: mini_isoc=0.
+  REAL(SP), DIMENSION(nz,nt,nm) :: mini_isoc=0.
 
   !arrays holding the number of mass elements for each isochrone,
   !the age of each isochrone, and the metallicity of each isochrone
   INTEGER, DIMENSION(nz,nt) :: nmass_isoc=0
-  REAL, DIMENSION(nz,nt)    :: timestep_isoc=0.0
-  REAL, DIMENSION(nz)       :: zlegend=-99.
+  REAL(SP), DIMENSION(nz,nt)    :: timestep_isoc=0.0
+  REAL(SP), DIMENSION(nz)       :: zlegend=-99.
   
   !arrays for the full Z-dep SSP spectra
-  REAL, DIMENSION(nz,ntfull,nspec) :: spec_ssp_zz=0.
-  REAL, DIMENSION(nz,ntfull)       :: mass_ssp_zz=0.,lbol_ssp_zz=0.
+  REAL(SP), DIMENSION(nz,ntfull,nspec) :: spec_ssp_zz=0.
+  REAL(SP), DIMENSION(nz,ntfull)       :: mass_ssp_zz=0.,lbol_ssp_zz=0.
   
-  REAL, DIMENSION(ntfull) :: time_full=0.
+  REAL(SP), DIMENSION(ntfull) :: time_full=0.
 
   !------------Define TYPE structures-------------!
   
   !structure for the set of parameters necessary to generate a model
   TYPE PARAMS
-     REAL :: pagb=1.0,dell=0.0,delt=0.0,fbhb=0.0,sbss=0.0,tau=1.0,&
+     REAL(SP) :: pagb=1.0,dell=0.0,delt=0.0,fbhb=0.0,sbss=0.0,tau=1.0,&
           const=0.0,tage=0.0,fburst=0.0,tburst=11.0,dust1=0.0,dust2=0.0,&
           logzsol=-0.2,zred=0.0,pmetals=0.02,imf1=1.3,imf2=2.3,imf3=2.3,&
           vdmc=0.08,dust_clumps=-99.,frac_nodust=0.0,dust_index=-0.7,&
           dust_tesc=7.0,frac_obrun=0.0,uvb=1.0,mwr=3.1,redgb=1.0,&
           dust1_index=-1.0,mdave=0.5,sf_start=0.0,sf_trunc=0.0,sf_theta=0.0,&
-          duste_gamma=0.01,duste_umin=1.0,duste_qpah=3.5
+          duste_gamma=0.01,duste_umin=1.0,duste_qpah=3.5,fcstar=1.0
      INTEGER :: zmet=1,sfh=0,wgp1=1,wgp2=1,wgp3=1
   END TYPE PARAMS
   
   !structure for the output of the compsp routine
   TYPE COMPSPOUT
-     REAL :: age=0.,mass_csp=0.,lbol_csp=0.,sfr=0.,mdust=0.0
-     REAL, DIMENSION(nbands) :: mags=0.
-     REAL, DIMENSION(nspec) :: spec=0.
+     REAL(SP) :: age=0.,mass_csp=0.,lbol_csp=0.,sfr=0.,mdust=0.0
+     REAL(SP), DIMENSION(nbands) :: mags=0.
+     REAL(SP), DIMENSION(nspec) :: spec=0.
   END TYPE COMPSPOUT
   
   !-----the following structures are not used in the public code-----!
@@ -303,15 +306,15 @@ MODULE SPS_VARS
 
   !structure for observational data
   TYPE OBSDAT
-     REAL                    :: zred=0.0,logsmass=0.0
-     REAL, DIMENSION(nbands) :: mags=0.0,magerr=0.0
-     REAL, DIMENSION(nspec)  :: spec=0.0, specerr=99.
+     REAL(SP)                    :: zred=0.0,logsmass=0.0
+     REAL(SP), DIMENSION(nbands) :: mags=0.0,magerr=0.0
+     REAL(SP), DIMENSION(nspec)  :: spec=0.0, specerr=99.
   END TYPE OBSDAT
 
   !structure for using P(z) in chi2
   INTEGER, PARAMETER :: npzphot   = 200
   TYPE TPZPHOT
-     REAL, DIMENSION(npzphot) :: zz=0.0,pz=0.0
+     REAL(SP), DIMENSION(npzphot) :: zz=0.0,pz=0.0
   END TYPE TPZPHOT
 
   !used for Powell minimization

@@ -7,9 +7,7 @@ SUBROUTINE PZ_CONVOL(yield,zave,spec_pz,lbol_pz,mass_pz)
   !variables spec_ssp_zz, mass_ssp_zz, and lbol_ssp_zz
   !The average metallicity is returned as zave
 
-  USE nrtype; USE sps_vars
-  USE nrutil, ONLY : assert_eq
-  USE nr, ONLY : spline, splint
+  USE sps_vars; USE sps_utils, ONLY : linterp
   IMPLICIT NONE
   
   INTEGER  :: i,t,z
@@ -17,7 +15,7 @@ SUBROUTINE PZ_CONVOL(yield,zave,spec_pz,lbol_pz,mass_pz)
   REAL(SP), INTENT(out), DIMENSION(ntfull,nspec) :: spec_pz
   REAL(SP), INTENT(out), DIMENSION(ntfull) :: mass_pz, lbol_pz
   REAL(SP), INTENT(out)    :: zave
-  REAL(SP), DIMENSION(nz)  ::  pzz1,spl
+  REAL(SP), DIMENSION(nz)  ::  pzz1
   REAL(SP), DIMENSION(100) :: pzz2,zz2,zzspec
   REAL(SP), INTENT(in) :: yield
 
@@ -63,11 +61,9 @@ SUBROUTINE PZ_CONVOL(yield,zave,spec_pz,lbol_pz,mass_pz)
      DO t=nt,nt
         DO i=1,nspec
            !interpolate
-           CALL spline(log10(zlegend),log10(spec_ssp_zz(:,t,i)),1.0e30_sp,&
-                1.0e30_sp,spl)
            DO z=1,100
-              zzspec(z) = 10**splint(log10(zlegend),&
-                   log10(spec_ssp_zz(:,t,i)),spl,log10(zz2(z)))
+              zzspec(z) = 10**linterp(log10(zlegend),&
+                   log10(spec_ssp_zz(:,t,i)),log10(zz2(z)))
            ENDDO
            !integrate
            DO z=1,100-1

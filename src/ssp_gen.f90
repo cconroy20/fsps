@@ -21,7 +21,7 @@ SUBROUTINE STITCH_PAGB(t,mini,mact,logl,logt,logg,wght,nmass,phase)
 
   !NB: routine is not currently used
 
-  USE sps_vars; USE nrtype
+  USE sps_vars
   IMPLICIT NONE
 
   INTEGER  :: i,nn,j, nexp=20
@@ -59,13 +59,13 @@ END SUBROUTINE STITCH_PAGB
 
 SUBROUTINE SSP_GEN(pset,mass_ssp,lbol_ssp,spec_ssp)
 
-  USE sps_vars; USE nrtype; USE nr, ONLY : locate
+  USE sps_vars; USE nr, ONLY : locate, ran
   USE sps_utils
   IMPLICIT NONE
   
-  INTEGER :: i=1, j=1, stat,ii,klo,khi
+  INTEGER :: i=1, j=1, stat,ii,klo,khi,idum=-1
   !weight given to the entire horizontal branch
-  REAL(SP) :: hb_wght,dt
+  REAL(SP) :: hb_wght,dt,tco
   !array of IMF weights
   REAL(SP), DIMENSION(nm) :: wght
   !SSP spectrum
@@ -185,12 +185,12 @@ SUBROUTINE SSP_GEN(pset,mass_ssp,lbol_ssp,spec_ssp)
      !modify the horizontal branch
      !need the hb weight for the blue stragglers too
      IF (pset%fbhb.GT.0.0.OR.pset%sbss.GT.1E-3) &
-          CALL MOD_HB(pset%fbhb,i,mini,mact,logl,logt,phase,&
+          CALL MOD_HB(pset%fbhb,i,mini,mact,logl,logt,logg,phase,&
           wght,hb_wght,nmass,time(i))
 
      !add in blue stragglers
      IF (time(i).GE.bhb_sbs_time.AND.pset%sbss.GT.1E-3) &
-          CALL ADD_BS(pset%sbss,i,mini,mact,logl,logt,phase,&
+          CALL ADD_BS(pset%sbss,i,mini,mact,logl,logt,logg,phase,&
           wght,hb_wght,nmass)
 
      !modify the TP-AGB stars and Post-AGB stars
@@ -214,8 +214,13 @@ SUBROUTINE SSP_GEN(pset,mass_ssp,lbol_ssp,spec_ssp)
      !compute SSP spectrum
      spec_ssp(ii,:) = 0.
      DO j=1,nmass(i)
-        CALL GETSPEC(pset%zmet,mini(i,j),mact(i,j),logt(i,j),&
-             10**logl(i,j),phase(i,j),ffco(i,j),tspec)
+        tco = ffco(i,j)
+        IF (phase(i,j).EQ.5.AND.tco.GT.1.0) THEN
+           !dilute the C star fraction
+           IF (ran(idum).GE.pset%fcstar) tco = 1.0
+        ENDIF
+        CALL GETSPEC(pset%zmet,mact(i,j),logt(i,j),&
+             10**logl(i,j),logg(i,j),phase(i,j),tco,tspec)
         spec_ssp(ii,:) = wght(j)*tspec + spec_ssp(ii,:)
      ENDDO
 
