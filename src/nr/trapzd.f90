@@ -6,10 +6,9 @@
 	INTEGER(I4B), INTENT(IN) :: n
 	INTERFACE
 		FUNCTION func(x)
-		USE sps_vars; USE nrtype
-                IMPLICIT NONE
-		REAL, DIMENSION(:), INTENT(IN) :: x
-		REAL, DIMENSION(size(x)) :: func
+		USE nrtype
+		REAL(SP), DIMENSION(:), INTENT(IN) :: x
+		REAL(SP), DIMENSION(size(x)) :: func
 		END FUNCTION func
 	END INTERFACE
 	REAL(SP) :: del,fsum

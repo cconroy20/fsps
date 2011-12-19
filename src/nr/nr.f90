@@ -393,13 +393,7 @@ MODULE nr
 		END INTERFACE
 		END FUNCTION brent
 	END INTERFACE
-	INTERFACE
-		SUBROUTINE broydn(x,check)
-		USE nrtype
-		REAL(SP), DIMENSION(:), INTENT(INOUT) :: x
-		LOGICAL(LGT), INTENT(OUT) :: check
-		END SUBROUTINE broydn
-	END INTERFACE
+
 	INTERFACE
 		SUBROUTINE bsstep(y,dydx,x,htry,eps,yscal,hdid,hnext,derivs)
 		USE nrtype
@@ -560,13 +554,6 @@ MODULE nr
 		END SUBROUTINE cosft2
 	END INTERFACE
 	INTERFACE
-		SUBROUTINE covsrt(covar,maska)
-		USE nrtype
-		REAL(SP), DIMENSION(:,:), INTENT(INOUT) :: covar
-		LOGICAL(LGT), DIMENSION(:), INTENT(IN) :: maska
-		END SUBROUTINE covsrt
-	END INTERFACE
-	INTERFACE
 		SUBROUTINE cyclic(a,b,c,alpha,beta,r,x)
 		USE nrtype
 		REAL(SP), DIMENSION(:), INTENT(IN):: a,b,c,r
@@ -622,14 +609,6 @@ MODULE nr
 		REAL(SP), DIMENSION(:), INTENT(IN) :: c
 		REAL(SP), DIMENSION(:), INTENT(OUT) :: pd
 		END SUBROUTINE ddpoly
-	END INTERFACE
-	INTERFACE
-		FUNCTION decchk(string,ch)
-		USE nrtype
-		CHARACTER(1), DIMENSION(:), INTENT(IN) :: string
-		CHARACTER(1), INTENT(OUT) :: ch
-		LOGICAL(LGT) :: decchk
-		END FUNCTION decchk
 	END INTERFACE
 	INTERFACE
 		SUBROUTINE dfpmin(p,gtol,iter,fret,func,dfunc)
@@ -706,20 +685,6 @@ MODULE nr
 		INTEGER(I4B), INTENT(IN) :: n
 		INTEGER(I4B), DIMENSION(n) :: eclass
 		END FUNCTION eclass
-	END INTERFACE
-	INTERFACE
-		FUNCTION eclazz(equiv,n)
-		USE nrtype
-		INTERFACE
-			FUNCTION equiv(i,j)
-			USE nrtype
-			LOGICAL(LGT) :: equiv
-			INTEGER(I4B), INTENT(IN) :: i,j
-			END FUNCTION equiv
-		END INTERFACE
-		INTEGER(I4B), INTENT(IN) :: n
-		INTEGER(I4B), DIMENSION(n) :: eclazz
-		END FUNCTION eclazz
 	END INTERFACE
 	INTERFACE
 		FUNCTION ei(x)
@@ -1293,15 +1258,6 @@ MODULE nr
 		END SUBROUTINE hypser
 	END INTERFACE
 	INTERFACE
-		FUNCTION icrc(crc,buf,jinit,jrev)
-		USE nrtype
-		CHARACTER(1), DIMENSION(:), INTENT(IN) :: buf
-		INTEGER(I2B), INTENT(IN) :: crc,jinit
-		INTEGER(I4B), INTENT(IN) :: jrev
-		INTEGER(I2B) :: icrc
-		END FUNCTION icrc
-	END INTERFACE
-	INTERFACE
 		FUNCTION igray(n,is)
 		USE nrtype
 		INTEGER(I4B), INTENT(IN) :: n,is
@@ -1454,23 +1410,6 @@ MODULE nr
 		END SUBROUTINE laguer
 	END INTERFACE
 	INTERFACE
-		SUBROUTINE lfit(x,y,sig,a,maska,covar,chisq,funcs)
-		USE nrtype
-		REAL(SP), DIMENSION(:), INTENT(IN) :: x,y,sig
-		REAL(SP), DIMENSION(:), INTENT(INOUT) :: a
-		LOGICAL(LGT), DIMENSION(:), INTENT(IN) :: maska
-		REAL(SP), DIMENSION(:,:), INTENT(INOUT) :: covar
-		REAL(SP), INTENT(OUT) :: chisq
-		INTERFACE
-			SUBROUTINE funcs(x,arr)
-			USE nrtype
-			REAL(SP),INTENT(IN) :: x
-			REAL(SP), DIMENSION(:), INTENT(OUT) :: arr
-			END SUBROUTINE funcs
-		END INTERFACE
-		END SUBROUTINE lfit
-	END INTERFACE
-	INTERFACE
 		SUBROUTINE linbcg(b,x,itol,tol,itmax,iter,err)
 		USE nrtype
 		REAL(DP), DIMENSION(:), INTENT(IN) :: b
@@ -1487,24 +1426,6 @@ MODULE nr
 		REAL(SP), INTENT(OUT) :: fret
 		REAL(SP), DIMENSION(:), TARGET, INTENT(INOUT) :: p,xi
 		END SUBROUTINE linmin
-	END INTERFACE
-	INTERFACE
-		SUBROUTINE lnsrch(xold,fold,g,p,x,f,stpmax,check,func)
-		USE nrtype
-		REAL(SP), DIMENSION(:), INTENT(IN) :: xold,g
-		REAL(SP), DIMENSION(:), INTENT(INOUT) :: p
-		REAL(SP), INTENT(IN) :: fold,stpmax
-		REAL(SP), DIMENSION(:), INTENT(OUT) :: x
-		REAL(SP), INTENT(OUT) :: f
-		LOGICAL(LGT), INTENT(OUT) :: check
-		INTERFACE
-			FUNCTION func(x)
-			USE nrtype
-			REAL(SP) :: func
-			REAL(SP), DIMENSION(:), INTENT(IN) :: x
-			END FUNCTION func
-		END INTERFACE
-		END SUBROUTINE lnsrch
 	END INTERFACE
 	INTERFACE
 		FUNCTION locate(xx,x)
@@ -1777,50 +1698,6 @@ MODULE nr
 		END SUBROUTINE mpsqrt
 	END INTERFACE
 	INTERFACE
-		SUBROUTINE mrqcof(x,y,sig,a,maska,alpha,beta,chisq,funcs)
-		USE nrtype
-		REAL(SP), DIMENSION(:), INTENT(IN) :: x,y,a,sig
-		REAL(SP), DIMENSION(:), INTENT(OUT) :: beta
-		REAL(SP), DIMENSION(:,:), INTENT(OUT) :: alpha
-		REAL(SP), INTENT(OUT) :: chisq
-		LOGICAL(LGT), DIMENSION(:), INTENT(IN) :: maska
-		INTERFACE
-			SUBROUTINE funcs(x,a,yfit,dyda)
-			USE nrtype
-			REAL(SP), DIMENSION(:), INTENT(IN) :: x,a
-			REAL(SP), DIMENSION(:), INTENT(OUT) :: yfit
-			REAL(SP), DIMENSION(:,:), INTENT(OUT) :: dyda
-			END SUBROUTINE funcs
-		END INTERFACE
-		END SUBROUTINE mrqcof
-	END INTERFACE
-	INTERFACE
-		SUBROUTINE mrqmin(x,y,sig,a,maska,covar,alpha,chisq,funcs,alamda)
-		USE nrtype
-		REAL(SP), DIMENSION(:), INTENT(IN) :: x,y,sig
-		REAL(SP), DIMENSION(:), INTENT(INOUT) :: a
-		REAL(SP), DIMENSION(:,:), INTENT(OUT) :: covar,alpha
-		REAL(SP), INTENT(OUT) :: chisq
-		REAL(SP), INTENT(INOUT) :: alamda
-		LOGICAL(LGT), DIMENSION(:), INTENT(IN) :: maska
-		INTERFACE
-			SUBROUTINE funcs(x,a,yfit,dyda)
-			USE nrtype
-			REAL(SP), DIMENSION(:), INTENT(IN) :: x,a
-			REAL(SP), DIMENSION(:), INTENT(OUT) :: yfit
-			REAL(SP), DIMENSION(:,:), INTENT(OUT) :: dyda
-			END SUBROUTINE funcs
-		END INTERFACE
-		END SUBROUTINE mrqmin
-	END INTERFACE
-	INTERFACE
-		SUBROUTINE newt(x,check)
-		USE nrtype
-		REAL(SP), DIMENSION(:), INTENT(INOUT) :: x
-		LOGICAL(LGT), INTENT(OUT) :: check
-		END SUBROUTINE newt
-	END INTERFACE
-	INTERFACE
 		SUBROUTINE odeint(ystart,x1,x2,eps,h1,hmin,derivs,rkqs)
 		USE nrtype
 		REAL(SP), DIMENSION(:), INTENT(INOUT) :: ystart
@@ -2027,14 +1904,6 @@ MODULE nr
 		REAL(SP), DIMENSION(:), INTENT(IN) :: yest
 		REAL(SP), DIMENSION(:), INTENT(OUT) :: yz,dy
 		END SUBROUTINE pzextr
-	END INTERFACE
-	INTERFACE
-		SUBROUTINE qrdcmp(a,c,d,sing)
-		USE nrtype
-		REAL(SP), DIMENSION(:,:), INTENT(INOUT) :: a
-		REAL(SP), DIMENSION(:), INTENT(OUT) :: c,d
-		LOGICAL(LGT), INTENT(OUT) :: sing
-		END SUBROUTINE qrdcmp
 	END INTERFACE
 	INTERFACE
 		FUNCTION qromb(func,a,b)
@@ -2723,15 +2592,6 @@ MODULE nr
 		END SUBROUTINE sort_shell
 	END INTERFACE
 	INTERFACE
-		SUBROUTINE spctrm(p,k,ovrlap,unit,n_window)
-		USE nrtype
-		REAL(SP), DIMENSION(:), INTENT(OUT) :: p
-		INTEGER(I4B), INTENT(IN) :: k
-		LOGICAL(LGT), INTENT(IN) :: ovrlap
-		INTEGER(I4B), OPTIONAL, INTENT(IN) :: n_window,unit
-		END SUBROUTINE spctrm
-	END INTERFACE
-	INTERFACE
 		SUBROUTINE spear(data1,data2,d,zd,probd,rs,probrs)
 		USE nrtype
 		REAL(SP), DIMENSION(:), INTENT(IN) :: data1,data2
@@ -2779,83 +2639,12 @@ MODULE nr
 		END SUBROUTINE spline
 	END INTERFACE
 	INTERFACE
-		SUBROUTINE myspline(x,y,y2)
-		USE nrtype; USE sps_vars
-		REAL(SP), DIMENSION(:), INTENT(IN) :: x,y
-		REAL(SP), DIMENSION(:), INTENT(OUT) :: y2
-		END SUBROUTINE myspline
-	END INTERFACE
-	INTERFACE
 		FUNCTION splint(xa,ya,y2a,x)
 		USE nrtype
 		REAL(SP), DIMENSION(:), INTENT(IN) :: xa,ya,y2a
 		REAL(SP), INTENT(IN) :: x
 		REAL(SP) :: splint
 		END FUNCTION splint
-	END INTERFACE
-	INTERFACE sprsax
-		SUBROUTINE sprsax_dp(sa,x,b)
-		USE nrtype
-		TYPE(sprs2_dp), INTENT(IN) :: sa
-		REAL(DP), DIMENSION (:), INTENT(IN) :: x
-		REAL(DP), DIMENSION (:), INTENT(OUT) :: b
-		END SUBROUTINE sprsax_dp
-!BL
-		SUBROUTINE sprsax_sp(sa,x,b)
-		USE nrtype
-		TYPE(sprs2_sp), INTENT(IN) :: sa
-		REAL(SP), DIMENSION (:), INTENT(IN) :: x
-		REAL(SP), DIMENSION (:), INTENT(OUT) :: b
-		END SUBROUTINE sprsax_sp
-	END INTERFACE
-	INTERFACE sprsdiag
-		SUBROUTINE sprsdiag_dp(sa,b)
-		USE nrtype
-		TYPE(sprs2_dp), INTENT(IN) :: sa
-		REAL(DP), DIMENSION(:), INTENT(OUT) :: b
-		END SUBROUTINE sprsdiag_dp
-!BL
-		SUBROUTINE sprsdiag_sp(sa,b)
-		USE nrtype
-		TYPE(sprs2_sp), INTENT(IN) :: sa
-		REAL(SP), DIMENSION(:), INTENT(OUT) :: b
-		END SUBROUTINE sprsdiag_sp
-	END INTERFACE
-	INTERFACE sprsin
-		SUBROUTINE sprsin_sp(a,thresh,sa)
-		USE nrtype
-		REAL(SP), DIMENSION(:,:), INTENT(IN) :: a
-		REAL(SP), INTENT(IN) :: thresh
-		TYPE(sprs2_sp), INTENT(OUT) :: sa
-		END SUBROUTINE sprsin_sp
-!BL
-		SUBROUTINE sprsin_dp(a,thresh,sa)
-		USE nrtype
-		REAL(DP), DIMENSION(:,:), INTENT(IN) :: a
-		REAL(DP), INTENT(IN) :: thresh
-		TYPE(sprs2_dp), INTENT(OUT) :: sa
-		END SUBROUTINE sprsin_dp
-	END INTERFACE
-	INTERFACE
-		SUBROUTINE sprstp(sa)
-		USE nrtype
-		TYPE(sprs2_sp), INTENT(INOUT) :: sa
-		END SUBROUTINE sprstp
-	END INTERFACE
-	INTERFACE sprstx
-		SUBROUTINE sprstx_dp(sa,x,b)
-		USE nrtype
-		TYPE(sprs2_dp), INTENT(IN) :: sa
-		REAL(DP), DIMENSION (:), INTENT(IN) :: x
-		REAL(DP), DIMENSION (:), INTENT(OUT) :: b
-		END SUBROUTINE sprstx_dp
-!BL
-		SUBROUTINE sprstx_sp(sa,x,b)
-		USE nrtype
-		TYPE(sprs2_sp), INTENT(IN) :: sa
-		REAL(SP), DIMENSION (:), INTENT(IN) :: x
-		REAL(SP), DIMENSION (:), INTENT(OUT) :: b
-		END SUBROUTINE sprstx_sp
 	END INTERFACE
 	INTERFACE
 		SUBROUTINE stifbs(y,dydx,x,htry,eps,yscal,hdid,hnext,derivs)
@@ -3001,30 +2790,22 @@ MODULE nr
 		END INTERFACE
 		END SUBROUTINE trapzd
 	END INTERFACE
-	INTERFACE
-		SUBROUTINE tred2(a,d,e,novectors)
-		USE nrtype
-		REAL(SP), DIMENSION(:,:), INTENT(INOUT) :: a
-		REAL(SP), DIMENSION(:), INTENT(OUT) :: d,e
-		LOGICAL(LGT), OPTIONAL, INTENT(IN) :: novectors
-		END SUBROUTINE tred2
-	END INTERFACE
 !	On a purely serial machine, for greater efficiency, remove
 !	the generic name tridag from the following interface,
 !	and put it on the next one after that.
-	INTERFACE tridag
-		RECURSIVE SUBROUTINE tridag_par(a,b,c,r,u)
-		USE nrtype
-		REAL(SP), DIMENSION(:), INTENT(IN) :: a,b,c,r
-		REAL(SP), DIMENSION(:), INTENT(OUT) :: u
-		END SUBROUTINE tridag_par
-	END INTERFACE
+!	INTERFACE tridag
+!		RECURSIVE SUBROUTINE tridag_par(a,b,c,r,u)
+!		USE nrtype
+!		REAL(SP), DIMENSION(:), INTENT(IN) :: a,b,c,r
+!		REAL(SP), DIMENSION(:), INTENT(OUT) :: u
+!		END SUBROUTINE tridag_par
+!	END INTERFACE
 	INTERFACE
-		SUBROUTINE tridag_ser(a,b,c,r,u)
+		SUBROUTINE tridag(a,b,c,r,u)
 		USE nrtype
 		REAL(SP), DIMENSION(:), INTENT(IN) :: a,b,c,r
 		REAL(SP), DIMENSION(:), INTENT(OUT) :: u
-		END SUBROUTINE tridag_ser
+		END SUBROUTINE tridag
 	END INTERFACE
 	INTERFACE
 		SUBROUTINE ttest(data1,data2,t,prob)
@@ -3137,20 +2918,6 @@ MODULE nr
 		END FUNCTION wwghts
 	END INTERFACE
 	INTERFACE
-		SUBROUTINE zbrac(func,x1,x2,succes)
-		USE nrtype
-		REAL(SP), INTENT(INOUT) :: x1,x2
-		LOGICAL(LGT), INTENT(OUT) :: succes
-		INTERFACE
-			FUNCTION func(x)
-			USE nrtype
-			REAL(SP), INTENT(IN) :: x
-			REAL(SP) :: func
-			END FUNCTION func
-		END INTERFACE
-		END SUBROUTINE zbrac
-	END INTERFACE
-	INTERFACE
 		SUBROUTINE zbrak(func,x1,x2,n,xb1,xb2,nb)
 		USE nrtype
 		INTEGER(I4B), INTENT(IN) :: n
@@ -3200,13 +2967,5 @@ MODULE nr
 			END FUNCTION func
 		END INTERFACE
 		END FUNCTION zriddr
-	END INTERFACE
-	INTERFACE
-		SUBROUTINE zroots(a,roots,polish)
-		USE nrtype
-		COMPLEX(SPC), DIMENSION(:), INTENT(IN) :: a
-		COMPLEX(SPC), DIMENSION(:), INTENT(OUT) :: roots
-		LOGICAL(LGT), INTENT(IN) :: polish
-		END SUBROUTINE zroots
 	END INTERFACE
 END MODULE nr
