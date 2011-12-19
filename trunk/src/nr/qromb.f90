@@ -6,15 +6,13 @@
 	REAL(SP) :: qromb
 	INTERFACE
 		FUNCTION func(x)
-		USE sps_vars; USE nrtype
-                IMPLICIT NONE
-		REAL, DIMENSION(:), INTENT(IN) :: x
-		REAL, DIMENSION(size(x)) :: func
+		USE nrtype
+		REAL(SP), DIMENSION(:), INTENT(IN) :: x
+		REAL(SP), DIMENSION(size(x)) :: func
 		END FUNCTION func
 	END INTERFACE
 	INTEGER(I4B), PARAMETER :: JMAX=20,JMAXP=JMAX+1,K=5,KM=K-1
-        !REAL(SP), PARAMETER :: EPS=1.0e-6_sp
-        REAL(SP), PARAMETER :: EPS=1.0e-5_sp
+	REAL(SP), PARAMETER :: EPS=1.0e-6_sp
 	REAL(SP), DIMENSION(JMAXP) :: h,s
 	REAL(SP) :: dqromb
 	INTEGER(I4B) :: j
