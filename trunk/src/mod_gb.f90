@@ -1,7 +1,7 @@
-SUBROUTINE MOD_AGB(zz,t,age,delt,dell,pagb,redgb,&
+SUBROUTINE MOD_GB(zz,t,age,delt,dell,pagb,redgb,&
      nn,logl,logt,phase,wght)
 
-  !routine to modify TP-AGB stars and post-AGB stars. 
+  !routine to modify TP-AGB stars, HB+RGB, and post-AGB stars. 
 
   USE sps_vars
   IMPLICIT NONE
@@ -19,9 +19,10 @@ SUBROUTINE MOD_AGB(zz,t,age,delt,dell,pagb,redgb,&
  
   DO i=1,nn
 
-     !modify the TP-AGB stars
+     !modify TP-AGB stars
      IF (phase(t,i).EQ.5.0) THEN
         !renormalize the Padova isochrones
+        !based on Conroy & Gunn (2010)
         IF (isoc_type.EQ.'pdva') THEN
            IF (age(t).GT.8.0.AND.age(t).LT.9.1) THEN
               logl(t,i) = logl(t,i) - 1.0+(age(t)-8.)/1.5
@@ -38,12 +39,12 @@ SUBROUTINE MOD_AGB(zz,t,age,delt,dell,pagb,redgb,&
         logt(t,i) = logt(t,i) + delt
      ENDIF
 
-     !modify the post-AGB stars
+     !modify post-AGB stars
      IF (phase(t,i).EQ.6.0.AND.pagb.NE.1.0) THEN
         wght(i) = wght(i)*pagb
      ENDIF
 
-     !modify the RGB + red clump HB + AGB
+     !modify RGB + red clump HB + AGB
      IF (phase(t,i).EQ.2.OR.phase(t,i).EQ.3 &
           .OR.phase(t,i).EQ.4.OR.phase(t,i).EQ.5) THEN
         wght(i) = wght(i)*redgb
@@ -51,4 +52,4 @@ SUBROUTINE MOD_AGB(zz,t,age,delt,dell,pagb,redgb,&
 
   ENDDO
 
-END SUBROUTINE MOD_AGB
+END SUBROUTINE MOD_GB
