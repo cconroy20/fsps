@@ -194,7 +194,7 @@ SUBROUTINE SSP_GEN(pset,mass_ssp,lbol_ssp,spec_ssp)
           wght,hb_wght,nmass)
 
      !modify the TP-AGB stars and Post-AGB stars
-     CALL MOD_AGB(pset%zmet,i,time,pset%delt,pset%dell,pset%pagb,&
+     CALL MOD_GB(pset%zmet,i,time,pset%delt,pset%dell,pset%pagb,&
           pset%redgb,nmass(i),logl,logt,phase,wght)
 
      !stitch the post-AGB tracks smoothly onto the full isochrone
