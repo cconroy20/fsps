@@ -77,8 +77,8 @@ SUBROUTINE SSP_GEN(pset,mass_ssp,lbol_ssp,spec_ssp)
   REAL(SP), DIMENSION(nt,nm) :: mini,mact,logl,logt,logg,ffco,phase
   !arrays holding the number of mass elements for each isochrone
   !and the age of each isochrone
-  INTEGER, DIMENSION(nt)  :: nmass
-  REAL(SP), DIMENSION(nt) :: time
+  INTEGER, DIMENSION(nt)     :: nmass
+  REAL(SP), DIMENSION(nt)    :: time
   REAL(SP), DIMENSION(nspec) :: tspec
 
   !structure containing all necessary parameters
@@ -142,7 +142,7 @@ SUBROUTINE SSP_GEN(pset,mass_ssp,lbol_ssp,spec_ssp)
      imf_user_alpha(1,1)          = imf_lower_limit
   ENDIF
 
-  !Dump Padova isochrones into temporary arrays
+  !transfer isochrones into temporary arrays
   mini  = mini_isoc(pset%zmet,:,:)  !initial mass
   mact  = mact_isoc(pset%zmet,:,:)  !actual (present) mass
   logl  = logl_isoc(pset%zmet,:,:)  !log(Lbol)

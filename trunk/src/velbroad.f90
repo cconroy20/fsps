@@ -13,7 +13,10 @@ SUBROUTINE VELBROAD(lambda,spec,sigma)
   REAL(SP), INTENT(in) :: sigma
   REAL(SP), DIMENSION(nspec) :: tspec,vel,func,gauss
   REAL(SP) :: c,cg,xmax
-  INTEGER :: i,j,il,ih,velocity=1,m=6
+  INTEGER :: i,j,il,ih,m=6
+  !convolve at fixed sigma_velocity
+  !if set to 0, then the convolution is at fixed sigma_wavelength
+  INTEGER, PARAMETER :: velocity=1
 
   !---------------------------------------------------------------!
   !---------------------------------------------------------------!
