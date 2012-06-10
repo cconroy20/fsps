@@ -393,16 +393,16 @@ SUBROUTINE COMPSP(write_compsp,nzin,outfile,mass_ssp,&
              WRITE(20,30) pset%dust1,pset%dust2
      ELSE
         IF (pset%tage.GT.tiny_number) writeage = pset%tage
-        IF (pset%tage.LE.tiny_number) writeage = time_full(ntfull)
+        IF (pset%tage.LE.tiny_number) writeage = 10**time_full(ntfull)/1E9
         IF (verbose.EQ.1) &
              WRITE(*,33) writeage,LOG10(tau),const,pset%fburst,&
-             pset%tburst,pset%dust1,pset%dust2
+             pset%tburst,pset%sf_start,pset%dust1,pset%dust2
         IF (write_compsp.EQ.1.OR.write_compsp.EQ.3) &
              WRITE(10,33) writeage,LOG10(tau),const,pset%fburst,&
-             pset%tburst,pset%dust1,pset%dust2
+             pset%tburst,pset%sf_start,pset%dust1,pset%dust2
         IF (write_compsp.EQ.2.OR.write_compsp.EQ.3) &
              WRITE(20,33) writeage,LOG10(tau),const,pset%fburst,&
-             pset%tburst,pset%dust1,pset%dust2
+             pset%tburst,pset%sf_start,pset%dust1,pset%dust2
      ENDIF
      IF (write_compsp.EQ.1.OR.write_compsp.EQ.3) THEN 
         WRITE(10,'("#")') 
@@ -551,7 +551,7 @@ SUBROUTINE COMPSP(write_compsp,nzin,outfile,mass_ssp,&
 32 FORMAT('#   log(age) log(mass) Log(lbol) log(SFR) mags (see FILTER_LIST)')
 33 FORMAT('#   SFH: Tage=',F6.2,' Gyr, log(tau/Gyr)= ',F6.3,&
         ', const= ',F5.3,', fb= ',F5.3,', tb= ',F6.2,&
-        ' Gyr, dust=(',F6.2,','F6.2,')')
+        ' Gyr, sf_start= 'F5.3,', dust=(',F6.2,','F6.2,')')
 
 END SUBROUTINE COMPSP
 

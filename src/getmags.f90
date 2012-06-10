@@ -33,7 +33,7 @@ SUBROUTINE GETMAGS(zred,spec,mags)
 
   !the units of the spectra are Lsun/Hz; convert to
   !erg/s/cm^2/Hz, at 10pc for absolute mags
-  tspec = tspec*lsun/4.0 /mypi/(pc2cm*pc2cm)/100.0
+  tspec = tspec*lsun/4.0/mypi/(pc2cm*pc2cm)/100.0
 
   !integrate over each filter
   DO i=1,nbands
@@ -52,7 +52,8 @@ SUBROUTINE GETMAGS(zred,spec,mags)
           ((spec_lambda(2:nspec)/lami(i))**(-1.0)*bands(ind(i),2:nspec)/&
           spec_lambda(2:nspec)+(spec_lambda(1:nspec-1)/lami(i))**(-1.0)*&
           bands(ind(i),1:nspec-1)/spec_lambda(1:nspec-1))/2. )
-     mags(ind(i)) = mags(ind(i)) / d
+     IF (mags(ind(i)).GT.tiny_number) &
+          mags(ind(i)) = mags(ind(i)) / MAX(d,tiny_number)
   ENDDO
 
   !normalize the MIPS photometry to a BB (beta=2)
@@ -63,11 +64,19 @@ SUBROUTINE GETMAGS(zred,spec,mags)
           ((spec_lambda(2:nspec)/lami(i))**(-2.0)*bands(ind(i),2:nspec)/&
           spec_lambda(2:nspec)+(spec_lambda(1:nspec-1)/lami(i))**(-1.0)*&
           bands(ind(i),1:nspec-1)/spec_lambda(1:nspec-1))/2. )
-     mags(ind(i)) = mags(ind(i)) / d
+     IF (mags(ind(i)).GT.tiny_number) &
+          mags(ind(i)) = mags(ind(i)) / MAX(d,tiny_number)
   ENDDO
 
+
   !convert to magnitudes in AB system
-  mags  = -2.5*LOG10(mags)-48.60
+  DO i=1,nbands
+     IF (mags(i).LE.tiny_number) THEN
+        mags(i) = 99.0 
+     ELSE
+        mags(i) = -2.5*LOG10(mags(i))-48.60
+     ENDIF
+  ENDDO
 
   !put magnitudes in the Vega system if keyword is set
   !(V-band is the first element in the array)

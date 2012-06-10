@@ -47,7 +47,7 @@ F90FLAGS = -O -cpp
 PROGS = simple lesssimple autosps 
 
 COMMON = sps_vars.o nrtype.o sps_utils.o nr.o nrutil.o compsp.o	 \
-ssp_gen.o getmags.o ran.o locate.o qromb.o polint.o trapzd.o tridag.o \
+ssp_gen.o getmags.o ran.o locate.o qromb.o polint.o trapzd.o \
 sps_setup.o pz_convol.o get_tuniv.o imf.o imf_weight.o add_dust.o getspec.o \
 add_bs.o mod_hb.o add_remnants.o getindx.o velbroad.o mod_gb.o \
 write_isochrone.o sfhstat.o linterp.o
