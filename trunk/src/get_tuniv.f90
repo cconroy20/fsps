@@ -9,11 +9,14 @@ FUNCTION GET_TUNIV(z)
   INTEGER :: i
   INTEGER, PARAMETER :: ii=10000
   REAL(SP), INTENT(in) :: z
-  REAL(SP) :: get_tuniv
+  REAL(SP) :: get_tuniv, thub
   REAL(SP), DIMENSION(ii) :: lnstig, hub
 
   !---------------------------------------------------------------!
   !---------------------------------------------------------------!
+
+  !Hubble time in Gyr
+  thub = 0.978E3 / H0
 
   DO i=1,ii
      lnstig(i) = REAL(i)/ii*(LOG(1E4)-LOG(1+z))+LOG(1+z)
