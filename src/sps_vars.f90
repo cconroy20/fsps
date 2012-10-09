@@ -5,19 +5,24 @@ MODULE SPS_VARS
   IMPLICIT NONE
   SAVE
 
-!define either BaSeL/Kurucz or MILES spectral library
-#define BASEL 1
-#define MILES 0
+!define either BaSeL/Kurucz, MILES, or HR CaT spectral library
+#define BASEL 0
+#define HRLIB 0
+#define RRLIB 0
+#define MILES 1
+#define CALIB 0
+#define COLIB 0
 !define either Padova or BaSTI isochrones
 #define PADOVA 1
 #define BASTI 0
 
-  INTEGER, PARAMETER :: SP = KIND(1.0)
+  INTEGER, PARAMETER :: SP = KIND(1.0D0)
+  INTEGER, PARAMETER :: RSP = KIND(1.0)
 
   !------Common parameters that may be altered by the user-------!
   
   !setup cosmology (WMAP7).  Used only for z(t) relation.
-  REAL(SP), PARAMETER :: om0=0.26, ol0=0.74, thub=13.77
+  REAL(SP) :: om0=0.26, ol0=0.74, H0=72.
   
   !controls the level of output (0 = no output to screen)
   INTEGER, PARAMETER :: verbose=0
@@ -31,6 +36,10 @@ MODULE SPS_VARS
   
   !the factor by which we increase the time array
   INTEGER, PARAMETER :: time_res_incr=2
+
+  !turn on/off computation of light-weighted stellar ages
+  !NB: This is only partially implemented, and only for straight tau models
+  INTEGER, PARAMETER :: compute_light_ages=0
 
   !turn on/off the Draine & Li 2007 dust emission model 
   INTEGER, PARAMETER :: add_dust_emission=1
@@ -78,6 +87,16 @@ MODULE SPS_VARS
   !flag indicating type of spectral library to use
 #if (MILES)
   CHARACTER(5), PARAMETER :: spec_type = 'miles'
+#elif (CALIB)
+  !CHARACTER(5), PARAMETER :: spec_type = 'calib'
+  CHARACTER(11), PARAMETER :: spec_type = 'calib_a+0.3'
+#elif (COLIB)
+  CHARACTER(5), PARAMETER :: spec_type = 'colib'
+#elif (HRLIB)
+  !CHARACTER(5), PARAMETER :: spec_type = 'hrlib'
+  CHARACTER(11), PARAMETER :: spec_type = 'hrlib_a+0.3'
+#elif (RRLIB)
+  CHARACTER(5), PARAMETER :: spec_type = 'rrlib'
 #else
   CHARACTER(5), PARAMETER :: spec_type = 'basel'
 #endif
@@ -86,7 +105,19 @@ MODULE SPS_VARS
   !number of elements per stellar spectrum
 #if (MILES)
   INTEGER, PARAMETER :: nz=5
-  INTEGER, PARAMETER :: nspec=4222
+  INTEGER, PARAMETER :: nspec=5252 !4222
+#elif (CALIB)
+  INTEGER, PARAMETER :: nz=11
+  INTEGER, PARAMETER :: nspec=4652
+#elif (COLIB)
+  INTEGER, PARAMETER :: nz=1
+  INTEGER, PARAMETER :: nspec=6391
+#elif (HRLIB)
+  INTEGER, PARAMETER :: nz=11
+  INTEGER, PARAMETER :: nspec=4296
+#elif (RRLIB)
+  INTEGER, PARAMETER :: nz=1
+  INTEGER, PARAMETER :: nspec= 49811 !34994
 #else
   INTEGER, PARAMETER :: nspec=1963
 #if (BASTI)
@@ -106,7 +137,7 @@ MODULE SPS_VARS
 
   !You must change the number of bands here if
   !filters are added to allfilters.dat
-  INTEGER, PARAMETER :: nbands=83
+  INTEGER, PARAMETER :: nbands=86
   !number of indices defined in allindices.dat
   INTEGER, PARAMETER :: nindsps=30
   
@@ -148,6 +179,7 @@ MODULE SPS_VARS
   !van Dokkum 2008 IMF parameters
   REAL(SP), PARAMETER :: vd_sigma2=0.69*0.69, vd_ah=0.0443,&
        vd_ind=1.3, vd_al=0.14, vd_nc=25.
+  REAL(SP) :: mlim_bh=40.0, mlim_ns=8.5
 
   !-------------Physical Constants---------------!
   !-------in cgs units where applicable----------!
@@ -172,8 +204,8 @@ MODULE SPS_VARS
   REAL(SP), PARAMETER :: pc2cm   = 3.08568E18
   
   !other important parameters
-  REAL(SP), PARAMETER    :: huge_number = 1E33
-  REAL(SP), PARAMETER    :: tiny_number = 1E-33
+  REAL(SP), PARAMETER :: huge_number = 1E33
+  REAL(SP), PARAMETER :: tiny_number = 1E-33
   
   !---------------Common Block-------------------!
     
@@ -202,7 +234,7 @@ MODULE SPS_VARS
   CHARACTER(250) :: SPS_HOME=''
 
   !Age of Universe in Gyr (set in sps_setup.f90, based on cosmo params)
-  REAL(SP) :: tuniv = thub
+  REAL(SP) :: tuniv=0.0
   
   !this specifies the size of the full time grid
   INTEGER, PARAMETER :: ntfull = time_res_incr*nt
@@ -242,7 +274,8 @@ MODULE SPS_VARS
   !arrays for stellar spectral information in HR diagram
   REAL(SP), DIMENSION(ndim_logt) :: basel_logt=0.0
   REAL(SP), DIMENSION(ndim_logg) :: basel_logg=0.0
-  REAL(SP), DIMENSION(nspec,nz,ndim_logt,ndim_logg) :: speclib=0.0
+  REAL(SP), DIMENSION(nspec,nz,ndim_logt,ndim_logg)  :: speclib=0.0
+  REAL(RSP), DIMENSION(nspec,nz,ndim_logt,ndim_logg) :: rspeclib=0.0
   
   !AGB library (Lancon & Mouhcine 2002)
   REAL(SP), DIMENSION(nspec,n_agb_o) :: agb_spec_o=0.
@@ -270,9 +303,9 @@ MODULE SPS_VARS
 
   !arrays holding the number of mass elements for each isochrone,
   !the age of each isochrone, and the metallicity of each isochrone
-  INTEGER, DIMENSION(nz,nt) :: nmass_isoc=0
-  REAL(SP), DIMENSION(nz,nt)    :: timestep_isoc=0.0
-  REAL(SP), DIMENSION(nz)       :: zlegend=-99.
+  INTEGER, DIMENSION(nz,nt)  :: nmass_isoc=0
+  REAL(SP), DIMENSION(nz,nt) :: timestep_isoc=0.0
+  REAL(SP), DIMENSION(nz)    :: zlegend=-99.
   
   !arrays for the full Z-dep SSP spectra
   REAL(SP), DIMENSION(nz,ntfull,nspec) :: spec_ssp_zz=0.
@@ -290,8 +323,9 @@ MODULE SPS_VARS
           vdmc=0.08,dust_clumps=-99.,frac_nodust=0.0,dust_index=-0.7,&
           dust_tesc=7.0,frac_obrun=0.0,uvb=1.0,mwr=3.1,redgb=1.0,&
           dust1_index=-1.0,mdave=0.5,sf_start=0.0,sf_trunc=0.0,sf_theta=0.0,&
-          duste_gamma=0.01,duste_umin=1.0,duste_qpah=3.5,fcstar=1.0
-     INTEGER :: zmet=1,sfh=0,wgp1=1,wgp2=1,wgp3=1
+          duste_gamma=0.01,duste_umin=1.0,duste_qpah=3.5,fcstar=1.0,&
+          masscut=150.0
+     INTEGER :: zmet=1,sfh=0,wgp1=1,wgp2=1,wgp3=1,evtype=-1
   END TYPE PARAMS
   
   !structure for the output of the compsp routine
