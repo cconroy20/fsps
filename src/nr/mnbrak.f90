@@ -1,11 +1,11 @@
 	SUBROUTINE mnbrak(ax,bx,cx,fa,fb,fc,func)
-	USE nrtype; USE nrutil, ONLY : swap
+	USE sps_vars; USE nrutil, ONLY : swap
 	IMPLICIT NONE
 	REAL(SP), INTENT(INOUT) :: ax,bx
 	REAL(SP), INTENT(OUT) :: cx,fa,fb,fc
 	INTERFACE
 		FUNCTION func(x)
-		USE nrtype
+		USE sps_vars
 		IMPLICIT NONE
 		REAL(SP), INTENT(IN) :: x
 		REAL(SP) :: func

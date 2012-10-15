@@ -1,6 +1,6 @@
 	SUBROUTINE gasdev_s(harvest)
 	USE nrtype
-	USE nr, ONLY : ran2
+	USE nr, ONLY : ran1
 	IMPLICIT NONE
 	REAL(SP), INTENT(OUT) :: harvest
 	REAL(SP) :: rsq,v1,v2
@@ -11,8 +11,8 @@
 		gaus_stored=.false.
 	else
 		do
-			call ran2(v1)
-			call ran2(v2)
+			call ran1(v1)
+			call ran1(v2)
 			v1=2.0_sp*v1-1.0_sp
 			v2=2.0_sp*v2-1.0_sp
 			rsq=v1**2+v2**2
@@ -27,7 +27,7 @@
 
 	SUBROUTINE gasdev_v(harvest)
 	USE nrtype; USE nrutil, ONLY : array_copy
-	USE nr, ONLY : ran2
+	USE nr, ONLY : ran1
 	IMPLICIT NONE
 	REAL(SP), DIMENSION(:), INTENT(OUT) :: harvest
 	REAL(SP), DIMENSION(size(harvest)) :: rsq,v1,v2
@@ -50,8 +50,8 @@
 		ng=1
 		do
 			if (ng > n) exit
-			call ran2(v1(ng:n))
-			call ran2(v2(ng:n))
+			call ran1(v1(ng:n))
+			call ran1(v2(ng:n))
 			v1(ng:n)=2.0_sp*v1(ng:n)-1.0_sp
 			v2(ng:n)=2.0_sp*v2(ng:n)-1.0_sp
 			rsq(ng:n)=v1(ng:n)**2+v2(ng:n)**2
