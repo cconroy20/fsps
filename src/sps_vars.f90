@@ -6,10 +6,11 @@ MODULE SPS_VARS
   SAVE
 
 !define either BaSeL/Kurucz, MILES, or HR CaT spectral library
-#define BASEL 0
+#define BASEL 1
+#define MILES 0
+!the following options are not included in the public release
 #define HRLIB 0
 #define RRLIB 0
-#define MILES 1
 #define CALIB 0
 #define COLIB 0
 !define either Padova or BaSTI isochrones
