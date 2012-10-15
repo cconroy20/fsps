@@ -31,7 +31,7 @@ SUBROUTINE GETSPEC(zz,mact,logt,lbol,logg,phase,ffco,spec)
   !post-AGB non-LTE model spectra from Rauch 2003
   !the H-Ni composition spectra are used here.
   !this library has two Zs, Solar and 0.1Solar, simply use one or the other
-  IF (phase.EQ.6.0.AND.logt.GE.4.699.AND.spec_type.NE.'miles') THEN
+  IF (phase.EQ.6.0.AND.logt.GE.4.699.AND.spec_type.EQ.'basel') THEN
     
      flag = 1
      jlo = MIN(MAX(locate(pagb_logt,logt),1),ndim_pagb-1)
@@ -49,8 +49,8 @@ SUBROUTINE GETSPEC(zz,mact,logt,lbol,logg,phase,ffco,spec)
   !phase information is available
   !NB: there is currently no Z or log(g) dependence in the WR spectra
   !NB: notice also that currently the WN and WC libraries are the same
-  ELSE IF ((phase.EQ.9.0.AND.ffco.LT.10.AND.spec_type.NE.'miles').OR.&
-       (phase.NE.6.0.AND.logt.GE.4.699)) THEN
+  ELSE IF ((phase.EQ.9.0.AND.ffco.LT.10.AND.spec_type.EQ.'basel')&
+       .OR.(phase.NE.6.0.AND.logt.GE.4.699)) THEN
      
      flag = 1
      jlo = MIN(MAX(locate(wr_logt,logt),1),ndim_wr-1)
@@ -62,7 +62,7 @@ SUBROUTINE GETSPEC(zz,mact,logt,lbol,logg,phase,ffco,spec)
           t*(wr_spec(:,jlo+1)-wr_spec(:,jlo)) )
 
   !WC WR stars (C-rich), from Smith et al. 2002
-  ELSE IF (phase.EQ.9.0.AND.ffco.GE.10.AND.spec_type.NE.'miles') THEN
+  ELSE IF (phase.EQ.9.0.AND.ffco.GE.10.AND.spec_type.EQ.'basel') THEN
      
      flag = 1
      jlo = MIN(MAX(locate(wr_logt,logt),1),ndim_wr-1)
@@ -123,15 +123,16 @@ SUBROUTINE GETSPEC(zz,mact,logt,lbol,logg,phase,ffco,spec)
 
      t   = (logt-basel_logt(jlo)) / &
           (basel_logt(jlo+1)-basel_logt(jlo))
-     u   = (logg-basel_logg(klo))   / &
+     u   = (loggi-basel_logg(klo))   / &
           (basel_logg(klo+1)-basel_logg(klo))
      
      !catch stars that fall off the grid
      sumtest = SUM(speclib(:,zz,jlo:jlo+1,klo:klo+1))
-     IF (sumtest.EQ.0.0) write(*,*) 'GETSPEC WARNING: you '//&
-          'have somehow managed to place part of an isochrone '//&
-          'off of the spectral grid.  This is not good.  Z=',&
-          zz,'(logt,logg)=',logt,loggi,phase
+     IF (sumtest.EQ.0.0.AND.phase.NE.6.0) &
+          write(*,'("GETSPEC WARNING: part of an '//&
+          'isochrone is off of the spectral grid:  Z=",I2,'//&
+          '" logT=",F5.2," logg=",F5.2," phase=",F2.0)') &
+          zz,logt,loggi,phase
      
      !bilinear interpolation over every spectral element
      !NB: extra factor of 4pi, that I can't explain,
@@ -147,7 +148,7 @@ SUBROUTINE GETSPEC(zz,mact,logt,lbol,logg,phase,ffco,spec)
   !make sure the spectrum never has any zero's
   spec = MAX(spec,0.0)
   
-  IF (flag.EQ.0.AND.spec_type.NE.'miles') THEN
+  IF (flag.EQ.0.AND.spec_type.EQ.'basel') THEN
      WRITE(*,*) 'GETSPEC ERROR: isochrone point not assigned a spectrum',&
           logt,loggi,phase
   ELSE IF (flag.GT.1) THEN

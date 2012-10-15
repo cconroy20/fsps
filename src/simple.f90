@@ -26,9 +26,9 @@
   ! with no dust, and the 'default' assumptions regarding the 
   ! locations of the isochrones
 
-  imf_type  = 1             !define the IMF (1=Chabrier 2003)
+  imf_type  = 2             !define the IMF (1=Chabrier 2003)
                             !see sps_vars.f90 for details of this var
-  pset%zmet = 20            !define the metallicity (see the manual)
+  pset%zmet = 13            !define the metallicity (see the manual)
                             !20 = solar metallacity
 
   CALL SPS_SETUP(pset%zmet) !read in the isochrones and spectral libraries

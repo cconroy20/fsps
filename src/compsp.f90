@@ -5,7 +5,7 @@
 !  units are Msun/yr.                                        !
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
-REAL FUNCTION INTSFR(sfh,tau,const,maxtime,sfstart,t1,t2)
+FUNCTION INTSFR(sfh,tau,const,maxtime,sfstart,t1,t2,tweight)
 
   !routine to integrate an analytic SFH from t1 to t2
 
@@ -14,22 +14,39 @@ REAL FUNCTION INTSFR(sfh,tau,const,maxtime,sfstart,t1,t2)
 
   INTEGER, INTENT(in)  :: sfh
   REAL(SP), INTENT(in) :: t1,t2,tau,const,maxtime,sfstart
+  INTEGER, INTENT(in), OPTIONAL :: tweight
   INTEGER  :: lo,hi
-  REAL(SP) :: s1,s2,dt
+  REAL(SP) :: s1,s2,dt, intsfr
 
   IF (sfh.EQ.1) THEN
 
-     intsfr = (EXP(-t2/tau/1E9) - EXP(-t1/tau/1E9))/&
-          (1-EXP(-(maxtime-sfstart)/1E9/tau)) 
-     intsfr = intsfr* (1-const) + const*(t1-t2)/(maxtime-sfstart)
+     IF (PRESENT(tweight)) THEN
+        !in this case the integral is int(t*sfr)
+        intsfr = tau*( (t2/tau/1E9+1)*EXP(-t2/tau/1E9) - &
+             (t1/tau/1E9+1)*EXP(-t1/tau/1E9) ) / &
+             (1-EXP(-(maxtime-sfstart)/1E9/tau)) 
+        intsfr = intsfr* (1-const) + const*(t1**2-t2**2)/2E9/(maxtime-sfstart)
+     ELSE
+        intsfr = (EXP(-t2/tau/1E9) - EXP(-t1/tau/1E9))/&
+             (1-EXP(-(maxtime-sfstart)/1E9/tau)) 
+        intsfr = intsfr* (1-const) + const*(t1-t2)/(maxtime-sfstart)
+     ENDIF
 
   ELSE IF (sfh.EQ.4) THEN
 
-     intsfr = (EXP(-t2/tau/1E9)*(1+t2/tau/1E9) - &
-          EXP(-t1/tau/1E9)*(1+t1/tau/1E9)) / &
-          (1-EXP(-(maxtime-sfstart)/1E9/tau)*((maxtime-sfstart)/1E9/tau+1))  
-     intsfr = intsfr* (1-const) + const*(t1-t2)/(maxtime-sfstart)
-   
+     IF (PRESENT(tweight)) THEN
+        !in this case the integral is int(t*sfr)
+        intsfr = tau*(EXP(-t2/tau/1E9)*(2+t2/tau/1E9*(t2/tau/1E9+2)) - &
+                  EXP(-t1/tau/1E9)*(2+t1/tau/1E9*(t1/tau/1E9+2))) / &
+                  (1-EXP(-(maxtime-sfstart)/1E9/tau)*((maxtime-sfstart)/1E9/tau+1)) 
+        intsfr = intsfr* (1-const) + const*(t1**2-t2**2)/2E9/(maxtime-sfstart)
+     ELSE
+        intsfr = (EXP(-t2/tau/1E9)*(1+t2/tau/1E9) - &
+             EXP(-t1/tau/1E9)*(1+t1/tau/1E9)) / &
+             (1-EXP(-(maxtime-sfstart)/1E9/tau)*((maxtime-sfstart)/1E9/tau+1))  
+        intsfr = intsfr* (1-const) + const*(t1-t2)/(maxtime-sfstart)
+     ENDIF
+  
   ELSE IF (sfh.EQ.2.OR.sfh.EQ.3) THEN
 
      !handle the edges separately
@@ -60,18 +77,20 @@ END FUNCTION INTSFR
 !------------------------------------------------------------!
 
 SUBROUTINE INTSPEC(pset,nti,spec_ssp,csp,mass_ssp,lbol_ssp,&
-     mass,lbol,specb,massb,lbolb,deltb,sfstart,tau,const,maxtime,mdust)
+     mass,lbol,specb,massb,lbolb,deltb,sfstart,tau,const,maxtime,&
+     mdust,tweight)
 
   !routine to perform integration of SSP over a SFH,
   !including attenuation by dust.
 
   USE sps_vars; USE nr, ONLY : locate
-  USE sps_utils, ONLY : add_dust
+  USE sps_utils, ONLY : add_dust, intsfr
   IMPLICIT NONE
   
   INTEGER :: i,imax,indsf,wtesc
-  REAL(SP) :: intsfr,t1,t2
+  REAL(SP) :: t1,t2
   REAL(SP), DIMENSION(ntfull) :: isfr,time
+  INTEGER, intent(in), optional :: tweight
   INTEGER,  INTENT(in)    :: nti
   REAL(SP), INTENT(in)    :: massb,lbolb,deltb,sfstart,tau,const,maxtime
   REAL(SP), INTENT(inout) :: mass, lbol, mdust
@@ -125,7 +144,11 @@ SUBROUTINE INTSPEC(pset,nti,spec_ssp,csp,mass_ssp,lbol_ssp,&
            ENDIF
            isfr(i) = MAX(isfr(i),0.0) / 1E10
         ELSE
-           isfr(i) = intsfr(pset%sfh,tau,const,maxtime,sfstart,t1,t2)
+           IF (PRESENT(tweight)) THEN
+              isfr(i) = intsfr(pset%sfh,tau,const,maxtime,sfstart,t1,t2,1)
+           ELSE
+              isfr(i) = intsfr(pset%sfh,tau,const,maxtime,sfstart,t1,t2)
+           ENDIF
         ENDIF
 
      ENDDO
@@ -196,7 +219,7 @@ SUBROUTINE COMPSP(write_compsp,nzin,outfile,mass_ssp,&
   !If tage<=0  -> produce outputs from tmin<t<tmax
 
   USE sps_vars; USE nr, ONLY : locate
-  USE sps_utils, ONLY : getmags, add_dust, linterp
+  USE sps_utils, ONLY : getmags, add_dust, linterp, intspec
   IMPLICIT NONE
  
   !write_compsp = (1->write mags), (2->write spectra), (3->write both) 
@@ -301,7 +324,7 @@ SUBROUTINE COMPSP(write_compsp,nzin,outfile,mass_ssp,&
 
   !set limits on the parameters tau and const
   IF (pset%sfh.EQ.1.OR.pset%sfh.EQ.4.OR.pset%sfh.EQ.5) THEN
-     tau   = MIN(MAX(pset%tau,0.1),100.)
+     tau   = MIN(MAX(pset%tau,0.1),100.) !tau in Gyr
      const = pset%const
   ENDIF
 
@@ -379,9 +402,9 @@ SUBROUTINE COMPSP(write_compsp,nzin,outfile,mass_ssp,&
         WRITE(20,'("#   Processing SSP")')
         WRITE(20,'("#")') 
         WRITE(20,31) 
-        IF (imax-imin.EQ.1) WRITE(20,'(I3,1x,I4)') 1,nspec
-        IF (imax-imin.GT.1) WRITE(20,'(I3,1x,I4)') ntfull,nspec
-        WRITE(20,*) spec_lambda
+        IF (imax-imin.EQ.1) WRITE(20,'(I3,1x,I6)') 1,nspec
+        IF (imax-imin.GT.1) WRITE(20,'(I3,1x,I6)') ntfull,nspec
+        WRITE(20,'(50000(F15.4))') spec_lambda
      ENDIF
   ELSE
     IF (pset%sfh.EQ.2.OR.pset%sfh.EQ.3) THEN
@@ -489,9 +512,17 @@ SUBROUTINE COMPSP(write_compsp,nzin,outfile,mass_ssp,&
          mass_csp = mass_ssp(1,i)
          lbol_csp = lbol_ssp(1,i)
       ELSE IF (pset%sfh.EQ.1.OR.pset%sfh.EQ.4.OR.pset%sfh.EQ.5) THEN
-         CALL INTSPEC(pset,i,spec_ssp,spec_csp,mass_ssp,lbol_ssp,&
+         CALL INTSPEC(pset,i,spec_ssp,csp1,mass_ssp,lbol_ssp,&
               mass_csp,lbol_csp,spec_burst,mass_burst,&
               lbol_burst,delt_burst,sfstart,tau,const,maxtime,mdust)
+         IF (compute_light_ages.EQ.1) THEN
+            CALL INTSPEC(pset,i,spec_ssp,csp2,mass_ssp,lbol_ssp,&
+                 mass_csp,lbol_csp,spec_burst,mass_burst,&
+                 lbol_burst,delt_burst,sfstart,tau,const,maxtime,mdust,1)
+            spec_csp = 10**time_full(i)/1E9 - csp2 / csp1
+         ELSE
+            spec_csp = csp1
+         ENDIF
       ELSE IF (pset%sfh.EQ.2.OR.pset%sfh.EQ.3) THEN
          CALL INTSPEC(pset,i,ispec,spec_csp,imass,ilbol,mass_csp,&
               lbol_csp,spec_burst,mass_burst,lbol_burst,&
@@ -537,7 +568,7 @@ SUBROUTINE COMPSP(write_compsp,nzin,outfile,mass_ssp,&
       spec_csp = (1-dt)*ocompsp(imin)%spec + &
            dt*ocompsp(imax)%spec
       CALL SAVE_COMPSP(write_compsp,ocompsp(1),&
-           LOG10(maxtime),mass_csp,lbol_csp,0.0,mags,&
+           LOG10(maxtime),mass_csp,lbol_csp,0.0D0,mags,&
            spec_csp,mdust)
    ENDIF
 
@@ -737,7 +768,7 @@ SUBROUTINE SAVE_COMPSP(write_compsp,cspo,time,mass,&
   IF (write_compsp.EQ.2.OR.write_compsp.EQ.3) THEN
      WRITE(20,'(4(F8.4,1x))') time,&
           LOG10(mass+tiny_number),lbol,LOG10(sfr+tiny_number)
-     WRITE(20,*) spec
+     WRITE(20,'(50000(E14.6))') spec
   ENDIF
 
 END SUBROUTINE SAVE_COMPSP

@@ -153,6 +153,8 @@ SUBROUTINE SSP_GEN(pset,mass_ssp,lbol_ssp,spec_ssp)
   nmass = nmass_isoc(pset%zmet,:)   !number of elements per isochrone
   time  = timestep_isoc(pset%zmet,:)!age of each isochrone in log(yr)
 
+  !convert to alpha-enhanced iso
+  logt = LOG10(10**logt-100.0)
 
   !write for control
   IF (verbose.NE.0) THEN
@@ -221,7 +223,11 @@ SUBROUTINE SSP_GEN(pset,mass_ssp,lbol_ssp,spec_ssp)
         ENDIF
         CALL GETSPEC(pset%zmet,mact(i,j),logt(i,j),&
              10**logl(i,j),logg(i,j),phase(i,j),tco,tspec)
-        spec_ssp(ii,:) = wght(j)*tspec + spec_ssp(ii,:)
+        !only construct SSPs for particular evolutionary
+        !phases if type NE -1
+        IF ((pset%evtype.EQ.-1.OR.pset%evtype.EQ.phase(i,j))&
+             .AND.mini(i,j).LT.pset%masscut) &
+             spec_ssp(ii,:) = wght(j)*tspec + spec_ssp(ii,:)
      ENDDO
 
   ENDDO

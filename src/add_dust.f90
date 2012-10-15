@@ -167,7 +167,7 @@ SUBROUTINE ADD_DUST(pset,csp1,csp2,specdust,mdust)
   ELSE
 
      !Calzetti et al. 2000 attenuation is applied to the entire spectrum 
-     w63 = locate(spec_lambda,6300.00)
+     w63 = locate(spec_lambda,6300.0D0)
      katt = 0.0
      katt(w63+1:) = 1.17*( -1.857+1.04*(1E4/spec_lambda(w63+1:)) ) + 1.78
      katt(1:w63)  = 1.17*(-2.156+1.509*(1E4/spec_lambda(1:w63))-&
@@ -175,7 +175,7 @@ SUBROUTINE ADD_DUST(pset,csp1,csp2,specdust,mdust)
           0.011*(1E4/spec_lambda(1:w63))**3) + 1.78
      !R=4.05
      katt = katt/0.44/4.05 * pset%dust2
-     w63 = locate(katt,0.0)
+     w63 = locate(katt,0.0D0)
      IF (w63.NE.nspec) THEN
         katt(w63+1:) = 0.0
      ENDIF
@@ -185,7 +185,7 @@ SUBROUTINE ADD_DUST(pset,csp1,csp2,specdust,mdust)
   ENDIF
 
   !Rayleigh-Jeans extrapolation for lambda>10um
-  IF (spec_type.NE.'miles') THEN
+  IF (spec_type.EQ.'basel') THEN
      i=1
      DO WHILE (spec_lambda(i)/1E5.LT.1.)
         i=i+1
@@ -193,15 +193,15 @@ SUBROUTINE ADD_DUST(pset,csp1,csp2,specdust,mdust)
      specdust(i:) = (1E5/spec_lambda(i:))**2*specdust(i-1)
   ENDIF
 
-  !-----------------------------------------------------!
-  !-----------------Add dust emission-------------------!
-  !-----------------------------------------------------!
+  !---------------------------------------------------------------!
+  !----------------------Add dust emission------------------------!
+  !---------------------------------------------------------------!
   
-  !the dust spectrum is computed according to Draine & Li 2007
-  !we are computing the integral of the dust spectrum over P(U)dU
-  !by considering two components, a delta function at Umin and 
-  !a power-law distribution from Umin to Umax=1E6 and alpha=2
-  !the relative weights of the two components are given by gamma
+  ! The dust spectrum is computed according to Draine & Li 2007
+  ! we are computing the integral of the dust spectrum over P(U)dU
+  ! by considering two components, a delta function at Umin and 
+  ! a power-law distribution from Umin to Umax=1E6 and alpha=2
+  ! the relative weights of the two components are given by gamma
   
   !NB: dust is never added with the MILES library
   IF (add_dust_emission.EQ.1.AND.spec_type.EQ.'basel') THEN 
@@ -250,16 +250,16 @@ SUBROUTINE ADD_DUST(pset,csp1,csp2,specdust,mdust)
         duste = (1-gamma)*dumin + gamma*dumax
         duste = MAX(duste,tiny_number)
 
-        !normalize the dust emission to the luminosity absorbed by the dust
-        !i.e., demand that Lbol remains the same
+        !normalize the dust emission to the luminosity absorbed by 
+        !the dust, i.e., demand that Lbol remains the same
         norm  = SUM( (nu(1:nspec-1)-nu(2:nspec)) * &
              (duste(2:nspec)+duste(1:nspec-1))/2. )
         duste = duste/norm * (lboln-lbold)
         duste = MAX(duste,tiny_number)
 
-        !this factor assumes Md/Mh=0.01 (appropriate for the MW3.1 models),
-        !and includes conversion factors from Jy -> Lsun and the hydrogen 
-        !mass in solar units
+        !this factor assumes Md/Mh=0.01 (appropriate for the 
+        !MW3.1 models), and includes conversion factors from 
+        !Jy -> Lsun and the hydrogen mass in solar units
         mdust = 3.21E-3 / 4/mypi * (lboln-lbold)/norm
 
         !add the dust emission to the stellar spectrum

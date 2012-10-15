@@ -28,7 +28,7 @@ SUBROUTINE MOD_HB(f_bhb,t,mini,mact,logl,logt,logg,phase, &
 
   !number of blue HB to add per HB star
   !(not important b/c their total weight remains fixed)
-  INTEGER, PARAMETER :: nhb = 10
+  INTEGER, PARAMETER :: nhb = 40
   INTEGER :: j, i, flip=0, idum=-1
   REAL(SP) :: tgrad=0., hblum=-999., rnum=0.
   REAL(SP), DIMENSION(nhb) :: dumarr=0.
@@ -74,7 +74,8 @@ SUBROUTINE MOD_HB(f_bhb,t,mini,mact,logl,logt,logg,phase, &
                     DO i=1,nhb
                        rnum = ran(idum)
                        !distribute Teff uniformly to high T
-                       logt(t,nmass(t)+i) = logt(t,j)+(4.2-logt(t,j))*rnum !3.86
+                       !logt(t,nmass(t)+i) = logt(t,j)+(4.2-logt(t,j))*rnum
+                       logt(t,nmass(t)+i) = 4.0+(4.3-4.0)*rnum
                        !compute logg
                        logg(t,nmass(t)+i) = LOG10( gsig4pi*mact(t,nmass(t)+i)/&
                             10**logl(t,nmass(t)+i) ) + 4*logt(t,nmass(t)+i) 
