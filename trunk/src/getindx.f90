@@ -1,4 +1,4 @@
-REAL FUNCTION INTIND(lam,func,lo,hi)
+FUNCTION INTIND(lam,func,lo,hi)
 
   !perform integral over spectrum for index computation
 
@@ -8,7 +8,7 @@ REAL FUNCTION INTIND(lam,func,lo,hi)
   INTEGER :: l1,l2,i
   REAL(SP), INTENT(in), DIMENSION(nspec) :: lam, func
   REAL(SP), INTENT(in) :: lo,hi
-  REAL(SP) :: f1,f2
+  REAL(SP) :: f1,f2,intind
 
   !---------------------------------------------------------------!
   !---------------------------------------------------------------!

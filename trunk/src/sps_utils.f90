@@ -83,7 +83,7 @@ MODULE SPS_UTILS
   INTERFACE
      FUNCTION GET_TUNIV(z)
        USE sps_vars
-       REAL, INTENT(in) :: z
+       REAL(SP), INTENT(in) :: z
        REAL(SP) :: get_tuniv
      END FUNCTION GET_TUNIV
   END INTERFACE
@@ -116,19 +116,40 @@ MODULE SPS_UTILS
   END INTERFACE
 
   INTERFACE
-     REAL FUNCTION INTIND(lam,func,lo,hi)
+     FUNCTION INTIND(lam,func,lo,hi)
        USE sps_vars; USE nr, ONLY : locate
        REAL(SP), INTENT(in), DIMENSION(nspec) :: lam,func
        REAL(SP), INTENT(in) :: lo,hi
+       REAL(SP) :: intind
      END FUNCTION INTIND
   END INTERFACE
 
   INTERFACE
-     REAL FUNCTION INTSFR(sfh,tau,const,maxtime,sfstart,t1,t2)
+     FUNCTION INTSFR(sfh,tau,const,maxtime,sfstart,t1,t2,tweight)
        USE sps_vars
        INTEGER, INTENT(in)  :: sfh
        REAL(SP), INTENT(in) :: t1,t2,tau,const,maxtime,sfstart
+       REAL(SP) :: intsfr
+       INTEGER, intent(in), optional :: tweight
      END FUNCTION INTSFR
+  END INTERFACE
+
+  INTERFACE
+     SUBROUTINE INTSPEC(pset,nti,spec_ssp,csp,mass_ssp,lbol_ssp,&
+          mass,lbol,specb,massb,lbolb,deltb,sfstart,tau,const,maxtime,&
+          mdust,tweight)
+       USE sps_vars
+       INTEGER, intent(in), optional :: tweight
+       INTEGER,  INTENT(in)    :: nti
+       REAL(SP), INTENT(in)    :: massb,lbolb,deltb,sfstart,tau,const,maxtime
+       REAL(SP), INTENT(inout) :: mass, lbol, mdust
+       REAL(SP), INTENT(in), DIMENSION(ntfull) :: mass_ssp,lbol_ssp
+       REAL(SP), INTENT(in), DIMENSION(ntfull,nspec) :: spec_ssp
+       REAL(SP), INTENT(in), DIMENSION(nspec)    :: specb
+       REAL(SP), INTENT(inout), DIMENSION(nspec) :: csp
+       REAL(SP), DIMENSION(nspec)  :: csp1,csp2
+       TYPE(PARAMS), INTENT(in)    :: pset
+     END SUBROUTINE INTSPEC
   END INTERFACE
 
   INTERFACE
@@ -190,9 +211,10 @@ MODULE SPS_UTILS
   
   !this is a private routine not included in the public release
   INTERFACE
-     REAL FUNCTION SPS_PRIORS(pos)
+     FUNCTION SPS_PRIORS(pos)
        USE sps_vars
        TYPE(PARAMS), INTENT(in) :: pos
+       REAL(SP) :: sps_priors
      END FUNCTION SPS_PRIORS
   END INTERFACE
   

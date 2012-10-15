@@ -11,7 +11,7 @@ SUBROUTINE SPS_SETUP(zin)
   USE sps_vars; USE sps_utils
   IMPLICIT NONE
   INTEGER, INTENT(in) :: zin
-  INTEGER :: stat,n,i,j,m,jj,k,tnspec
+  INTEGER :: stat=1,n,i,j,m,jj,k,tnspec
   INTEGER :: n_isoc,z,zmin,zmax
   CHARACTER(1) :: char,sqpah
   CHARACTER(6) :: zstype
@@ -70,7 +70,9 @@ SUBROUTINE SPS_SETUP(zin)
      STOP
   ENDIF
 
-  IF (spec_type.NE.'basel'.AND.spec_type.NE.'miles'.AND.spec_type.NE.'picks') THEN
+  IF (spec_type.NE.'basel'.AND.spec_type.NE.'miles'.AND.spec_type.NE.'picks'&
+       .AND.spec_type(1:5).NE.'calib'.AND.spec_type.NE.'colib'.AND.&
+       spec_type(1:5).NE.'hrlib'.AND.spec_type.NE.'rrlib') THEN
      WRITE(*,*) 'SPS_SETUP ERROR: spec_type var set to invalid type: ',spec_type
      STOP
   ENDIF
@@ -103,10 +105,10 @@ SUBROUTINE SPS_SETUP(zin)
   !units are simply metal fraction by mass (e.g. Z=0.0190 for Zsun)
   IF (isoc_type.EQ.'pdva') THEN
      OPEN(90,FILE=TRIM(SPS_HOME)//'/ISOCHRONES/Padova/Padova2007/zlegend_'//&
-          spec_type//'.dat',STATUS='OLD',iostat=stat,ACTION='READ')
+          spec_type(1:5)//'.dat',STATUS='OLD',iostat=stat,ACTION='READ')
   ELSE IF (isoc_type.EQ.'bsti') THEN
      OPEN(90,FILE=TRIM(SPS_HOME)//'/ISOCHRONES/BaSTI/zlegend_'//&
-          spec_type//'.dat',STATUS='OLD',iostat=stat,ACTION='READ')
+          spec_type(1:5)//'.dat',STATUS='OLD',iostat=stat,ACTION='READ')
   ENDIF
   IF (stat.NE.0) THEN
      WRITE(*,*) 'SPS_SETUP ERROR: zlegend_*.dat '//&
@@ -146,6 +148,10 @@ SUBROUTINE SPS_SETUP(zin)
   ELSE IF (spec_type.EQ.'picks') THEN
      OPEN(91,FILE=TRIM(SPS_HOME)//'/SPECTRA/Pickles/pickles.lambda',&
           STATUS='OLD',iostat=stat,ACTION='READ')
+  ELSE IF (spec_type(1:5).EQ.'calib'.OR.spec_type.EQ.'colib'.OR.&
+       spec_type(1:5).EQ.'hrlib'.OR.spec_type.EQ.'rrlib') THEN
+     OPEN(91,FILE=TRIM(SPS_HOME)//'/SPECTRA/HRLIB/'//spec_type(1:5)//&
+          '.lambda',STATUS='OLD',iostat=stat,ACTION='READ')
   ENDIF
   IF (stat.NE.0) THEN
      WRITE(*,*) 'SPS_SETUP ERROR: wavelength grid '//&
@@ -193,52 +199,63 @@ SUBROUTINE SPS_SETUP(zin)
              //'spectra.bin',FORM='UNFORMATTED',&
              STATUS='OLD',iostat=stat,ACTION='READ',access='direct',&
              recl=nspec*ndim_logg*ndim_logt*4)
+     ELSE IF (spec_type(1:5).EQ.'calib'.OR.spec_type.EQ.'colib'.OR.&
+          spec_type(1:5).EQ.'hrlib'.OR.spec_type.EQ.'rrlib') THEN
+        OPEN(92,FILE=TRIM(SPS_HOME)//'/SPECTRA/HRLIB/'//spec_type//'_z'&
+             //zstype//'.spectra.bin',FORM='UNFORMATTED',&
+             STATUS='OLD',iostat=stat,ACTION='READ',access='direct',&
+             recl=nspec*ndim_logg*ndim_logt*4)
      ENDIF
      IF (stat.NE.0) THEN 
         WRITE(*,*) 'SPS_SETUP ERROR: '//spec_type//&
-             ' spectral library cannot be opened', zstype
+             ' spectral library cannot be opened ', zstype
         STOP 
      ENDIF
 
-     READ(92,rec=1) speclib(1:tnspec,z,:,:)
+     READ(92,rec=1) rspeclib(1:tnspec,z,:,:)
      CLOSE(92)
 
   ENDDO
 
-  !read in AGB Teff array for O-rich spectra
-  OPEN(93,FILE=TRIM(SPS_HOME)//'/SPECTRA/AGB_spectra/Orich_teff_allZ_'//&
+  speclib = rspeclib
+
+  !these stars are only included with BaSeL or MILES libraries
+  IF (spec_type.NE.'picks'.AND.spec_type(1:5).NE.'calib'&
+       .AND.spec_type.NE.'colib'.AND.spec_type(1:5).NE.'hrlib'&
+       .AND.spec_type.NE.'rrlib') THEN
+
+     !read in AGB Teff array for O-rich spectra
+     OPEN(93,FILE=TRIM(SPS_HOME)//'/SPECTRA/AGB_spectra/Orich_teff_allZ_'//&
        isoc_type//'_'//spec_type//'.dat',STATUS='OLD',iostat=stat,ACTION='READ')
-  IF (stat.NE.0) THEN
-     WRITE(*,*) 'SPS_SETUP ERROR: /SPECTRA/AGB_spectra/Orich_teff_allZ_'&
-          //isoc_type//'_'//spec_type//'.dat cannot be opened'
-     STOP 
-  ENDIF
-  !burn the header
-  READ(93,*) char
-  DO i=1,n_agb_o
-     READ(93,*) dumr1, agb_logt_o(:,i)
-  ENDDO  
-  CLOSE(93)
-  agb_logt_o = LOG10(agb_logt_o)
-
-  !read in AGB Teff array for C-rich spectra
-  OPEN(94,FILE=TRIM(SPS_HOME)//'/SPECTRA/AGB_spectra/Crich_teff_allZ'//&
-       '.dat',STATUS='OLD',iostat=stat,ACTION='READ')
-  IF (stat.NE.0) THEN
-     WRITE(*,*) 'SPS_SETUP ERROR: /SPECTRA/AGB_spectra/'//&
-          'Crich_teff_allZ.dat cannot be opened'
-     STOP 
-  ENDIF
-  !burn the header
-  READ(94,*) char
-  DO i=1,n_agb_c
-     READ(94,*) dumr1, agb_logt_c(i)
-  ENDDO  
-  CLOSE(94)
-  agb_logt_c = LOG10(agb_logt_c)
-
-  IF (spec_type.NE.'picks') THEN
-
+     IF (stat.NE.0) THEN
+        WRITE(*,*) 'SPS_SETUP ERROR: /SPECTRA/AGB_spectra/Orich_teff_allZ_'&
+             //isoc_type//'_'//spec_type//'.dat cannot be opened'
+        STOP 
+     ENDIF
+     !burn the header
+     READ(93,*) char
+     DO i=1,n_agb_o
+        READ(93,*) dumr1, agb_logt_o(:,i)
+     ENDDO
+     CLOSE(93)
+     agb_logt_o = LOG10(agb_logt_o)
+     
+     !read in AGB Teff array for C-rich spectra
+     OPEN(94,FILE=TRIM(SPS_HOME)//'/SPECTRA/AGB_spectra/Crich_teff_allZ'//&
+          '.dat',STATUS='OLD',iostat=stat,ACTION='READ')
+     IF (stat.NE.0) THEN
+        WRITE(*,*) 'SPS_SETUP ERROR: /SPECTRA/AGB_spectra/'//&
+             'Crich_teff_allZ.dat cannot be opened'
+        STOP 
+     ENDIF
+     !burn the header
+     READ(94,*) char
+     DO i=1,n_agb_c
+        READ(94,*) dumr1, agb_logt_c(i)
+     ENDDO
+     CLOSE(94)
+     agb_logt_c = LOG10(agb_logt_c)
+     
      !read in TP-AGB O-rich spectra
      OPEN(95,FILE=TRIM(SPS_HOME)//&
           '/SPECTRA/AGB_spectra/Orich_spec_all_'//spec_type//'.dat',&
@@ -656,7 +673,7 @@ SUBROUTINE SPS_SETUP(zin)
   ENDDO
 
   !set Tuniv
-  tuniv = get_tuniv(0.0)
+  tuniv = get_tuniv(0.0D0)
 
   !----------------------------------------------------------------!
   !-----------------read in index definitions----------------------!
@@ -684,13 +701,9 @@ SUBROUTINE SPS_SETUP(zin)
      IF (MOD(i-1,time_res_incr).EQ.0) THEN
         time_full(i) = timestep_isoc(zmin,(i-1)/time_res_incr+1)
      ELSE
-        IF ((i-1)/time_res_incr+2.GT.nt) THEN
-           d1 = 0.05
-           IF (isoc_type.EQ.'bsti') d1 = 0.01
-           d1 = d1/time_res_incr
-        ELSE
+        IF ((i-1)/time_res_incr+2.LT.nt) THEN
            d1 = (timestep_isoc(zmin,(i-1)/time_res_incr+2)-&
-                timestep_isoc(zmin,(i-1)/time_res_incr+1))/time_res_incr
+                timestep_isoc(zmin,(i-1)/time_res_incr+1))/time_res_incr 
         ENDIF
         time_full(i) = timestep_isoc(zmin,(i-1)/time_res_incr+1)+d1
         time_full(i) = time_full(i-1)+d1
