@@ -207,8 +207,11 @@ SUBROUTINE SSP_GEN(pset,mass_ssp,lbol_ssp,spec_ssp)
 
      !compute IMF-weighted mass of the SSP
      mass_ssp(ii) = SUM(wght(1:nmass(i))*mact(i,1:nmass(i)))
+
      !add in remant masses
-     CALL ADD_REMNANTS(mass_ssp(ii),MAXVAL(mini(i,:)))
+     IF (add_stellar_remnants.EQ.1) THEN 
+        CALL ADD_REMNANTS(mass_ssp(ii),MAXVAL(mini(i,:)))
+     ENDIF
 
      !compute IMF-weighted bolometric luminosity (actually log(Lbol))
      lbol_ssp(ii) = LOG10(SUM(wght(1:nmass(i))*10**logl(i,1:nmass(i))))

@@ -45,6 +45,10 @@ MODULE SPS_VARS
   !turn on/off the Draine & Li 2007 dust emission model 
   INTEGER, PARAMETER :: add_dust_emission=1
 
+  !turn on/off the addition of stellar remnants to the 
+  !computation of stellar masses
+  INTEGER, PARAMETER :: add_stellar_remnants=1
+
   !set attenuation-law for the diffuse ISM
   !0 - power-law attenuation.  See dust_index variable below
   !1 - MW extinction law, parameterized by Cardelli et al. 1989,
