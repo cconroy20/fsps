@@ -110,7 +110,7 @@ MODULE SPS_VARS
   !number of elements per stellar spectrum
 #if (MILES)
   INTEGER, PARAMETER :: nz=5
-  INTEGER, PARAMETER :: nspec=5252 !4222
+  INTEGER, PARAMETER :: nspec=5252
 #elif (CALIB)
   INTEGER, PARAMETER :: nz=11
   INTEGER, PARAMETER :: nspec=4652

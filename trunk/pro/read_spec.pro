@@ -36,10 +36,10 @@ FUNCTION READ_SPEC1, file,lam,nli
   ;the number of age steps and the number of spectral elements are included
   char = strsplit(char,' ',/extr)
   IF n_elements(char) GT 1 THEN BEGIN
-     nt = FIX(char[0])
-     nl = FIX(char[1]) 
+     nt = LONG(char[0])
+     nl = LONG(char[1]) 
   ENDIF ELSE BEGIN
-     nt = fix(char[0])
+     nt = LONG(char[0])
      nl = nli
   ENDELSE
 

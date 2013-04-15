@@ -63,5 +63,8 @@ REVISION HISTORY
  - Switching between different isochrones and stellar libaries is now more transparent
    in the sps_vars.f90 module.
 
+XX/XX/XX
 
+ - Release of v2.4.  
+ - Bug found related to post-AGB stars.  This was affecting far-UV spectra at old ages.
 
