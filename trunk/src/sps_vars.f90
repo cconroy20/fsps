@@ -8,11 +8,6 @@ MODULE SPS_VARS
 !define either BaSeL/Kurucz, MILES, or HR CaT spectral library
 #define BASEL 1
 #define MILES 0
-!the following options are not included in the public release
-#define HRLIB 0
-#define RRLIB 0
-#define CALIB 0
-#define COLIB 0
 !define either Padova or BaSTI isochrones
 #define PADOVA 1
 #define BASTI 0
@@ -92,16 +87,6 @@ MODULE SPS_VARS
   !flag indicating type of spectral library to use
 #if (MILES)
   CHARACTER(5), PARAMETER :: spec_type = 'miles'
-#elif (CALIB)
-  !CHARACTER(5), PARAMETER :: spec_type = 'calib'
-  CHARACTER(11), PARAMETER :: spec_type = 'calib_a+0.3'
-#elif (COLIB)
-  CHARACTER(5), PARAMETER :: spec_type = 'colib'
-#elif (HRLIB)
-  !CHARACTER(5), PARAMETER :: spec_type = 'hrlib'
-  CHARACTER(11), PARAMETER :: spec_type = 'hrlib_a+0.3'
-#elif (RRLIB)
-  CHARACTER(5), PARAMETER :: spec_type = 'rrlib'
 #else
   CHARACTER(5), PARAMETER :: spec_type = 'basel'
 #endif
@@ -111,18 +96,6 @@ MODULE SPS_VARS
 #if (MILES)
   INTEGER, PARAMETER :: nz=5
   INTEGER, PARAMETER :: nspec=5252
-#elif (CALIB)
-  INTEGER, PARAMETER :: nz=11
-  INTEGER, PARAMETER :: nspec=4652
-#elif (COLIB)
-  INTEGER, PARAMETER :: nz=1
-  INTEGER, PARAMETER :: nspec=6391
-#elif (HRLIB)
-  INTEGER, PARAMETER :: nz=11
-  INTEGER, PARAMETER :: nspec=4296
-#elif (RRLIB)
-  INTEGER, PARAMETER :: nz=1
-  INTEGER, PARAMETER :: nspec= 49811 !34994
 #else
   INTEGER, PARAMETER :: nspec=1963
 #if (BASTI)
