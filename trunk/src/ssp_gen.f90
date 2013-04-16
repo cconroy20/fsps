@@ -123,7 +123,9 @@ SUBROUTINE SSP_GEN(pset,mass_ssp,lbol_ssp,spec_ssp)
   imf_vdmc     = pset%vdmc
   imf_mdave    = pset%mdave
 
-  !read in user-defined IMF
+  !read in user-defined IMF (this needs to be done here rather than
+  !in sps_setup because the user can change the IMF without having
+  !to re-run the setup
   IF (imf_type.EQ.5) THEN
      OPEN(13,FILE=TRIM(SPS_HOME)//'/data/imf.dat',ACTION='READ',STATUS='OLD')
      DO i=1,100
@@ -136,10 +138,9 @@ SUBROUTINE SSP_GEN(pset,mass_ssp,lbol_ssp,spec_ssp)
 29   CONTINUE
      CLOSE(13)
      n_user_imf = i-1
-     !force the lower and upper bounds in the tabulated input
-     !to be the the limits defined in sps_vars.f90
-     imf_user_alpha(3,n_user_imf) = imf_upper_limit
-     imf_user_alpha(1,1)          = imf_lower_limit
+     !define the upper and lower IMF limits
+     imf_lower_limit = imf_user_alpha(1,1)
+     imf_upper_limit = imf_user_alpha(2,n_user_imf)
   ENDIF
 
   !transfer isochrones into temporary arrays
