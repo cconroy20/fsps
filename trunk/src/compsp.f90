@@ -601,7 +601,7 @@ SUBROUTINE COMPSP_WARNING(maxtime, pset, nzin, write_compsp)
 
   !-----------------------------------------------------!
 
-  IF (maxtime.LE.1E8) THEN
+  IF (maxtime.LE.1E8.AND.pset%sfh.NE.0) THEN
      WRITE(*,*) 'COMPSP ERROR, maxtime too small:',maxtime
      STOP
   ENDIF
@@ -713,8 +713,8 @@ SUBROUTINE COMPSP_HEADER(unit,pset)
   ELSE
      WRITE(unit,'("#   Log(Z/Zsol): tabulated")')
   ENDIF
-  WRITE(unit,'("#   Fraction of blue HB stars: ",F6.3)') pset%fbhb
-  WRITE(unit,'("#   Ratio of BS to HB stars  : ",F6.3)') pset%sbss
+  WRITE(unit,'("#   Fraction of blue HB stars: ",F6.3,'//&
+       '"; Ratio of BS to HB stars: ",F6.3)') pset%fbhb, pset%sbss
   WRITE(unit,'("#   Shift to TP-AGB [log(Teff),log(Lbol)]: ",F5.2,1x,F5.2)') &
        pset%delt, pset%dell
   IF (imf_type.EQ.2) THEN
@@ -724,6 +724,11 @@ SUBROUTINE COMPSP_HEADER(unit,pset)
      WRITE(unit,'("#   IMF: ",I1,", cut-off= ",F4.2)') imf_type,pset%vdmc
   ELSE
      WRITE(unit,'("#   IMF: ",I1)') imf_type
+  ENDIF
+  IF (compute_vega_mags.EQ.1) THEN
+     WRITE(unit,'("#   Mag Zero Point: Vega (not relevant for *spec files)")')
+  ELSE
+     WRITE(unit,'("#   Mag Zero Point: AB (not relevant for *spec files)")')
   ENDIF
 
 END SUBROUTINE COMPSP_HEADER
