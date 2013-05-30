@@ -4,29 +4,30 @@ SUBROUTINE GETMAGS(zred,spec,mags)
   !given an input spectrum and redshift.
   !see parameter compute_vega_mags in sps_vars.f90
   !magnitudes defined in accordance with Fukugita et al. 1996, Eqn 7
+  !This routine also redshifts the spectrum, if necessary.
 
-  USE sps_vars; USE sps_utils, ONLY : linterp
+  USE sps_vars; USE sps_utils, ONLY : linterp, tsum
   IMPLICIT NONE
 
   INTEGER  :: i
   REAL(SP) :: d
-  REAL(SP), INTENT(in), DIMENSION(nspec) :: spec
+  REAL(SP), INTENT(inout), DIMENSION(nspec) :: spec
   REAL(SP), INTENT(in) :: zred
   REAL(SP), INTENT(inout), DIMENSION(nbands) :: mags
-  REAL(SP), DIMENSION(nspec)  :: tmpspl, tspec
+  REAL(SP), DIMENSION(nspec)  :: tspec
   REAL(SP), DIMENSION(14) :: lami
   INTEGER,  DIMENSION(14) :: ind
 
   !-----------------------------------------------------------!
   !-----------------------------------------------------------!
 
-  !redshift the spectra
+  !redshift the spectrum
   IF (zred.NE.0.0) THEN
-     tmpspl = 0.0
      DO i=1,nspec
         tspec(i) = MAX(linterp(spec_lambda*(1+zred),spec,&
         spec_lambda(i)),0.0)
      ENDDO
+     spec = tspec
   ELSE
      tspec = spec  
   ENDIF
@@ -37,10 +38,8 @@ SUBROUTINE GETMAGS(zred,spec,mags)
 
   !integrate over each filter
   DO i=1,nbands
-     mags(i) = SUM( (spec_lambda(2:nspec)-spec_lambda(1:nspec-1)) * &
-          (tspec(2:nspec)*bands(i,2:nspec)/spec_lambda(2:nspec)+&
-          tspec(1:nspec-1)*bands(i,1:nspec-1)/spec_lambda(1:nspec-1))/2. )
-     mags(i)  = MAX(mags(i),tiny_number)     
+     mags(i) = TSUM(spec_lambda,tspec*bands(i,:)/spec_lambda)
+     mags(i) = MAX(mags(i),tiny_number)
   ENDDO
 
   !normalize the IRAC, PACS, SPIRE, and IRAS photometry to nu*fnu=const
@@ -48,10 +47,8 @@ SUBROUTINE GETMAGS(zred,spec,mags)
        12.0,25.0,60.0,100.0/)*1E4
   DO i=1,14
      ind=(/19,20,21,22,71,72,73,74,75,76,77,78,79,80/)
-     d = SUM( (spec_lambda(2:nspec)-spec_lambda(1:nspec-1)) * &
-          ((spec_lambda(2:nspec)/lami(i))**(-1.0)*bands(ind(i),2:nspec)/&
-          spec_lambda(2:nspec)+(spec_lambda(1:nspec-1)/lami(i))**(-1.0)*&
-          bands(ind(i),1:nspec-1)/spec_lambda(1:nspec-1))/2. )
+     d = TSUM(spec_lambda,(spec_lambda/lami(i))**(-1.0)*bands(ind(i),:)/&
+          spec_lambda)
      IF (mags(ind(i)).GT.tiny_number) &
           mags(ind(i)) = mags(ind(i)) / MAX(d,tiny_number)
   ENDDO
@@ -60,10 +57,8 @@ SUBROUTINE GETMAGS(zred,spec,mags)
   lami(1:3) = (/23.68,71.42,155.9/)*1E4
   DO i=1,3
      ind(1:3) = (/66,67,68/)
-     d = SUM( (spec_lambda(2:nspec)-spec_lambda(1:nspec-1)) * &
-          ((spec_lambda(2:nspec)/lami(i))**(-2.0)*bands(ind(i),2:nspec)/&
-          spec_lambda(2:nspec)+(spec_lambda(1:nspec-1)/lami(i))**(-1.0)*&
-          bands(ind(i),1:nspec-1)/spec_lambda(1:nspec-1))/2. )
+     d = TSUM(spec_lambda,(spec_lambda/lami(i))**(-2.0)*bands(ind(i),:)/&
+          spec_lambda)
      IF (mags(ind(i)).GT.tiny_number) &
           mags(ind(i)) = mags(ind(i)) / MAX(d,tiny_number)
   ENDDO

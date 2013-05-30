@@ -9,7 +9,7 @@ FUNCTION INTSFR(sfh,tau,const,maxtime,sfstart,t1,t2,tweight)
 
   !routine to integrate an analytic SFH from t1 to t2
 
-  USE sps_vars; USE nr, ONLY : locate
+  USE sps_vars; USE nr, ONLY : locate; USE sps_utils, ONLY : tsum
   IMPLICIT NONE
 
   INTEGER, INTENT(in)  :: sfh
@@ -62,8 +62,7 @@ FUNCTION INTSFR(sfh,tau,const,maxtime,sfstart,t1,t2,tweight)
         intsfr = (t1-t2)*0.5*(s1+s2)
      ELSE
         lo = lo+1
-        intsfr = SUM((sfh_tab(1,lo+1:hi)-sfh_tab(1,lo:hi-1))/2.*&
-             (sfh_tab(2,lo:hi-1)+sfh_tab(2,lo+1:hi)))
+        intsfr = TSUM(sfh_tab(1,lo:hi),sfh_tab(2,lo:hi))
         intsfr = intsfr + (t1-sfh_tab(1,hi))*0.5*(s1+sfh_tab(2,hi))
         intsfr = intsfr + (sfh_tab(1,lo)-t2)*0.5*(s2+sfh_tab(2,lo))
      ENDIF
@@ -219,7 +218,7 @@ SUBROUTINE COMPSP(write_compsp,nzin,outfile,mass_ssp,&
   !If tage<=0  -> produce outputs from tmin<t<tmax
 
   USE sps_vars; USE nr, ONLY : locate
-  USE sps_utils, ONLY : getmags, add_dust, linterp, intspec
+  USE sps_utils, ONLY : getmags, add_dust, linterp, intspec, smoothspec
   IMPLICIT NONE
  
   !write_compsp = (1->write mags), (2->write spectra), (3->write both) 
@@ -244,7 +243,16 @@ SUBROUTINE COMPSP(write_compsp,nzin,outfile,mass_ssp,&
   TYPE(COMPSPOUT), INTENT(inout), DIMENSION(ntfull) :: ocompsp
 
   !-------------------------------------------------------------!
-  !------------------------Basic Setup--------------------------!
+  !-------------------First, Add Nebular Emission---------------!
+  !-------------------------------------------------------------!
+
+
+
+
+
+
+  !-------------------------------------------------------------!
+  !---------------------Basic CSP Setup-------------------------!
   !-------------------------------------------------------------!
 
   dtb        = 0.0
@@ -529,7 +537,12 @@ SUBROUTINE COMPSP(write_compsp,nzin,outfile,mass_ssp,&
               delt_burst,sfstart,tau,const,maxtime,mdust)
       ENDIF
       
-      !calculate mags
+      !smooth the spectrum
+      IF (pset%vel_broad.GT.0.0) THEN
+         CALL SMOOTHSPEC(spec_lambda,spec_csp,pset%vel_broad)
+      ENDIF
+
+      !redshift spectrum; calculate mags
       IF (redshift_colors.EQ.0) THEN
          CALL GETMAGS(pset%zred,spec_csp,mags)
       ELSE

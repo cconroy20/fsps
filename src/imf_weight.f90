@@ -18,7 +18,8 @@ SUBROUTINE IMF_WEIGHT(mini,wght,nmass)
   REAL(SP), INTENT(in), DIMENSION(nm)    :: mini
   INTEGER, INTENT(in) :: nmass
   INTEGER  :: i
-  REAL(SP) :: m1,m2
+  REAL(SP) :: m1,m2, i1,i2
+  REAL(SP), DIMENSION(1) :: tm1,tm2,ti1,ti2
 
   !--------------------------------------------------------!
   !--------------------------------------------------------!
@@ -39,6 +40,12 @@ SUBROUTINE IMF_WEIGHT(mini,wght,nmass)
      ENDIF
 
      wght(i) = qromb(imf,m1,m2)
+
+     !tm1 = m1
+     !tm2 = m2
+     !ti1 = imf(tm1)
+     !ti2 = imf(tm2)
+     !write(*,*) m1,m2,wght(i)/ ((m2-m1)*(ti1+ti2)/2.)-1
 
   ENDDO
 

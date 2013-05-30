@@ -1,6 +1,7 @@
 SUBROUTINE ADD_DUST(pset,csp1,csp2,specdust,mdust)
 
-  USE sps_vars; USE nr, ONLY : locate
+  USE sps_vars; USE nr, ONLY : locate 
+  USE sps_utils, ONLY : tsum
   IMPLICIT NONE
 
   REAL(SP), DIMENSION(nspec), INTENT(in) :: csp1,csp2
@@ -212,11 +213,8 @@ SUBROUTINE ADD_DUST(pset,csp1,csp2,specdust,mdust)
         !compute Lbol both before and after dust attenuation
         !this will determine the normalization of the dust emission
         nu    = clight/spec_lambda
-        lbold = SUM( (nu(1:nspec-1)-nu(2:nspec)) * &
-             (specdust(2:nspec)+specdust(1:nspec-1))/2. )
-        lboln = SUM( (nu(1:nspec-1)-nu(2:nspec)) * &
-             (csp1(2:nspec)+csp2(2:nspec)+csp1(1:nspec-1)+&
-             csp2(1:nspec-1))/2. )
+        lbold = TSUM(nu,specdust)
+        lboln = TSUM(nu,csp1+csp2)
      
         !set up qpah interpolation
         qpaharr = (/0.47,1.12,1.77,2.50,3.19,3.90,4.58/)
@@ -252,8 +250,7 @@ SUBROUTINE ADD_DUST(pset,csp1,csp2,specdust,mdust)
 
         !normalize the dust emission to the luminosity absorbed by 
         !the dust, i.e., demand that Lbol remains the same
-        norm  = SUM( (nu(1:nspec-1)-nu(2:nspec)) * &
-             (duste(2:nspec)+duste(1:nspec-1))/2. )
+        norm  = TSUM(nu,duste)
         duste = duste/norm * (lboln-lbold)
         duste = MAX(duste,tiny_number)
 

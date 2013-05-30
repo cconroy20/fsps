@@ -1,4 +1,5 @@
-REVISION HISTORY
+
+-------------------------REVISION HISTORY-----------------------------
 
 01/10/09 
  - Release of FSPS v0.9
@@ -7,64 +8,83 @@ REVISION HISTORY
  - small bug in compsp.f90 fixed.  effected tabulated SFH outputs
 
 1/24/09
- - Bug fixed in the output of *spec files (only effects readin from read_spec.pro)
+
+ - Bug fixed in the output of *spec files (only effects readin from
+   read_spec.pro)
  - Allowed tau to be less than 0.1.  Minor modifications to compsp.f90
  - Added lesssimple.f90 routine
  - Updated the manual	      	 
 
 4/29/09
  - Release of v1.0
- - Bug in BaSeL library fixed.  Effected primarily red/near-IR colors at 
-   the 0.05 mag level.
- - dust attenuation can now be applied to SSPs (i.e. when sfh=0), when 
+ - Bug in BaSeL library fixed.  Effected primarily red/near-IR colors
+   at the 0.05 mag level.
+ - dust attenuation can now be applied to SSPs (i.e. when sfh=0), when
    dust is turned on
- - greatly increased flexibility in the dust model
-   	   - Added Calzetti et al. 2000 attenuation curve
-	   - Several additional parameters were added to the parameter set to control
-	      various aspects of the dust model.  See the manual for details
- - WFPC2 F606W filter was added.   If you have added filters to the FILTER_LIST file
-    you will have to probably contact me to resolve the conflict.
+ - greatly increased flexibility in the dust model: Added Calzetti et
+   al. 2000 attenuation curve; Several additional parameters were
+   added to the parameter set to control various aspects of the dust
+   model.  See the manual for details
+ - WFPC2 F606W filter was added.  If you have added filters to the
+    FILTER_LIST file you will have to probably contact me to resolve
+    the conflict.
 
 11/17/09 
+
  - Release of v2.0.  Major revisions, including a calibration of the
-   TP-AGB parameters Delta_L and Delta_T on Magellanic Cloud data.  See
-   Conroy & Gunn 2009 for details.
+   TP-AGB parameters Delta_L and Delta_T on Magellanic Cloud data.
+   See Conroy & Gunn 2009 for details.
  - BaSTI isochrones added
  - Post-AGB tracks added
  - Witt & Gordon 2000 dust models added
  - Routines for computing spectral indices, and velocity broadening
    added
  
-02/10/10
- - Release of v2.2.  Major revisions, including the addition of synthetic 
-   post-AGB spectra from Rauch 2003, synthetic OB and WR spectra from 
-   Smith et al. 2002, and the Geneva models for massive stars (>70 Msun).  
-   This means that the model predictions are now more accurate at very early
-   ages and in the UV.
+04/15/11
+
+ - Release of v2.2.  Major revisions, including the addition of
+   synthetic post-AGB spectra from Rauch 2003, synthetic OB and WR
+   spectra from Smith et al. 2002, and the Geneva models for massive
+   stars (>70 Msun).  This means that the model predictions are now
+   more accurate at very early ages and in the UV.
  - The directory structure has been reorganized.
  - The code is now in a svn repository for easy future updates
- - There was a bug in compsp that effected early ages.  
- - The time array is now finer, and can be easily modified to be even finer
- - new IMF option: imf_type=5, which allows for tabulated piece-wise power-law IMFs
+ - There was a bug in compsp that effected early ages.
+ - The time array is now finer, and can be easily modified to be even
+   finer
+ - new IMF option: imf_type=5, which allows for tabulated piece-wise
+   power-law IMFs
  - the Miles spectral library is now fully embedded in FSPS
- - the variable Tuniv is now no longer used in setting SFHs.  The final age output
-   is now set by the maximum age in the isochrones (unless the parameter tage is set).
+ - the variable Tuniv is now no longer used in setting SFHs.  The
+   final age output is now set by the maximum age in the isochrones
+   (unless the parameter tage is set).
 
-09/30/10
+09/30/11
 
- - Release of v2.3.  Major update including the addition of dust emission models 
-   from Draine & Li 2007.  The wavelength grid has been expanded to accomodate this
-   new feature.
+ - Release of v2.3.  Major update including the addition of dust
+   emission models from Draine & Li 2007.  The wavelength grid has
+   been expanded to accomodate this new feature.
  - Addition of many filters, including many in the IR and submm.
- - The empirical Carbon star spectra are now extrapolated beyond 2.4um with the 
-   Aringer et al. 2009 synthetic stellar library.
- - The empirical M star spectra are now extrapolated beyond 2.4um with the latest
-   PHOENIX theoretical stellar library (the BT-SETTL grid).
- - Switching between different isochrones and stellar libaries is now more transparent
-   in the sps_vars.f90 module.
+ - The empirical carbon star spectra are now extrapolated beyond 2.4um
+   with the Aringer et al. 2009 synthetic stellar library.
+ - The empirical M star spectra are now extrapolated beyond 2.4um with
+   the PHOENIX theoretical stellar library (the BT-SETTL grid).
+ - Switching between different isochrones and stellar libaries is now
+   more transparent in the sps_vars.f90 module.
 
 XX/XX/XX
 
  - Release of v2.4.  
- - Bug found related to post-AGB stars.  This was affecting far-UV spectra at old ages.
-
+ - Bug found related to post-AGB stars.  This was affecting far-UV
+   spectra at old ages.
+ - MILES library is now combined with BaSeL so that when the MILES
+   spectral library is used, the wavelengths are extended beyond the
+   nominal MILES limits with the BaSeL grid.
+ - Bug fixed related to user-defined tabulated IMF.
+ - Bug fixed related to normalization of Spitzer/MIPS magnitudes
+ - Filter list has been explanded and slightly re-organized
+ - When the "zred" (redshift) flag is non-zero, the output spectra are
+   now redshifted, in addition to the magnitudes
+ - Spectra can now be smoothed by a Gaussian that is constant in
+   either wavelength or velocity space.  This is now a parameter in
+   the main parameter set.

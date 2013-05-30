@@ -28,17 +28,19 @@
 
   imf_type  = 2             !define the IMF (1=Chabrier 2003)
                             !see sps_vars.f90 for details of this var
-  pset%zmet = 13            !define the metallicity (see the manual)
+  pset%zmet = 20            !define the metallicity (see the manual)
                             !20 = solar metallacity
 
   CALL SPS_SETUP(pset%zmet) !read in the isochrones and spectral libraries
 
   !define the parameter set.  These are the default values, specified 
   !in sps_vars.f90, but are explicitly included here for transparency
-  pset%sfh   = 0     !set SFH to "SSP"
+  pset%sfh   = 1     !set SFH to "SSP"
   pset%zred  = 0.0   !redshift  
   pset%dust1 = 0.0   !dust parameter 1
   pset%dust2 = 0.0   !dust parameter 2
+  pset%fburst = 0.1
+
   pset%dell  = 0.0   !shift in log(L) for TP-AGB stars
   pset%delt  = 0.0   !shift in log(Teff) for TP-AGB stars
   pset%fbhb  = 0.0   !fraction of blue HB stars
@@ -49,6 +51,8 @@
   !compute mags and write out mags and spec for SSP
   file1 = 'SSP.out'
   CALL COMPSP(3,1,file1,mass_ssp,lbol_ssp,spec_ssp,pset,ocompsp)
+
+
 
   ! Now lets compute a 1 Gyr tau model SFH with a van Dokkum 2008 IMF,
   ! with a simple dust model, at a particular time 
@@ -66,7 +70,7 @@
   pset%tau   = 2.0   !tau units are Gyr
   pset%dust1 = 1.0   !dust parameter 1
   pset%dust2 = 0.3   !dust parameter 2
-  pset%tage  = 12.5  !age at which we want the mags
+  !pset%tage  = 12.5  !age at which we want the mags
 
   !compute the CSP
   CALL SSP_GEN(pset,mass_ssp,lbol_ssp,spec_ssp)
@@ -77,5 +81,6 @@
   !compute basic SFH statistics for the last entry in the ocompsp array
   !results are returned in the variables ssfr6,...,ave_age
   CALL SFHSTAT(pset,ocompsp(1),ssfr6,ssfr7,ssfr8,ave_age)
+
 
 END PROGRAM SIMPLE
