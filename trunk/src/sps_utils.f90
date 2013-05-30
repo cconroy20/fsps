@@ -60,26 +60,6 @@ MODULE SPS_UTILS
      END SUBROUTINE GETINDX
   END INTERFACE
 
-  !this is a private routine not included in the public release
-  INTERFACE
-     SUBROUTINE FITGAL_INIT(switch,pos,powell_pos)
-       USE sps_vars
-       INTEGER, INTENT(in) :: switch
-       TYPE(PARAMS), INTENT(inout) :: pos
-       REAL(SP), OPTIONAL, DIMENSION(:), INTENT(inout) :: powell_pos
-     END SUBROUTINE FITGAL_INIT
-  END INTERFACE
-
-  !this is a private routine not included in the public release
-  INTERFACE
-     SUBROUTINE FITFAST_INIT(switch,pos,powell_pos)
-       USE sps_vars
-       INTEGER, INTENT(in) :: switch
-       TYPE(PARAMS), INTENT(inout) :: pos
-       REAL(SP), OPTIONAL, DIMENSION(:), INTENT(inout) :: powell_pos
-     END SUBROUTINE FITFAST_INIT
-    END INTERFACE
-
   INTERFACE
      FUNCTION GET_TUNIV(z)
        USE sps_vars
@@ -100,7 +80,7 @@ MODULE SPS_UTILS
   INTERFACE
      SUBROUTINE GETMAGS(zred,spec,mags) 
        USE sps_vars
-       REAL(SP), INTENT(in), DIMENSION(nspec) :: spec
+       REAL(SP), INTENT(inout), DIMENSION(nspec) :: spec
        REAL(SP), INTENT(in) :: zred
        REAL(SP), DIMENSION(nbands) :: mags
      END SUBROUTINE GETMAGS
@@ -197,58 +177,28 @@ MODULE SPS_UTILS
      END SUBROUTINE MOD_HB
   END INTERFACE
 
-  !this is a private routine not included in the public release
   INTERFACE
-     SUBROUTINE READ_SPEC(file,lambda,spec,time,mass,lbol,n_isoc)
+     FUNCTION MYRAN()
        USE sps_vars
-       INTEGER, INTENT(out) :: n_isoc
-       CHARACTER(60), INTENT(in) :: file
-       REAL(SP), INTENT(out), DIMENSION(nspec) :: lambda
-       REAL(SP), INTENT(out), DIMENSION(nt,nspec) :: spec
-       REAL(SP), INTENT(out), DIMENSION(nt) :: time, mass, lbol
-     END SUBROUTINE READ_SPEC
-  END INTERFACE
-  
-  !this is a private routine not included in the public release
-  INTERFACE
-     FUNCTION SPS_PRIORS(pos)
-       USE sps_vars
-       TYPE(PARAMS), INTENT(in) :: pos
-       REAL(SP) :: sps_priors
-     END FUNCTION SPS_PRIORS
-  END INTERFACE
-  
-  !this is a private routine not included in the public release
-  INTERFACE
-     FUNCTION SPS_CHI2(data,pos,csp,c)
-       USE sps_vars
-       TYPE(OBSDAT), INTENT(in)       :: data
-       TYPE(COMPSPOUT), INTENT(inout) :: csp
-       TYPE(PARAMS), INTENT(in)       :: pos
-       REAL(SP), INTENT(out), OPTIONAL :: c
-       REAL(SP) :: sps_chi2
-     END FUNCTION SPS_CHI2
-  END INTERFACE
-
-  !this is a private routine not included in the public release
-  INTERFACE
-     FUNCTION SPS_CHI2_PHOTZ(data,pos,csp,pzphot)
-       USE sps_vars
-       TYPE(OBSDAT), INTENT(in)       :: data
-       TYPE(COMPSPOUT), INTENT(inout) :: csp
-       TYPE(PARAMS), INTENT(in)       :: pos
-       TYPE(TPZPHOT), INTENT(in)       :: pzphot
-       REAL(SP) :: sps_chi2_photz
-     END FUNCTION SPS_CHI2_PHOTZ
+       REAL(SP) :: myran
+     END FUNCTION MYRAN
   END INTERFACE
 
   INTERFACE
-     SUBROUTINE VELBROAD(lambda,spec,sigma)
+     FUNCTION TSUM(xin,yin)
+       USE sps_vars
+       REAL(SP), DIMENSION(:), INTENT(in) :: xin,yin
+       REAL(SP) :: tsum
+     END FUNCTION TSUM
+  END INTERFACE
+
+  INTERFACE
+     SUBROUTINE SMOOTHSPEC(lambda,spec,sigma)
        USE sps_vars
        REAL(SP), INTENT(inout), DIMENSION(nspec) :: spec
        REAL(SP), INTENT(in), DIMENSION(nspec) :: lambda
        REAL(SP), INTENT(in) :: sigma
-     END SUBROUTINE VELBROAD
+     END SUBROUTINE SMOOTHSPEC
   END INTERFACE
 
   INTERFACE
@@ -257,16 +207,6 @@ MODULE SPS_UTILS
        INTEGER, INTENT(in) :: zz
        CHARACTER(100), INTENT(in)  :: file
      END SUBROUTINE WRITE_ISOCHRONE
-  END INTERFACE
-
-  !this is a private routine not included in the public release
-  INTERFACE
-     SUBROUTINE ZINTERP(zpos,spec,lbol,mass)
-       USE sps_vars
-       REAL(SP),INTENT(in) :: zpos
-       REAL(SP),INTENT(inout),DIMENSION(ntfull) :: mass, lbol
-       REAL(SP),INTENT(inout),DIMENSION(ntfull,nspec) :: spec
-     END SUBROUTINE ZINTERP
   END INTERFACE
 
 END MODULE SPS_UTILS

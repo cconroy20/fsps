@@ -32,7 +32,7 @@ SUBROUTINE MOD_GB(zz,t,age,delt,dell,pagb,redgb,&
            ELSE
               logl(t,i) = logl(t,i) - &
                    MAX(MIN(0.4,-log10(zlegend(zz)/0.0190)),0.2)
-              logt(t,i) = logt(t,i) + 0.1-MIN((age(t)-9.1)/1.5,0.2)
+              logt(t,i) = logt(t,i) + 0.1 -MIN((age(t)-9.1)/1.5,0.2)
            ENDIF
         ENDIF
         logl(t,i) = logl(t,i) + dell

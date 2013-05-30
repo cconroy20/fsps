@@ -13,7 +13,7 @@ SUBROUTINE GETSPEC(zz,mact,logt,lbol,logg,phase,ffco,spec)
   REAL(SP), INTENT(in) :: mact,logt,lbol,logg,phase,ffco
   INTEGER,  INTENT(in) :: zz
   REAL(SP), INTENT(inout), DIMENSION(nspec) :: spec  
-  REAL(SP) :: t,u,r2,tpagbtdiff,sumtest,loggi
+  REAL(SP) :: t,u,r2,tpagbtdiff,sum1,sum2,sum3,sum4,loggi
   INTEGER  :: klo,jlo,flag
 
   !---------------------------------------------------------------!
@@ -23,8 +23,7 @@ SUBROUTINE GETSPEC(zz,mact,logt,lbol,logg,phase,ffco,spec)
   flag = 0
 
   !compute radius squared (cm^2) 
-  !we need to re-compute logg becuase we modify the logt,logl
-  !of AGB stars
+  !we need to re-compute logg becuase we modify the logt,logl of AGB stars
   loggi = LOG10( gsig4pi*mact/lbol ) + 4*logt
   r2    = mact*msun*newton/10**loggi
 
@@ -126,13 +125,17 @@ SUBROUTINE GETSPEC(zz,mact,logt,lbol,logg,phase,ffco,spec)
      u   = (loggi-basel_logg(klo))   / &
           (basel_logg(klo+1)-basel_logg(klo))
      
-     !catch stars that fall off the grid
-     sumtest = SUM(speclib(:,zz,jlo:jlo+1,klo:klo+1))
-     IF (sumtest.EQ.0.0.AND.phase.NE.6.0) &
-          write(*,'("GETSPEC WARNING: part of an '//&
-          'isochrone is off of the spectral grid:  Z=",I2,'//&
-          '" logT=",F5.2," logg=",F5.2," phase=",F2.0)') &
-          zz,logt,loggi,phase
+     !catch stars that fall off part of the grid
+     sum1 = SUM(speclib(:,zz,jlo,klo))
+     sum2 = SUM(speclib(:,zz,jlo+1,klo))
+     sum3 = SUM(speclib(:,zz,jlo,klo+1))
+     sum4 = SUM(speclib(:,zz,jlo+1,klo+1))
+    ! IF ((sum1.EQ.0.0.OR.sum2.EQ.0.OR.sum3.EQ.0.OR.sum4.EQ.0)&
+    !      .AND.phase.NE.6.0) &
+    !      write(*,'("GETSPEC WARNING: part of an '//&
+    !      'isochrone is off of the spectral grid:  Z=",I2,'//&
+    !      '" logT=",F5.2," logg=",F5.2," phase=",F2.0)') &
+    !      zz,logt,loggi,phase
      
      !bilinear interpolation over every spectral element
      !NB: extra factor of 4pi, that I can't explain,
@@ -146,7 +149,7 @@ SUBROUTINE GETSPEC(zz,mact,logt,lbol,logg,phase,ffco,spec)
   ENDIF
  
   !make sure the spectrum never has any zero's
-  spec = MAX(spec,0.0)
+  spec = MAX(spec,tiny_number)
   
   IF (flag.EQ.0.AND.spec_type.EQ.'basel') THEN
      WRITE(*,*) 'GETSPEC ERROR: isochrone point not assigned a spectrum',&

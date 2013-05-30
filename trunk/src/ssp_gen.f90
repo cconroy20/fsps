@@ -59,11 +59,11 @@ END SUBROUTINE STITCH_PAGB
 
 SUBROUTINE SSP_GEN(pset,mass_ssp,lbol_ssp,spec_ssp)
 
-  USE sps_vars; USE nr, ONLY : locate, ran
+  USE sps_vars; USE nr, ONLY : locate
   USE sps_utils
   IMPLICIT NONE
   
-  INTEGER :: i=1, j=1, stat,ii,klo,khi,idum=-1
+  INTEGER :: i=1, j=1, stat,ii,klo,khi
   !weight given to the entire horizontal branch
   REAL(SP) :: hb_wght,dt,tco
   !array of IMF weights
@@ -223,7 +223,7 @@ SUBROUTINE SSP_GEN(pset,mass_ssp,lbol_ssp,spec_ssp)
         tco = ffco(i,j)
         IF (phase(i,j).EQ.5.AND.tco.GT.1.0) THEN
            !dilute the C star fraction
-           IF (ran(idum).GE.pset%fcstar) tco = 1.0
+           IF (myran().GE.pset%fcstar) tco = 1.0
         ENDIF
         CALL GETSPEC(pset%zmet,mact(i,j),logt(i,j),&
              10**logl(i,j),logg(i,j),phase(i,j),tco,tspec)

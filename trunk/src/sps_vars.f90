@@ -8,9 +8,15 @@ MODULE SPS_VARS
 !define either BaSeL/Kurucz, MILES, or HR CaT spectral library
 #define BASEL 1
 #define MILES 0
-!define either Padova or BaSTI isochrones
+!the following options are not included in the public release
+#define HRLIB 0
+#define RRLIB 0
+!define either Padova, BaSTI, or MESA isochrones
 #define PADOVA 1
 #define BASTI 0
+#define MESA 0
+
+  !--------------------------------------------------------------!
 
   INTEGER, PARAMETER :: SP = KIND(1.0D0)
   INTEGER, PARAMETER :: RSP = KIND(1.0)
@@ -18,7 +24,7 @@ MODULE SPS_VARS
   !------Common parameters that may be altered by the user-------!
   
   !setup cosmology (WMAP7).  Used only for z(t) relation.
-  REAL(SP) :: om0=0.26, ol0=0.74, H0=72.
+  REAL(SP) :: om0=0.27, ol0=0.73, H0=72.
   
   !controls the level of output (0 = no output to screen)
   INTEGER, PARAMETER :: verbose=0
@@ -34,11 +40,15 @@ MODULE SPS_VARS
   INTEGER, PARAMETER :: time_res_incr=2
 
   !turn on/off computation of light-weighted stellar ages
-  !NB: This is only partially implemented, and only for straight tau models
+  !NB: This is only partially implemented, and only for tau models
   INTEGER, PARAMETER :: compute_light_ages=0
 
   !turn on/off the Draine & Li 2007 dust emission model 
   INTEGER, PARAMETER :: add_dust_emission=1
+
+  !turn on/off a Cloudy-based nebular emission model 
+  !NB: this is not yet implemented
+  INTEGER, PARAMETER :: add_neb_emission=0
 
   !turn on/off the addition of stellar remnants to the 
   !computation of stellar masses
@@ -80,6 +90,8 @@ MODULE SPS_VARS
   !'bsti' = BaSTI, 'pdva' = Padova 2007
 #if (BASTI)
   CHARACTER(4), PARAMETER :: isoc_type = 'bsti'
+#elif (MESA)
+  CHARACTER(4), PARAMETER :: isoc_type = 'mesa'
 #else
   CHARACTER(4), PARAMETER :: isoc_type = 'pdva'
 #endif
@@ -87,6 +99,11 @@ MODULE SPS_VARS
   !flag indicating type of spectral library to use
 #if (MILES)
   CHARACTER(5), PARAMETER :: spec_type = 'miles'
+#elif (HRLIB)
+  !CHARACTER(5), PARAMETER :: spec_type = 'hrlib'
+  CHARACTER(11), PARAMETER :: spec_type = 'hrlib_a+0.3'
+#elif (RRLIB)
+  CHARACTER(5), PARAMETER :: spec_type = 'rrlib'
 #else
   CHARACTER(5), PARAMETER :: spec_type = 'basel'
 #endif
@@ -96,10 +113,18 @@ MODULE SPS_VARS
 #if (MILES)
   INTEGER, PARAMETER :: nz=5
   INTEGER, PARAMETER :: nspec=5252
+#elif (HRLIB)
+  INTEGER, PARAMETER :: nz=11
+  INTEGER, PARAMETER :: nspec=4296
+#elif (RRLIB)
+  INTEGER, PARAMETER :: nz=1
+  INTEGER, PARAMETER :: nspec= 49811 !34994
 #else
   INTEGER, PARAMETER :: nspec=1963
 #if (BASTI)
   INTEGER, PARAMETER :: nz=10
+#elif (MESA)
+  INTEGER, PARAMETER :: nz=1
 #else   
   INTEGER, PARAMETER :: nz=22
 #endif
@@ -239,6 +264,10 @@ MODULE SPS_VARS
   REAL(SP), DIMENSION(3,ntabmax) :: sfh_tab=0.0
   INTEGER :: ntabsfh=0
 
+  !variables used in smoothspec.f90 routine
+  REAL(SP) :: dlstep
+  REAL(SP), DIMENSION(nspec) :: lnlam
+
   !bandpass filters 
   REAL(SP), DIMENSION(nbands,nspec) :: bands
   !magnitude of the Sun in all filters
@@ -302,7 +331,7 @@ MODULE SPS_VARS
           dust_tesc=7.0,frac_obrun=0.0,uvb=1.0,mwr=3.1,redgb=1.0,&
           dust1_index=-1.0,mdave=0.5,sf_start=0.0,sf_trunc=0.0,sf_theta=0.0,&
           duste_gamma=0.01,duste_umin=1.0,duste_qpah=3.5,fcstar=1.0,&
-          masscut=150.0
+          masscut=150.0,vel_broad=0.0
      INTEGER :: zmet=1,sfh=0,wgp1=1,wgp2=1,wgp3=1,evtype=-1
   END TYPE PARAMS
   
@@ -310,7 +339,7 @@ MODULE SPS_VARS
   TYPE COMPSPOUT
      REAL(SP) :: age=0.,mass_csp=0.,lbol_csp=0.,sfr=0.,mdust=0.0
      REAL(SP), DIMENSION(nbands) :: mags=0.
-     REAL(SP), DIMENSION(nspec) :: spec=0.
+     REAL(SP), DIMENSION(nspec)  :: spec=0.
   END TYPE COMPSPOUT
   
   !-----the following structures are not used in the public code-----!

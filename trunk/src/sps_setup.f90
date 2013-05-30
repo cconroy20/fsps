@@ -29,6 +29,9 @@ SUBROUTINE SPS_SETUP(zin)
      WRITE(*,*) '    Setting up SPS...'
   ENDIF
 
+  !initialize the random number generator
+  CALL init_random_seed()
+
   !clean out all the common block arrays
   mini_isoc     = 0.
   mact_isoc     = 0.
@@ -60,7 +63,8 @@ SUBROUTINE SPS_SETUP(zin)
      STOP
   ENDIF
 
-  IF (isoc_type.NE.'pdva'.AND.isoc_type.NE.'bsti') THEN
+  IF (isoc_type.NE.'pdva'.AND.isoc_type.NE.'bsti'.AND.&
+       isoc_type.NE.'mesa') THEN
      WRITE(*,*) 'SPS_SETUP ERROR: isoc_type var set to invalid type: ',isoc_type
      STOP
   ENDIF
@@ -71,8 +75,7 @@ SUBROUTINE SPS_SETUP(zin)
   ENDIF
 
   IF (spec_type.NE.'basel'.AND.spec_type.NE.'miles'.AND.spec_type.NE.'picks'&
-       .AND.spec_type(1:5).NE.'calib'.AND.spec_type.NE.'colib'.AND.&
-       spec_type(1:5).NE.'hrlib'.AND.spec_type.NE.'rrlib') THEN
+       .AND.spec_type(1:5).NE.'hrlib'.AND.spec_type.NE.'rrlib') THEN
      WRITE(*,*) 'SPS_SETUP ERROR: spec_type var set to invalid type: ',spec_type
      STOP
   ENDIF
@@ -108,6 +111,9 @@ SUBROUTINE SPS_SETUP(zin)
           spec_type(1:5)//'.dat',STATUS='OLD',iostat=stat,ACTION='READ')
   ELSE IF (isoc_type.EQ.'bsti') THEN
      OPEN(90,FILE=TRIM(SPS_HOME)//'/ISOCHRONES/BaSTI/zlegend_'//&
+          spec_type(1:5)//'.dat',STATUS='OLD',iostat=stat,ACTION='READ')
+ ELSE IF (isoc_type.EQ.'mesa') THEN
+     OPEN(90,FILE=TRIM(SPS_HOME)//'/ISOCHRONES/MESA/zlegend_'//&
           spec_type(1:5)//'.dat',STATUS='OLD',iostat=stat,ACTION='READ')
   ENDIF
   IF (stat.NE.0) THEN
@@ -148,8 +154,7 @@ SUBROUTINE SPS_SETUP(zin)
   ELSE IF (spec_type.EQ.'picks') THEN
      OPEN(91,FILE=TRIM(SPS_HOME)//'/SPECTRA/Pickles/pickles.lambda',&
           STATUS='OLD',iostat=stat,ACTION='READ')
-  ELSE IF (spec_type(1:5).EQ.'calib'.OR.spec_type.EQ.'colib'.OR.&
-       spec_type(1:5).EQ.'hrlib'.OR.spec_type.EQ.'rrlib') THEN
+  ELSE IF (spec_type(1:5).EQ.'hrlib'.OR.spec_type.EQ.'rrlib') THEN
      OPEN(91,FILE=TRIM(SPS_HOME)//'/SPECTRA/HRLIB/'//spec_type(1:5)//&
           '.lambda',STATUS='OLD',iostat=stat,ACTION='READ')
   ENDIF
@@ -199,8 +204,7 @@ SUBROUTINE SPS_SETUP(zin)
              //'spectra.bin',FORM='UNFORMATTED',&
              STATUS='OLD',iostat=stat,ACTION='READ',access='direct',&
              recl=nspec*ndim_logg*ndim_logt*4)
-     ELSE IF (spec_type(1:5).EQ.'calib'.OR.spec_type.EQ.'colib'.OR.&
-          spec_type(1:5).EQ.'hrlib'.OR.spec_type.EQ.'rrlib') THEN
+     ELSE IF (spec_type(1:5).EQ.'hrlib'.OR.spec_type.EQ.'rrlib') THEN
         OPEN(92,FILE=TRIM(SPS_HOME)//'/SPECTRA/HRLIB/'//spec_type//'_z'&
              //zstype//'.spectra.bin',FORM='UNFORMATTED',&
              STATUS='OLD',iostat=stat,ACTION='READ',access='direct',&
@@ -220,8 +224,7 @@ SUBROUTINE SPS_SETUP(zin)
   speclib = rspeclib
 
   !these stars are only included with BaSeL or MILES libraries
-  IF (spec_type.NE.'picks'.AND.spec_type(1:5).NE.'calib'&
-       .AND.spec_type.NE.'colib'.AND.spec_type(1:5).NE.'hrlib'&
+  IF (spec_type.NE.'picks'.AND.spec_type(1:5).NE.'hrlib'&
        .AND.spec_type.NE.'rrlib') THEN
 
      !read in AGB Teff array for O-rich spectra
@@ -371,10 +374,15 @@ SUBROUTINE SPS_SETUP(zin)
           OPEN(97,FILE=TRIM(SPS_HOME)//&
           '/ISOCHRONES/Padova/Padova2007/isoc_z'//&
           zstype//'.dat',STATUS='OLD', IOSTAT=stat,ACTION='READ')
+     !open MESA isochrones
+     IF (isoc_type.EQ.'mesa') &
+          OPEN(97,FILE=TRIM(SPS_HOME)//&
+          'ISOCHRONES/MESA/isoc_z'//zstype//'.dat',STATUS='OLD',&
+          IOSTAT=stat,ACTION='READ')
      !open BaSTI isochrones
      IF (isoc_type.EQ.'bsti') &
           OPEN(97,FILE=TRIM(SPS_HOME)//&
-          'ISOCHRONES//BaSTI/isoc_z'//zstype//'.dat',STATUS='OLD',&
+          'ISOCHRONES/BaSTI/NOVER/isoc_z'//zstype//'.dat',STATUS='OLD',&
           IOSTAT=stat,ACTION='READ')
 
      IF (stat.NE.0) THEN
@@ -475,6 +483,13 @@ SUBROUTINE SPS_SETUP(zin)
 
   ENDDO
 
+  !logarithmic wavelength grid used in smoothspec.f90
+  dlstep = (LOG(MAXVAL(spec_lambda))-&
+       LOG(MINVAL(spec_lambda)))/nspec
+  DO i=1,nspec
+     lnlam(i) = i*dlstep+LOG(MINVAL(spec_lambda))
+  ENDDO
+
   !----------------------------------------------------------------!
   !-------------------Set up magnitude info------------------------!
   !----------------------------------------------------------------!
@@ -571,17 +586,13 @@ SUBROUTINE SPS_SETUP(zin)
      ENDDO
 
      !normalize
-     dumr1 = SUM( (spec_lambda(2:nspec)-spec_lambda(1:nspec-1)) * &
-          (bands(i,2:nspec)/spec_lambda(2:nspec)+&
-          bands(i,1:nspec-1)/spec_lambda(1:nspec-1))/2. )
+     dumr1 = TSUM(spec_lambda,bands(i,:)/spec_lambda)
      !in this case the band is entirely outside the wavelength array
      IF (dumr1.EQ.0.0) dumr1=1.0 
      bands(i,:) = bands(i,:) / dumr1
 
      !compute absolute magnitude of the Sun in all filters
-     magsun(i) = SUM( (spec_lambda(2:nspec)-spec_lambda(1:nspec-1)) * &
-          (sun_spec(2:nspec)*bands(i,2:nspec)/spec_lambda(2:nspec)+&
-          sun_spec(1:nspec-1)*bands(i,1:nspec-1)/spec_lambda(1:nspec-1))/2. )
+     magsun(i) = TSUM(spec_lambda,sun_spec*bands(i,:)/spec_lambda)
      IF (magsun(i).LT.2*tiny_number) THEN
         magsun(i) = 99.0
      ELSE
@@ -589,9 +600,7 @@ SUBROUTINE SPS_SETUP(zin)
      ENDIF
 
      !compute mags of Vega
-     magvega(i) = SUM( (spec_lambda(2:nspec)-spec_lambda(1:nspec-1)) * &
-          (vega_spec(2:nspec)*bands(i,2:nspec)/spec_lambda(2:nspec)+&
-          vega_spec(1:nspec-1)*bands(i,1:nspec-1)/spec_lambda(1:nspec-1))/2. )
+     magvega(i) = TSUM(spec_lambda,vega_spec*bands(i,:)/spec_lambda)
      magvega(i) = -2.5 * LOG10(magvega(i)) - 48.60
      
      !put Sun magnitudes in the Vega system if keyword is set
