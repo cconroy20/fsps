@@ -29,6 +29,11 @@ SUBROUTINE SPS_SETUP(zin)
      WRITE(*,*) '    Setting up SPS...'
   ENDIF
 
+  IF (zin.GT.nz) THEN
+     WRITE(*,*) 'SPS_SETUP ERROR: zin GT nz', zin,nz
+     STOP
+  ENDIF
+
   !initialize the random number generator
   CALL init_random_seed()
 
@@ -424,6 +429,11 @@ SUBROUTINE SPS_SETUP(zin)
 20   CONTINUE
      CLOSE(97)
 
+     IF (n_isoc.NE.nt) THEN 
+        WRITE(*,*) 'SPS_SETUP ERROR: number of isochrones NE nt',n_isoc,nt
+        STOP
+     ENDIF
+
   ENDDO
 
   !----------------------------------------------------------------!
@@ -574,7 +584,7 @@ SUBROUTINE SPS_SETUP(zin)
         STOP
      ENDIF
      IF (jj.EQ.0) THEN
-        WRITE(*,*) 'SPS_SETUP ERROR: error during filter definition read-in'
+        WRITE(*,*) 'SPS_SETUP ERROR: error during filter definition read-in',i
         STOP
      ENDIF
 

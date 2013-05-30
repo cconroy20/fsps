@@ -90,10 +90,13 @@ MODULE SPS_VARS
   !'bsti' = BaSTI, 'pdva' = Padova 2007
 #if (BASTI)
   CHARACTER(4), PARAMETER :: isoc_type = 'bsti'
+  INTEGER, PARAMETER :: nt=94
 #elif (MESA)
   CHARACTER(4), PARAMETER :: isoc_type = 'mesa'
+  INTEGER, PARAMETER :: nt=51
 #else
   CHARACTER(4), PARAMETER :: isoc_type = 'pdva'
+  INTEGER, PARAMETER :: nt=94
 #endif
 
   !flag indicating type of spectral library to use
@@ -140,15 +143,15 @@ MODULE SPS_VARS
 
   !You must change the number of bands here if
   !filters are added to allfilters.dat
-  INTEGER, PARAMETER :: nbands=86
+  INTEGER, PARAMETER :: nbands=50
   !number of indices defined in allindices.dat
   INTEGER, PARAMETER :: nindsps=30
   
   !The following parameters should never be changed
    !unless you are changing the libraries
 
-  !max dimension of mass and time arrays for isochrones
-  INTEGER, PARAMETER :: nm=1500, nt=94
+  !max dimension of array for each isochrone
+  INTEGER, PARAMETER :: nm=1500
   !dimension of Kurucz/BaSeL atlas
   INTEGER, PARAMETER :: ndim_basel=1221
   !max number of lines to read in
