@@ -9,9 +9,9 @@ SETUP INSTRUCTIONS
     simply typing "make"
 
 3.  email cconroy@ucolick.org so that I can keep you posted on updates.  
-      ->  this step is actually important.  Every code has bugs.  If I don't know 
+      ->  this step is actually important!  Every code has bugs.  If I don't know 
 	  that you're using this code, I can't tell you that I found a catastrophic 
-	  bug that invalidates all of your results!
+	  bug that invalidates all of your results.
 
 4.  please email me if have any problems or find any bugs.
 
@@ -27,5 +27,6 @@ SETUP INSTRUCTIONS
 NOTES:
 
 1.  It has been reported that the code crashes if compiled with
-    earlier versions of gfortran (specifically v4.2.1).  The code compiles 
-    sucessfully with gfortran v4.4 and later.
+    earlier versions of gfortran (specifically v4.2.1).  The code has
+    been tested and compiles sucessfully with gfortran v4.4 and later.
+    (FYI, I currently compile FSPS with gfortran v4.9.0).

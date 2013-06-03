@@ -81,10 +81,16 @@ XX/XX/XX
    spectral library is used, the wavelengths are extended beyond the
    nominal MILES limits with the BaSeL grid.
  - Bug fixed related to user-defined tabulated IMF.
- - Bug fixed related to normalization of Spitzer/MIPS magnitudes
- - Filter list has been explanded and slightly re-organized
+ - Bug fixed related to normalization of Spitzer MIPS magnitudes
  - When the "zred" (redshift) flag is non-zero, the output spectra are
    now redshifted, in addition to the magnitudes
  - Spectra can now be smoothed by a Gaussian that is constant in
    either wavelength or velocity space.  This is now a parameter in
-   the main parameter set.
+   the main parameter set.  (This feature is still in beta-testing)
+ - Major update to the filter set (see the file FILTER_LIST in the
+   data directory for details).  Many new HST filters have been added,
+   and the ordering of the filters has changed compeletely.  Please
+   keep this in mind when reading the *mags file!  If you use the
+   read_mags.pro routine provided with FSPS to read in the *mags files
+   then you will notice no change except the increased number of
+   available filters.
