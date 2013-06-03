@@ -143,7 +143,7 @@ MODULE SPS_VARS
 
   !You must change the number of bands here if
   !filters are added to allfilters.dat
-  INTEGER, PARAMETER :: nbands=50
+  INTEGER, PARAMETER :: nbands=105
   !number of indices defined in allindices.dat
   INTEGER, PARAMETER :: nindsps=30
   
