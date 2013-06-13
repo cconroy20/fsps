@@ -116,14 +116,18 @@ MODULE SPS_VARS
 #if (MILES)
   INTEGER, PARAMETER :: nz=5
   INTEGER, PARAMETER :: nspec=5252
+  INTEGER, PARAMETER :: min_lam_smooth=355, max_lam_smooth=4575
 #elif (HRLIB)
   INTEGER, PARAMETER :: nz=11
   INTEGER, PARAMETER :: nspec=4296
+  INTEGER, PARAMETER :: min_lam_smooth=1, max_lam_smooth=nspec
 #elif (RRLIB)
   INTEGER, PARAMETER :: nz=1
   INTEGER, PARAMETER :: nspec= 49811 !34994
+  INTEGER, PARAMETER :: min_lam_smooth=1, max_lam_smooth=nspec
 #else
   INTEGER, PARAMETER :: nspec=1963
+  INTEGER, PARAMETER :: min_lam_smooth=1, max_lam_smooth=nspec
 #if (BASTI)
   INTEGER, PARAMETER :: nz=10
 #elif (MESA)
