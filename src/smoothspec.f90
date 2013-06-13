@@ -1,7 +1,7 @@
 SUBROUTINE SMOOTHSPEC(lambda,spec,sigma)
 
   !routine to compute velocity broadening of an input spectrum
-  !the PSF kernel has a width of m*sigma, where m=6
+  !the PSF kernel has a width of m*sigma, where m=4
 
   USE sps_vars; USE nr, ONLY : locate
   USE sps_utils, ONLY : linterp
@@ -12,7 +12,7 @@ SUBROUTINE SMOOTHSPEC(lambda,spec,sigma)
   REAL(SP), INTENT(in) :: sigma
   REAL(SP), DIMENSION(nspec) :: tspec,tnspec,vel,func,gauss,psf
   REAL(SP) :: cg,xmax,xmin,fwhm,psig
-  INTEGER :: i,j,il,ih,m=6,grange
+  INTEGER :: i,j,il,ih,m=4,grange
 
   !---------------------------------------------------------------!
   !---------------------------------------------------------------!
@@ -22,10 +22,11 @@ SUBROUTINE SMOOTHSPEC(lambda,spec,sigma)
      DO i=1,nspec
         tspec(i) = linterp(LOG(lambda(1:nspec)),spec(1:nspec),lnlam(i))
      ENDDO
-     
-     fwhm   = sigma*2.35482/clight*1E5/dlstep
+  
+     fwhm   = sigma*2.35482/clight*1E8*1E5/dlstep
      psig   = fwhm/2.d0/SQRT(-2.d0*LOG(0.5d0)) ! equivalent sigma for kernel
      grange = FLOOR(m*psig)	               ! range for kernel (-range:range)
+
      DO i=1,2*grange+1
         psf(i) = 1.d0/SQRT(2.d0*mypi)/psig*EXP(-((i-grange-1)/psig)**2/2.d0)
      ENDDO
@@ -36,7 +37,7 @@ SUBROUTINE SMOOTHSPEC(lambda,spec,sigma)
      ENDDO
      
      !interpolate back to the main array
-     DO i=1,nspec
+     DO i=min_lam_smooth,max_lam_smooth
         spec(i) = linterp(EXP(lnlam),tnspec,lambda(i))
      ENDDO
 
