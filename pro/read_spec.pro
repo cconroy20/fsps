@@ -11,8 +11,9 @@
 ;
 ; KEYWORD PARAMETERS:
 ;   miles - set this keyword when reading in spectra based on Miles 
+;   pickles - set this keyword when reading in spectra based on Pickles
 ;   NB: you should not need to set these keywords if you are running
-;       the latest version of fsps (v2.3)
+;       the latest version of fsps
 ;
 ; MODIFICATION HISTORY: 
 ;   ? - created by CFC
@@ -22,7 +23,7 @@
 ;-
 ;-----------------------------------------------------------------;
 
-FUNCTION READ_SPEC1, file,lam,nli
+FUNCTION READ_SPEC1, file
 
   openr,lun,file,/get_lun
 
@@ -36,11 +37,11 @@ FUNCTION READ_SPEC1, file,lam,nli
   ;the number of age steps and the number of spectral elements are included
   char = strsplit(char,' ',/extr)
   IF n_elements(char) GT 1 THEN BEGIN
-     nt = LONG(char[0])
-     nl = LONG(char[1]) 
+     nt = long(char[0])
+     nl = long(char[1]) 
   ENDIF ELSE BEGIN
-     nt = LONG(char[0])
-     nl = nli
+     print,'ERROR: you are not passing a properly formatted *spec file'
+     STOP
   ENDELSE
 
   str  = {agegyr:0.0,logmass:0.0,loglbol:0.0,logsfr:0.0,spec:fltarr(nl),$
@@ -83,8 +84,7 @@ END
 ;------------------------------------------------------------;
 ;------------------------------------------------------------;
 
-FUNCTION READ_SPEC, file, miles=miles,pickles=pickles,$
-                    m42=m42,uvm=uvm,emiles=emiles
+FUNCTION READ_SPEC, file
 
   ct = n_elements(file)
 
@@ -96,14 +96,7 @@ FUNCTION READ_SPEC, file, miles=miles,pickles=pickles,$
   ENDIF
   spsdir = spsdir+'/SPECTRA/'
 
-  IF keyword_set(miles) THEN BEGIN
-     readcol,spsdir+'/MILES/miles.lambda',lam,/silent
-  ENDIF ELSE BEGIN
-     readcol,spsdir+'/BaSeL3.1/basel.lambda',lam,/silent
-  ENDELSE
      
-  nl = n_elements(lam)
-
   ff = findfile(file[0],count=ctf)
   IF ctf EQ 0 THEN BEGIN
      print,'READ_SPEC ERROR: file not found: ',file
@@ -116,12 +109,12 @@ FUNCTION READ_SPEC, file, miles=miles,pickles=pickles,$
      return,0
   ENDIF
 
-  astr = read_spec1(file[0],lam,nl)
+  astr = read_spec1(file[0])
 
   IF ct GT 1 THEN BEGIN
      str = replicate(astr[0],n_elements(astr),ct)
      str[*,0] = astr
-     FOR i=1,ct-1 DO str[*,i] = read_spec1(file[i],lam,nl)
+     FOR i=1,ct-1 DO str[*,i] = read_spec1(file[i])
   ENDIF ELSE str = astr
   
   RETURN, str

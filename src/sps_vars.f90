@@ -5,10 +5,10 @@ MODULE SPS_VARS
   IMPLICIT NONE
   SAVE
 
-!define either BaSeL/Kurucz, MILES, or HR CaT spectral library
+!define either BaSeL/Kurucz, MILES, or a HR spectral library
 #define BASEL 1
 #define MILES 0
-!the following options are not included in the public release
+!the following two options are not yet included in the public release
 #define HRLIB 0
 #define RRLIB 0
 !define either Padova, BaSTI, or MESA isochrones
@@ -103,8 +103,8 @@ MODULE SPS_VARS
 #if (MILES)
   CHARACTER(5), PARAMETER :: spec_type = 'miles'
 #elif (HRLIB)
-  !CHARACTER(5), PARAMETER :: spec_type = 'hrlib'
-  CHARACTER(11), PARAMETER :: spec_type = 'hrlib_a+0.3'
+  CHARACTER(5), PARAMETER :: spec_type = 'hrlib'
+  !CHARACTER(11), PARAMETER :: spec_type = 'hrlib_a+0.3'
 #elif (RRLIB)
   CHARACTER(5), PARAMETER :: spec_type = 'rrlib'
 #else
