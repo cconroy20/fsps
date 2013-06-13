@@ -16,6 +16,7 @@ SUBROUTINE SPS_SETUP(zin)
   CHARACTER(1) :: char,sqpah
   CHARACTER(6) :: zstype
   REAL(SP) :: dumr1,d1,d2,logage,x,a
+  REAL(SP), DIMENSION(nspec) :: tspec
   REAL(SP), DIMENSION(1221) :: tvega_lam,tvega_spec,tsun_lam,tsun_spec
   REAL(SP), DIMENSION(50000) :: readlamb,readband
   REAL(SP), DIMENSION(25) :: wglam
@@ -611,7 +612,11 @@ SUBROUTINE SPS_SETUP(zin)
 
      !compute mags of Vega
      magvega(i) = TSUM(spec_lambda,vega_spec*bands(i,:)/spec_lambda)
-     magvega(i) = -2.5 * LOG10(magvega(i)) - 48.60
+     IF (magvega(i).LE.tiny_number) THEN
+        magvega(i) = 99.0 
+     ELSE
+        magvega(i) = -2.5 * LOG10(magvega(i)) - 48.60
+     ENDIF
      
      !put Sun magnitudes in the Vega system if keyword is set
      IF (compute_vega_mags.EQ.1.AND.magsun(i).NE.99.0) &

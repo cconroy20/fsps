@@ -97,13 +97,14 @@ SUBROUTINE MOD_HB(f_bhb,t,mini,mact,logl,logt,logg,phase, &
         
         ENDIF
      
-     ELSE IF (isoc_type.EQ.'bsti'.AND.tphase(j).EQ.3) THEN
+     ELSE IF ((isoc_type.EQ.'bsti'.OR.isoc_type.EQ.'mesa')&
+          .AND.tphase(j).EQ.3) THEN
 
         !keep track of total HB weight
         hb_wght  = hb_wght+wght(j)
         
         !Blue HB stars have to be old
-        IF (f_bhb.GT.1E-3.AND.hbtime.GE.bhb_sbs_time) THEN
+        IF (f_bhb.GT.1E-4.AND.hbtime.GE.bhb_sbs_time) THEN
            
            !update number of stars in the isochrone
            nmass(t) = nmass(t)+1

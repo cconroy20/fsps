@@ -32,18 +32,18 @@
 32	HST ACS F775W  (http://acs.pha.jhu.edu/instrument/photometry/)
 33	HST ACS F814W  (http://acs.pha.jhu.edu/instrument/photometry/)
 34	HST ACS F850LP  (http://acs.pha.jhu.edu/instrument/photometry/)
-35	HST WFC3 UVIS F218W (http://www.stsci.edu/~WFC3/UVIS/SystemThroughput/)
-36	HST WFC3 UVIS F225W (http://www.stsci.edu/~WFC3/UVIS/SystemThroughput/)
-37	HST WFC3 UVIS F275W (http://www.stsci.edu/~WFC3/UVIS/SystemThroughput/)
-38	HST WFC3 UVIS F336W (http://www.stsci.edu/~WFC3/UVIS/SystemThroughput/)
-39	HST WFC3 UVIS F390W (http://www.stsci.edu/~WFC3/UVIS/SystemThroughput/)
-40	HST WFC3 UVIS F438W (http://www.stsci.edu/~WFC3/UVIS/SystemThroughput/)
-41	HST WFC3 UVIS F475W (http://www.stsci.edu/~WFC3/UVIS/SystemThroughput/)
-42	HST WFC3 UVIS F555W (http://www.stsci.edu/~WFC3/UVIS/SystemThroughput/)
-43	HST WFC3 UVIS F606W (http://www.stsci.edu/~WFC3/UVIS/SystemThroughput/)
-44	HST WFC3 UVIS F775W (http://www.stsci.edu/~WFC3/UVIS/SystemThroughput/)
-45	HST WFC3 UVIS F814W (http://www.stsci.edu/~WFC3/UVIS/SystemThroughput/)
-46	HST WFC3 UVIS F850LP (http://www.stsci.edu/~WFC3/UVIS/SystemThroughput/)
+35	HST WFC3 UVIS F218W (http://www.stsci.edu/~WFC3/UVIS/SystemThroughput/) Chip #1
+36	HST WFC3 UVIS F225W (http://www.stsci.edu/~WFC3/UVIS/SystemThroughput/) Chip #1
+37	HST WFC3 UVIS F275W (http://www.stsci.edu/~WFC3/UVIS/SystemThroughput/) Chip #1
+38	HST WFC3 UVIS F336W (http://www.stsci.edu/~WFC3/UVIS/SystemThroughput/) Chip #1
+39	HST WFC3 UVIS F390W (http://www.stsci.edu/~WFC3/UVIS/SystemThroughput/) Chip #1
+40	HST WFC3 UVIS F438W (http://www.stsci.edu/~WFC3/UVIS/SystemThroughput/) Chip #1
+41	HST WFC3 UVIS F475W (http://www.stsci.edu/~WFC3/UVIS/SystemThroughput/) Chip #1
+42	HST WFC3 UVIS F555W (http://www.stsci.edu/~WFC3/UVIS/SystemThroughput/) Chip #1
+43	HST WFC3 UVIS F606W (http://www.stsci.edu/~WFC3/UVIS/SystemThroughput/) Chip #1
+44	HST WFC3 UVIS F775W (http://www.stsci.edu/~WFC3/UVIS/SystemThroughput/) Chip #1
+45	HST WFC3 UVIS F814W (http://www.stsci.edu/~WFC3/UVIS/SystemThroughput/) Chip #1
+46	HST WFC3 UVIS F850LP (http://www.stsci.edu/~WFC3/UVIS/SystemThroughput/) Chip #1
 47	HST WFC3 IR F105W (http://www.stsci.edu/~WFC3/UVIS/SystemThroughput/)
 48	HST WFC3 IR F110W (http://www.stsci.edu/~WFC3/UVIS/SystemThroughput/)
 49	HST WFC3 IR F140W (http://www.stsci.edu/~WFC3/UVIS/SystemThroughput/)

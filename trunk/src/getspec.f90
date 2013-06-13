@@ -43,8 +43,8 @@ SUBROUTINE GETSPEC(zz,mact,logt,lbol,logg,phase,ffco,spec)
           t*(pagb_spec(:,jlo+1,klo)-pagb_spec(:,jlo,klo)) )
 
   !WN WR stars (N-rich), from Smith et al. 2002
-  !also use this library for very hot stars that are not post-AGB,
-  !such stars come from the Padova isochrones, for which no 
+  !also use this library for very hot stars that are not labeled as 
+  !post-AGB. Such stars come from the Padova isochrones, for which no 
   !phase information is available
   !NB: there is currently no Z or log(g) dependence in the WR spectra
   !NB: notice also that currently the WN and WC libraries are the same
@@ -125,17 +125,19 @@ SUBROUTINE GETSPEC(zz,mact,logt,lbol,logg,phase,ffco,spec)
      u   = (loggi-basel_logg(klo))   / &
           (basel_logg(klo+1)-basel_logg(klo))
      
-     !catch stars that fall off part of the grid
-     sum1 = SUM(speclib(:,zz,jlo,klo))
-     sum2 = SUM(speclib(:,zz,jlo+1,klo))
-     sum3 = SUM(speclib(:,zz,jlo,klo+1))
-     sum4 = SUM(speclib(:,zz,jlo+1,klo+1))
-    ! IF ((sum1.EQ.0.0.OR.sum2.EQ.0.OR.sum3.EQ.0.OR.sum4.EQ.0)&
-    !      .AND.phase.NE.6.0) &
-    !      write(*,'("GETSPEC WARNING: part of an '//&
-    !      'isochrone is off of the spectral grid:  Z=",I2,'//&
-    !      '" logT=",F5.2," logg=",F5.2," phase=",F2.0)') &
-    !      zz,logt,loggi,phase
+     IF (verbose.EQ.1) THEN 
+        !catch stars that fall off part of the grid
+        sum1 = SUM(speclib(:,zz,jlo,klo))
+        sum2 = SUM(speclib(:,zz,jlo+1,klo))
+        sum3 = SUM(speclib(:,zz,jlo,klo+1))
+        sum4 = SUM(speclib(:,zz,jlo+1,klo+1))
+        IF ((sum1.EQ.0.0.OR.sum2.EQ.0.OR.sum3.EQ.0.OR.sum4.EQ.0)&
+             .AND.phase.NE.6.0) &
+             write(*,'("GETSPEC WARNING: A '//&
+             'star is off the grid: Z=",I2,'//&
+             '" logT=",F5.2," logg=",F5.2," phase=",F2.0)') &
+             zz,logt,loggi,phase
+     ENDIF
      
      !bilinear interpolation over every spectral element
      !NB: extra factor of 4pi, that I can't explain,
