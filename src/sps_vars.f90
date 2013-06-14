@@ -18,7 +18,7 @@ MODULE SPS_VARS
 
   !--------------------------------------------------------------!
 
-  INTEGER, PARAMETER :: SP = KIND(1.0D0)
+  INTEGER, PARAMETER :: SP = KIND(1.0d0)
   INTEGER, PARAMETER :: RSP = KIND(1.0)
 
   !------Common parameters that may be altered by the user-------!

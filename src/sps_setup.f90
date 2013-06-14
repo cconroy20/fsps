@@ -15,7 +15,7 @@ SUBROUTINE SPS_SETUP(zin)
   INTEGER :: n_isoc,z,zmin,zmax
   CHARACTER(1) :: char,sqpah
   CHARACTER(6) :: zstype
-  REAL(SP) :: dumr1,d1,d2,logage,x,a
+  REAL(SP) :: dumr1,d1,d2,logage,x,a, zero=0.0
   REAL(SP), DIMENSION(nspec) :: tspec
   REAL(SP), DIMENSION(1221) :: tvega_lam,tvega_spec,tsun_lam,tsun_spec
   REAL(SP), DIMENSION(50000) :: readlamb,readband
@@ -697,7 +697,7 @@ SUBROUTINE SPS_SETUP(zin)
   ENDDO
 
   !set Tuniv
-  tuniv = get_tuniv(0.0D0)
+  tuniv = get_tuniv(zero)
 
   !----------------------------------------------------------------!
   !-----------------read in index definitions----------------------!

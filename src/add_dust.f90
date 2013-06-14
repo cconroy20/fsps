@@ -17,6 +17,7 @@ SUBROUTINE ADD_DUST(pset,csp1,csp2,specdust,mdust)
   REAL(SP), DIMENSION(nclump) :: nden,wclump
   REAL(SP), DIMENSION(7) :: qpaharr
   REAL(SP) :: clump_ave,lboln,lbold,gamma,norm,dq,qpah,umin,du
+  REAL(SP) :: zero=0.0,dd63=6300.00
   REAL(SP), DIMENSION(numin_dl07) :: uminarr
 
   !-----------------------------------------------------!
@@ -168,7 +169,7 @@ SUBROUTINE ADD_DUST(pset,csp1,csp2,specdust,mdust)
   ELSE
 
      !Calzetti et al. 2000 attenuation is applied to the entire spectrum 
-     w63 = locate(spec_lambda,6300.0D0)
+     w63 = locate(spec_lambda,dd63)
      katt = 0.0
      katt(w63+1:) = 1.17*( -1.857+1.04*(1E4/spec_lambda(w63+1:)) ) + 1.78
      katt(1:w63)  = 1.17*(-2.156+1.509*(1E4/spec_lambda(1:w63))-&
@@ -176,7 +177,7 @@ SUBROUTINE ADD_DUST(pset,csp1,csp2,specdust,mdust)
           0.011*(1E4/spec_lambda(1:w63))**3) + 1.78
      !R=4.05
      katt = katt/0.44/4.05 * pset%dust2
-     w63 = locate(katt,0.0D0)
+     w63 = locate(katt,zero)
      IF (w63.NE.nspec) THEN
         katt(w63+1:) = 0.0
      ENDIF
