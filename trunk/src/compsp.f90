@@ -230,7 +230,7 @@ SUBROUTINE COMPSP(write_compsp,nzin,outfile,mass_ssp,&
   INTEGER  :: i,j,n,k,stat,klo,jlo,ilo,imin,imax,indsf,indsft
   REAL(SP) :: tau,const,maxtime,writeage,psfr,sfstart,zhist,sftrunc
   REAL(SP) :: mass_csp,lbol_csp,dtb,dt,dz,zred=0.,t1,t2,mdust
-  REAL(SP) :: mass_burst=0.0,lbol_burst=0.0,delt_burst=0.0
+  REAL(SP) :: mass_burst=0.0,lbol_burst=0.0,delt_burst=0.0,zero=0.0
   REAL(SP), DIMENSION(nbands)       :: mags
   REAL(SP), DIMENSION(ntfull,nspec) :: ispec
   REAL(SP), DIMENSION(nspec)  :: spec_burst=0.0,csp1,csp2,spec1,spec_csp
@@ -579,7 +579,7 @@ SUBROUTINE COMPSP(write_compsp,nzin,outfile,mass_ssp,&
       spec_csp = (1-dt)*ocompsp(imin)%spec + &
            dt*ocompsp(imax)%spec
       CALL SAVE_COMPSP(write_compsp,ocompsp(1),&
-           LOG10(maxtime),mass_csp,lbol_csp,0.0D0,mags,&
+           LOG10(maxtime),mass_csp,lbol_csp,zero,mags,&
            spec_csp,mdust)
    ENDIF
 
