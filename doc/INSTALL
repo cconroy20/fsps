@@ -8,10 +8,11 @@ SETUP INSTRUCTIONS
     fortran compiler one should then be able to compile everything by
     simply typing "make"
 
-3.  email cconroy@ucolick.org so that I can keep you posted on updates.  
-      ->  this step is actually important!  Every code has bugs.  If I don't know 
-	  that you're using this code, I can't tell you that I found a catastrophic 
-	  bug that invalidates all of your results.
+3.  email conroy@ucsc.edu so that I can keep you posted on updates.  
+      -> this step is actually important!  Every code has bugs.  If I
+	 don't know that you're using this code, I can't tell you
+	 that I found a catastrophic bug that invalidates all of your
+	 results.
 
 4.  please email me if have any problems or find any bugs.
 

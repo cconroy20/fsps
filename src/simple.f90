@@ -35,11 +35,10 @@
 
   !define the parameter set.  These are the default values, specified 
   !in sps_vars.f90, but are explicitly included here for transparency
-  pset%sfh   = 1     !set SFH to "SSP"
+  pset%sfh   = 0     !set SFH to "SSP"
   pset%zred  = 0.0   !redshift  
   pset%dust1 = 0.0   !dust parameter 1
   pset%dust2 = 0.0   !dust parameter 2
-  pset%fburst = 0.1
 
   pset%dell  = 0.0   !shift in log(L) for TP-AGB stars
   pset%delt  = 0.0   !shift in log(Teff) for TP-AGB stars

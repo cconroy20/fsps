@@ -28,6 +28,9 @@ SUBROUTINE IMF_WEIGHT(mini,wght,nmass)
 
   DO i=1,nmass
 
+     IF (mini(i).LT.imf_lower_limit.OR.&
+          mini(i).GT.imf_upper_limit) CYCLE
+
      IF (i.EQ.1) THEN
         m1 = imf_lower_limit
      ELSE
