@@ -127,7 +127,12 @@ SUBROUTINE SSP_GEN(pset,mass_ssp,lbol_ssp,spec_ssp)
   !in sps_setup because the user can change the IMF without having
   !to re-run the setup
   IF (imf_type.EQ.5) THEN
-     OPEN(13,FILE=TRIM(SPS_HOME)//'/data/imf.dat',ACTION='READ',STATUS='OLD')
+     IF (TRIM(pset%imf_filename).EQ.'') THEN
+        OPEN(13,FILE=TRIM(SPS_HOME)//'/data/imf.dat',ACTION='READ',STATUS='OLD')
+     ELSE
+        OPEN(13,FILE=TRIM(SPS_HOME)//'/data/'//TRIM(pset%imf_filename),&
+             ACTION='READ',STATUS='OLD')
+     ENDIF
      DO i=1,100
         READ(13,*,IOSTAT=stat) imf_user_alpha(1,i),imf_user_alpha(2,i),&
              imf_user_alpha(3,i)
@@ -158,7 +163,7 @@ SUBROUTINE SSP_GEN(pset,mass_ssp,lbol_ssp,spec_ssp)
   logt = LOG10(10**logt-100.0)
 
   !write for control
-  IF (verbose.NE.0) THEN
+  IF (verbose.EQ.1) THEN
      WRITE(*,*)
      WRITE(*,'("   Log(Z/Zsol): ",F6.3)') LOG10(zlegend(pset%zmet)/0.019)
      WRITE(*,'("   Fraction of blue HB stars: ",F6.3)') pset%fbhb
@@ -181,6 +186,9 @@ SUBROUTINE SSP_GEN(pset,mass_ssp,lbol_ssp,spec_ssp)
 
   !loop over each isochrone
   DO i=1,nt
+
+     IF (verbose.EQ.1) &
+          WRITE(*,'("age=",F5.2)') time(i)
 
      !compute IMF-based weights
      CALL IMF_WEIGHT(mini(i,:),wght,nmass(i))

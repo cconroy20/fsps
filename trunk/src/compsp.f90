@@ -273,7 +273,12 @@ SUBROUTINE COMPSP(write_compsp,nzin,outfile,mass_ssp,&
   !if a tabulated SFH is passed, read in sfh.dat file
   IF (pset%sfh.EQ.2) THEN
 
-     OPEN(3,FILE=TRIM(SPS_HOME)//'/data/sfh.dat',ACTION='READ',STATUS='OLD')
+     IF (TRIM(pset%sfh_filename).EQ.'') THEN
+        OPEN(3,FILE=TRIM(SPS_HOME)//'/data/sfh.dat',ACTION='READ',STATUS='OLD')
+     ELSE
+        OPEN(3,FILE=TRIM(SPS_HOME)//'/data/'//TRIM(pset%sfh_filename),&
+             ACTION='READ',STATUS='OLD')
+     ENDIF
      DO n=1,ntabmax
         READ(3,*,IOSTAT=stat) sfh_tab(1,n),sfh_tab(2,n),sfh_tab(3,n)
         IF (stat.NE.0) GOTO 29

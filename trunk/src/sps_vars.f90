@@ -104,7 +104,6 @@ MODULE SPS_VARS
   CHARACTER(5), PARAMETER :: spec_type = 'miles'
 #elif (HRLIB)
   CHARACTER(5), PARAMETER :: spec_type = 'hrlib'
-  !CHARACTER(11), PARAMETER :: spec_type = 'hrlib_a+0.3'
 #elif (RRLIB)
   CHARACTER(5), PARAMETER :: spec_type = 'rrlib'
 #else
@@ -123,7 +122,7 @@ MODULE SPS_VARS
   INTEGER, PARAMETER :: min_lam_smooth=1, max_lam_smooth=nspec
 #elif (RRLIB)
   INTEGER, PARAMETER :: nz=1
-  INTEGER, PARAMETER :: nspec= 49811 !34994
+  INTEGER, PARAMETER :: nspec= 49811
   INTEGER, PARAMETER :: min_lam_smooth=1, max_lam_smooth=nspec
 #else
   INTEGER, PARAMETER :: nspec=1963
@@ -340,6 +339,7 @@ MODULE SPS_VARS
           duste_gamma=0.01,duste_umin=1.0,duste_qpah=3.5,fcstar=1.0,&
           masscut=150.0,vel_broad=0.0
      INTEGER :: zmet=1,sfh=0,wgp1=1,wgp2=1,wgp3=1,evtype=-1
+     CHARACTER(50) :: imf_filename='', sfh_filename=''
   END TYPE PARAMS
   
   !structure for the output of the compsp routine
