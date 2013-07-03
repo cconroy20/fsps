@@ -12,9 +12,9 @@ MODULE SPS_VARS
 #define HRLIB 0
 #define RRLIB 0
 !define either Padova, BaSTI, or MESA isochrones
-#define PADOVA 1
+#define PADOVA 0
 #define BASTI 0
-#define MESA 0
+#define MIST 0
 
   !--------------------------------------------------------------!
 
@@ -91,8 +91,8 @@ MODULE SPS_VARS
 #if (BASTI)
   CHARACTER(4), PARAMETER :: isoc_type = 'bsti'
   INTEGER, PARAMETER :: nt=94
-#elif (MESA)
-  CHARACTER(4), PARAMETER :: isoc_type = 'mesa'
+#elif (MIST)
+  CHARACTER(4), PARAMETER :: isoc_type = 'mist'
   INTEGER, PARAMETER :: nt=51
 #else
   CHARACTER(4), PARAMETER :: isoc_type = 'pdva'
@@ -129,7 +129,7 @@ MODULE SPS_VARS
   INTEGER, PARAMETER :: min_lam_smooth=1, max_lam_smooth=nspec
 #if (BASTI)
   INTEGER, PARAMETER :: nz=10
-#elif (MESA)
+#elif (MIST)
   INTEGER, PARAMETER :: nz=1
 #else   
   INTEGER, PARAMETER :: nz=22
