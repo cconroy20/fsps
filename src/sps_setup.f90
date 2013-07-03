@@ -70,7 +70,7 @@ SUBROUTINE SPS_SETUP(zin)
   ENDIF
 
   IF (isoc_type.NE.'pdva'.AND.isoc_type.NE.'bsti'.AND.&
-       isoc_type.NE.'mesa') THEN
+       isoc_type.NE.'mist') THEN
      WRITE(*,*) 'SPS_SETUP ERROR: isoc_type var set to invalid type: ',isoc_type
      STOP
   ENDIF
@@ -118,8 +118,8 @@ SUBROUTINE SPS_SETUP(zin)
   ELSE IF (isoc_type.EQ.'bsti') THEN
      OPEN(90,FILE=TRIM(SPS_HOME)//'/ISOCHRONES/BaSTI/zlegend_'//&
           spec_type(1:5)//'.dat',STATUS='OLD',iostat=stat,ACTION='READ')
- ELSE IF (isoc_type.EQ.'mesa') THEN
-     OPEN(90,FILE=TRIM(SPS_HOME)//'/ISOCHRONES/MESA/zlegend_'//&
+ ELSE IF (isoc_type.EQ.'mist') THEN
+     OPEN(90,FILE=TRIM(SPS_HOME)//'/ISOCHRONES/MIST/zlegend_'//&
           spec_type(1:5)//'.dat',STATUS='OLD',iostat=stat,ACTION='READ')
   ENDIF
   IF (stat.NE.0) THEN
@@ -380,10 +380,10 @@ SUBROUTINE SPS_SETUP(zin)
           OPEN(97,FILE=TRIM(SPS_HOME)//&
           '/ISOCHRONES/Padova/Padova2007/isoc_z'//&
           zstype//'.dat',STATUS='OLD', IOSTAT=stat,ACTION='READ')
-     !open MESA isochrones
-     IF (isoc_type.EQ.'mesa') &
+     !open MIST isochrones
+     IF (isoc_type.EQ.'mist') &
           OPEN(97,FILE=TRIM(SPS_HOME)//&
-          'ISOCHRONES/MESA/isoc_z'//zstype//'.dat',STATUS='OLD',&
+          'ISOCHRONES/MIST/isoc_z'//zstype//'.dat',STATUS='OLD',&
           IOSTAT=stat,ACTION='READ')
      !open BaSTI isochrones
      IF (isoc_type.EQ.'bsti') &
