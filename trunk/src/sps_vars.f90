@@ -12,7 +12,7 @@ MODULE SPS_VARS
 #define HRLIB 0
 #define RRLIB 0
 !define either Padova, BaSTI, or MESA isochrones
-#define PADOVA 0
+#define PADOVA 1
 #define BASTI 0
 #define MIST 0
 
@@ -93,7 +93,7 @@ MODULE SPS_VARS
   INTEGER, PARAMETER :: nt=94
 #elif (MIST)
   CHARACTER(4), PARAMETER :: isoc_type = 'mist'
-  INTEGER, PARAMETER :: nt=51
+  INTEGER, PARAMETER :: nt=107
 #else
   CHARACTER(4), PARAMETER :: isoc_type = 'pdva'
   INTEGER, PARAMETER :: nt=94
@@ -146,7 +146,7 @@ MODULE SPS_VARS
 
   !You must change the number of bands here if
   !filters are added to allfilters.dat
-  INTEGER, PARAMETER :: nbands=105
+  INTEGER, PARAMETER :: nbands=109
   !number of indices defined in allindices.dat
   INTEGER, PARAMETER :: nindsps=30
   
