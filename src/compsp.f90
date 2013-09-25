@@ -243,7 +243,7 @@ SUBROUTINE COMPSP(write_compsp,nzin,outfile,mass_ssp,&
   TYPE(COMPSPOUT), INTENT(inout), DIMENSION(ntfull) :: ocompsp
 
   !-------------------------------------------------------------!
-  !-------------------First, Add Nebular Emission---------------!
+  !---------------------Add Nebular Emission--------------------!
   !-------------------------------------------------------------!
 
   !TBD
@@ -279,8 +279,14 @@ SUBROUTINE COMPSP(write_compsp,nzin,outfile,mass_ssp,&
         OPEN(3,FILE=TRIM(SPS_HOME)//'/data/'//TRIM(pset%sfh_filename),&
              ACTION='READ',STATUS='OLD')
      ENDIF
+     
      DO n=1,ntabmax
-        READ(3,*,IOSTAT=stat) sfh_tab(1,n),sfh_tab(2,n),sfh_tab(3,n)
+        IF (nzin.EQ.nz) THEN
+           READ(3,*,IOSTAT=stat) sfh_tab(1,n),sfh_tab(2,n),sfh_tab(3,n)
+        ELSE
+           READ(3,*,IOSTAT=stat) sfh_tab(1,n),sfh_tab(2,n)
+           sfh_tab(3,n)=0.0
+        ENDIF
         IF (stat.NE.0) GOTO 29
      ENDDO
      WRITE(*,*) 'COMPSP ERROR: didnt finish reading in the sfh file,'
@@ -624,8 +630,13 @@ SUBROUTINE COMPSP_WARNING(maxtime, pset, nzin, write_compsp)
 
   !the isochrones don't go past 10**10.15 yrs, so warn the user
   !that this will be an extrapolation
-  IF (maxtime.GT.10**10.20) THEN
-     WRITE(*,*) 'COMPSP WARNING: Tmax>10^10.2 yrs -'//&
+  IF (maxtime.GT.10**10.16.AND.isoc_type.NE.'mist') THEN
+     WRITE(*,*) 'COMPSP WARNING: log(Tmax)>10.16 yrs -'//&
+          ' linear extrapolation beyond this point for log(Tmax)=:',&
+          LOG10(maxtime)
+  ENDIF
+  IF (maxtime.GT.10**10.35.AND.isoc_type.EQ.'mist') THEN
+     WRITE(*,*) 'COMPSP WARNING: log(Tmax)>10.35 yrs -'//&
           ' linear extrapolation beyond this point for log(Tmax)=:',&
           LOG10(maxtime)
   ENDIF

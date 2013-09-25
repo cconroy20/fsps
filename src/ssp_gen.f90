@@ -4,7 +4,7 @@
 !  heterogeneous library of stellar spectra.  The code also allows !
 !  for variation in the horizontal branch morphology, TP-AGB       !
 !  phase, and the blue straggler population.  The output is a      !
-!  time-dependent spectrum from the far-UV to the IR.              !
+!  time-dependent spectrum from the far-UV to the far-IR.          !
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 !
 !   PARAMETER RANGES:
@@ -12,49 +12,6 @@
 !   2.  if abs(delt)>0.5 then abs(delt)=0.5
 !
 !-----------------------------------------------------------!
-!-----------------------------------------------------------!
-
-SUBROUTINE STITCH_PAGB(t,mini,mact,logl,logt,logg,wght,nmass,phase)
-
-  !routine to add a few dummy stars to stitch the post-AGB tracks
-  !onto the full isochrones
-
-  !NB: routine is not currently used
-
-  USE sps_vars
-  IMPLICIT NONE
-
-  INTEGER  :: i,nn,j, nexp=20
-  REAL(SP), INTENT(inout), DIMENSION(nt,nm) :: mini,mact,logl,&
-       logt,phase,logg
-  REAL(SP), INTENT(inout), DIMENSION(nm) :: wght
-  INTEGER, INTENT(inout),  DIMENSION(nt) :: nmass
-  INTEGER, INTENT(in) :: t
-
-  nn = nmass(t)
-
-  !simply spread the most luminous pagb star uniformly over to the agb tip
-  pagb: DO i=1,nn
-     IF (phase(t,i).EQ.6.0.AND.logg(t,i).EQ.-99.) THEN
-        wght(i) = wght(i)/REAL(nexp+1)
-        DO j=1,nexp
-           logt(t,nn+j)  = logt(t,i-1)+j/REAL(nexp+1)*&
-                (logt(t,i)-logt(t,i-1))
-           logl(t,nn+j)  = logl(t,i-1)
-           mini(t,nn+j)  = mini(t,i)
-           mact(t,nn+j)  = mact(t,i)
-           wght(nn+j)    = wght(i)
-           phase(t,nn+j) = 6.0
-        ENDDO
-        nmass(t) = nmass(t)+nexp
-        EXIT pagb
-     ENDIF
-  ENDDO pagb
-
-END SUBROUTINE STITCH_PAGB
-
-!-----------------------------------------------------------!
-!---------------------Driver Routine------------------------!
 !-----------------------------------------------------------!
 
 SUBROUTINE SSP_GEN(pset,mass_ssp,lbol_ssp,spec_ssp)
@@ -208,10 +165,6 @@ SUBROUTINE SSP_GEN(pset,mass_ssp,lbol_ssp,spec_ssp)
      CALL MOD_GB(pset%zmet,i,time,pset%delt,pset%dell,pset%pagb,&
           pset%redgb,nmass(i),logl,logt,phase,wght)
 
-     !stitch the post-AGB tracks smoothly onto the full isochrone
-     !IF (pset%pagb.NE.0.AND.MAXVAL(phase(i,:)).GE.5.0) &
-     !     CALL STITCH_PAGB(i,mini,mact,logl,logt,logg,wght,nmass,phase)
-
      ii = 1 + (i-1)*time_res_incr
 
      !compute IMF-weighted mass of the SSP
@@ -225,22 +178,34 @@ SUBROUTINE SSP_GEN(pset,mass_ssp,lbol_ssp,spec_ssp)
      !compute IMF-weighted bolometric luminosity (actually log(Lbol))
      lbol_ssp(ii) = LOG10(SUM(wght(1:nmass(i))*10**logl(i,1:nmass(i))))
 
+
      !compute SSP spectrum
      spec_ssp(ii,:) = 0.
      DO j=1,nmass(i)
+
         tco = ffco(i,j)
         IF (phase(i,j).EQ.5.AND.tco.GT.1.0) THEN
            !dilute the C star fraction
            IF (myran().GE.pset%fcstar) tco = 1.0
         ENDIF
+
         CALL GETSPEC(pset%zmet,mact(i,j),logt(i,j),&
              10**logl(i,j),logg(i,j),phase(i,j),tco,tspec)
+
+        !add circumstellar dust around AGB stars
+        IF (phase(i,j).EQ.5.AND.add_agb_dust_model.EQ.1) THEN
+           CALL ADD_AGB_DUST(tspec,mact(i,j),logt(i,j),&
+                logl(i,j),logg(i,j),tco)
+        ENDIF
+
         !only construct SSPs for particular evolutionary
-        !phases if type NE -1
+        !phases if evtype NE -1
         IF ((pset%evtype.EQ.-1.OR.pset%evtype.EQ.phase(i,j))&
              .AND.mini(i,j).LT.pset%masscut) &
              spec_ssp(ii,:) = wght(j)*tspec + spec_ssp(ii,:)
+
      ENDDO
+
 
   ENDDO
 
