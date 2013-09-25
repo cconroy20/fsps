@@ -28,8 +28,8 @@
 
   imf_type  = 2             !define the IMF (1=Chabrier 2003)
                             !see sps_vars.f90 for details of this var
-  pset%zmet = 20             !define the metallicity (see the manual)
-                            !20 = solar metallacity for the BaSeL library
+  pset%zmet = 20            !define the metallicity (see the manual)
+                            !20 = solar metallacity
 
   CALL SPS_SETUP(pset%zmet) !read in the isochrones and spectral libraries
 
@@ -45,12 +45,12 @@
   pset%fbhb  = 0.0   !fraction of blue HB stars
   pset%sbss  = 0.0   !specific frequency of BS stars
 
-
   !compute the SSP
   CALL SSP_GEN(pset,mass_ssp,lbol_ssp,spec_ssp)
   !compute mags and write out mags and spec for SSP
-  file1 = 'SSP_v300.out'
+  file1 = 'SSP.out'
   CALL COMPSP(3,1,file1,mass_ssp,lbol_ssp,spec_ssp,pset,ocompsp)
+
 
 
   ! Now lets compute a 1 Gyr tau model SFH with a van Dokkum 2008 IMF,
@@ -59,6 +59,8 @@
 
   imf_type  = 3                !define the IMF (3=van Dokkum 2003)
                                !see sps_vars.f90 for details of this var
+  pset%zmet = 20               !define the metallicity (see the lookup table)
+                               !20 = solar metallacity
 
   CALL SPS_SETUP(pset%zmet)    !read in the isochrones and spectral libraries
 

@@ -26,7 +26,7 @@ MODULE SPS_VARS
   !setup cosmology (WMAP7).  Used only for z(t) relation.
   REAL(SP) :: om0=0.27, ol0=0.73, H0=72.
   
-  !controls the level of output (0 = no output to screen)
+  !controls the level of output (0 = minimal output to screen)
   INTEGER, PARAMETER :: verbose=0
 
   !Turn-on time for BHB and SBS phases, time is in log(yrs)
@@ -45,6 +45,10 @@ MODULE SPS_VARS
 
   !turn on/off the Draine & Li 2007 dust emission model 
   INTEGER, PARAMETER :: add_dust_emission=1
+
+  !turn on/off the AGB circumstellar dust model
+  !NB: this is not yet implemented
+  INTEGER, PARAMETER :: add_agb_dust_model=0
 
   !turn on/off a Cloudy-based nebular emission model 
   !NB: this is not yet implemented

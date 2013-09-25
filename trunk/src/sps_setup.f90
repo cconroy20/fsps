@@ -194,7 +194,7 @@ SUBROUTINE SPS_SETUP(zin)
 
      WRITE(zstype,'(F6.4)') zlegend(z)
 
-     !read in spectral library
+     !read in the spectral library
      IF (spec_type.EQ.'basel') THEN
         OPEN(92,FILE=TRIM(SPS_HOME)//'/SPECTRA/BaSeL3.1/basel_'//basel_str//'_z'&
              //zstype//'.spectra.bin',FORM='UNFORMATTED',&

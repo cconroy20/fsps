@@ -1,6 +1,14 @@
 MODULE SPS_UTILS
 
   INTERFACE
+     SUBROUTINE ADD_AGB_DUST(tspec,mact,logt,logl,logg,tco)
+       USE sps_vars
+       REAL(SP), DIMENSION(nspec), INTENT(out) :: tspec
+       REAL(SP), INTENT(in)  :: mact,logt,logl,logg,tco
+     END SUBROUTINE ADD_AGB_DUST
+  END INTERFACE
+
+  INTERFACE
      SUBROUTINE ADD_BS(s_bs,t,mini,mact,logl,logt,logg,phase, &
           wght,hb_wght,nmass)
        USE sps_vars
