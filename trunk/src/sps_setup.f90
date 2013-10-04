@@ -11,7 +11,7 @@ SUBROUTINE SPS_SETUP(zin)
   USE sps_vars; USE sps_utils
   IMPLICIT NONE
   INTEGER, INTENT(in) :: zin
-  INTEGER :: stat=1,n,i,j,m,jj,k,tnspec
+  INTEGER :: stat=1,n,i,j,m,jj,k
   INTEGER :: n_isoc,z,zmin,zmax
   CHARACTER(1) :: char,sqpah
   CHARACTER(6) :: zstype
@@ -101,11 +101,6 @@ SUBROUTINE SPS_SETUP(zin)
      STOP
   ENDIF
 
-  IF (spec_type.EQ.'basel') THEN
-     tnspec=ndim_basel 
-  ELSE 
-     tnspec=nspec
-  ENDIF
 
   !----------------------------------------------------------------!
   !----------------Read in metallicity values----------------------!
@@ -147,7 +142,7 @@ SUBROUTINE SPS_SETUP(zin)
   ENDIF
 
   !----------------------------------------------------------------!
-  !-----------------Read in spectral library-----------------------!
+  !-----------------Read in spectral libraries---------------------!
   !----------------------------------------------------------------!
 
   !read in wavelength array
@@ -169,7 +164,7 @@ SUBROUTINE SPS_SETUP(zin)
           'cannot be opened'
      STOP 
   ENDIF
-  DO i=1,tnspec
+  DO i=1,nspec
      READ(91,*) spec_lambda(i)
   ENDDO
   CLOSE(91)
@@ -199,7 +194,7 @@ SUBROUTINE SPS_SETUP(zin)
         OPEN(92,FILE=TRIM(SPS_HOME)//'/SPECTRA/BaSeL3.1/basel_'//basel_str//'_z'&
              //zstype//'.spectra.bin',FORM='UNFORMATTED',&
              STATUS='OLD',iostat=stat,ACTION='READ',access='direct',&
-             recl=ndim_basel*ndim_logg*ndim_logt*4)
+             recl=nspec*ndim_logg*ndim_logt*4)
      ELSE IF (spec_type.EQ.'miles') THEN
         OPEN(92,FILE=TRIM(SPS_HOME)//'/SPECTRA/MILES/imiles_z'&
              //zstype//'.spectra.bin',FORM='UNFORMATTED',&
@@ -222,7 +217,7 @@ SUBROUTINE SPS_SETUP(zin)
         STOP 
      ENDIF
 
-     READ(92,rec=1) rspeclib(1:tnspec,z,:,:)
+     READ(92,rec=1) rspeclib(:,z,:,:)
      CLOSE(92)
 
   ENDDO
@@ -230,8 +225,7 @@ SUBROUTINE SPS_SETUP(zin)
   speclib = rspeclib
 
   !these stars are only included with BaSeL or MILES libraries
-  IF (spec_type.NE.'picks'.AND.spec_type(1:5).NE.'hrlib'&
-       .AND.spec_type.NE.'rrlib') THEN
+  IF (spec_type.EQ.'miles'.OR.spec_type.EQ.'basel') THEN
 
      !read in AGB Teff array for O-rich spectra
      OPEN(93,FILE=TRIM(SPS_HOME)//'/SPECTRA/AGB_spectra/Orich_teff_allZ_'//&
@@ -275,7 +269,7 @@ SUBROUTINE SPS_SETUP(zin)
              spec_type//'.dat '//'cannot be opened'
         STOP 
      ENDIF
-     DO i=1,tnspec
+     DO i=1,nspec
         READ(95,*) d1,agb_spec_o(i,:)
      ENDDO
      CLOSE(95)
@@ -289,76 +283,69 @@ SUBROUTINE SPS_SETUP(zin)
              'Crich_spec_all_'//spec_type//'.dat '//'cannot be opened'
         STOP 
      ENDIF
-     DO i=1,tnspec
+     DO i=1,nspec
         READ(96,*) d1,agb_spec_c(i,:)
      ENDDO
      CLOSE(96)
-
-  ENDIF
-  
-  !read in WR Teff array
-  OPEN(94,FILE=TRIM(SPS_HOME)//'/SPECTRA/Hot_spectra/iwr.teff',&
-       STATUS='OLD',iostat=stat,ACTION= 'READ')
-  IF (stat.NE.0) THEN
-     WRITE(*,*) 'SPS_SETUP ERROR: Hot_spectra/iwr.teff cannot be opened'
-     STOP 
-  ENDIF
-  DO i=1,ndim_wr
-     READ(94,*) wr_logt(i)
-  ENDDO
-  CLOSE(94)
-  
-  !read in post-AGB Teff array
-  OPEN(94,FILE=TRIM(SPS_HOME)//'/SPECTRA/Hot_spectra/ipagb.teff',&
-       STATUS='OLD',iostat=stat,ACTION='READ')
-  IF (stat.NE.0) THEN
-     WRITE(*,*) 'SPS_SETUP ERROR: Hot_spectra/ipagb.teff cannot be opened'
-     STOP 
-  ENDIF
-  DO i=1,ndim_pagb
-     READ(94,*) pagb_logt(i)
-  ENDDO
-  CLOSE(94)
-  pagb_logt = LOG10(pagb_logt)
      
-  !NB: Hot stars only included with BaSeL grid
-  IF (spec_type.EQ.'basel') THEN 
+     !read in post-AGB Teff array
+     OPEN(94,FILE=TRIM(SPS_HOME)//'/SPECTRA/Hot_spectra/ipagb.teff',&
+          STATUS='OLD',iostat=stat,ACTION='READ')
+     IF (stat.NE.0) THEN
+        WRITE(*,*) 'SPS_SETUP ERROR: Hot_spectra/ipagb.teff cannot be opened'
+        STOP 
+     ENDIF
+     DO i=1,ndim_pagb
+        READ(94,*) pagb_logt(i)
+     ENDDO
+     CLOSE(94)
+     pagb_logt = LOG10(pagb_logt)
 
      !read in post-AGB spectra from Rauch 2003
-     OPEN(97,FILE=TRIM(SPS_HOME)//'/SPECTRA/Hot_spectra/ipagb.spec_solar',&
-          STATUS='OLD',iostat=stat,ACTION='READ')
+     OPEN(97,FILE=TRIM(SPS_HOME)//'/SPECTRA/Hot_spectra/ipagb_'//&
+          spec_type//'.spec_solar',STATUS='OLD',iostat=stat,ACTION='READ')
      IF (stat.NE.0) THEN
         WRITE(*,*) 'SPS_SETUP ERROR: /SPECTRA/Hot_spectra/'//&
              'ipagb.spec_solar cannot be opened'
         STOP 
      ENDIF
-     DO i=1,tnspec
+     DO i=1,nspec
         READ(97,*) d1,pagb_spec(i,:,2)
      ENDDO
      CLOSE(97)
-     
-     !read in WR spectra from Smith et al. 2002
-     OPEN(97,FILE=TRIM(SPS_HOME)//'/SPECTRA/Hot_spectra/ipagb.spec_halo',&
-          STATUS='OLD',iostat=stat,ACTION='READ')
+     OPEN(97,FILE=TRIM(SPS_HOME)//'/SPECTRA/Hot_spectra/ipagb_'//&
+          spec_type//'.spec_halo',STATUS='OLD',iostat=stat,ACTION='READ')
      IF (stat.NE.0) THEN
         WRITE(*,*) 'SPS_SETUP ERROR: /SPECTRA/Hot_spectra/'//&
              'ipagb.spec_halo cannot be opened'
         STOP 
      ENDIF
-     DO i=1,tnspec
+     DO i=1,nspec
         READ(97,*) d1,pagb_spec(i,:,1)
      ENDDO
      CLOSE(97)
 
+     !read in WR Teff array
+     OPEN(94,FILE=TRIM(SPS_HOME)//'/SPECTRA/Hot_spectra/CMFGEN_WN.teff',&
+          STATUS='OLD',iostat=stat,ACTION= 'READ')
+     IF (stat.NE.0) THEN
+        WRITE(*,*) 'SPS_SETUP ERROR: Hot_spectra/iwr.teff cannot be opened'
+        STOP 
+     ENDIF
+     DO i=1,ndim_wr
+        READ(94,*) wr_logt(i)
+     ENDDO
+     CLOSE(94)
+
      !read in WR spectra from Smith et al. 2002
-     OPEN(97,FILE=TRIM(SPS_HOME)//'/SPECTRA/Hot_spectra/iwr.spec',&
-          STATUS='OLD',iostat=stat,ACTION='READ')
+     OPEN(97,FILE=TRIM(SPS_HOME)//'/SPECTRA/Hot_spectra/CMFGEN_WN_Z020_'&
+          //spec_type//'.spec',STATUS='OLD',iostat=stat,ACTION='READ')
      IF (stat.NE.0) THEN
         WRITE(*,*) 'SPS_SETUP ERROR: Hot_spectra/iwr.spec '//&
              'cannot be opened'
         STOP 
      ENDIF
-     DO i=1,tnspec
+     DO i=1,nspec
         READ(97,*) d1,wr_spec(i,:)
      ENDDO
      CLOSE(97)
@@ -466,31 +453,27 @@ SUBROUTINE SPS_SETUP(zin)
      CLOSE(99)
      lambda_dl07 = lambda_dl07*1E4  !convert to Ang
      
-     IF (spec_type.EQ.'basel') THEN 
-
-        !expand the wavelength array
-        i=1
-        DO WHILE (spec_lambda(i)/1E4.LT.10.)
-           i=i+1
-        ENDDO
-        j=1
-        DO WHILE (lambda_dl07(j)/1E4.LE.10.) 
-           j=j+1
-        ENDDO
-        spec_lambda(i:) = lambda_dl07(j-1:)
-        
-        !now interpolate the dust spectra onto the master wavelength array
-        DO j=1,numin_dl07*2
-           DO i=1,nspec
-              !the dust models only extend to 1um
-              IF (spec_lambda(i)/1E4.GT.1) THEN
-                 dustem2_dl07(i,k+1,j) = linterp(lambda_dl07,&
-                      dustem_dl07(:,j),spec_lambda(i))
-              ENDIF
-           ENDDO
-        ENDDO
+     !expand the wavelength array
+     !i=1
+     !DO WHILE (spec_lambda(i)/1E4.LT.10.)
+     !   i=i+1
+     !ENDDO
+     !j=1
+     !DO WHILE (lambda_dl07(j)/1E4.LE.10.) 
+     !   j=j+1
+     !ENDDO
+     !spec_lambda(i:) = lambda_dl07(j-1:)
      
-     ENDIF
+     !now interpolate the dust spectra onto the master wavelength array
+     DO j=1,numin_dl07*2
+        DO i=1,nspec
+           !the dust models only extend to 1um
+           IF (spec_lambda(i)/1E4.GT.1) THEN
+              dustem2_dl07(i,k+1,j) = linterp(lambda_dl07,&
+                   dustem_dl07(:,j),spec_lambda(i))
+           ENDIF
+        ENDDO
+     ENDDO
 
   ENDDO
 
@@ -500,6 +483,38 @@ SUBROUTINE SPS_SETUP(zin)
   DO i=1,nspec
      lnlam(i) = i*dlstep+LOG(spec_lambda(min_lam_smooth))
   ENDDO
+
+  !----------------------------------------------------------------!
+  !-------------Read in circumstellar AGB dust models--------------!
+  !----------------------------------------------------------------!
+
+  OPEN(99,FILE=TRIM(SPS_HOME)//'/dust/dusty/Orich_dusty.spec',&
+       STATUS='OLD',iostat=stat,ACTION='READ')
+  IF (stat.NE.0) THEN 
+     WRITE(*,*) 'SPS_SETUP ERROR: error opening dusty models'
+     STOP
+  ENDIF
+  READ(99,*) !burn the header
+  DO i=1,nlam_dagb
+     READ(99,*,IOSTAT=stat) lambda_dagb(i),fluxin_dagb(i,:)
+     IF (stat.NE.0) THEN 
+        WRITE(*,*) 'SPS_SETUP ERROR: error during dust emission read'
+        STOP
+     ENDIF
+  ENDDO
+  CLOSE(99)
+
+  !now interpolate the dust spectra onto the master wavelength array
+  DO j=1,ntau_dagb
+     DO i=1,nspec
+        IF (spec_lambda(i).GT.lambda_dagb(1)) THEN
+           flux_dagb(i,j) = linterp(lambda_dagb,&
+                fluxin_dagb(:,j),spec_lambda(i))
+        ENDIF
+        IF (flux_dagb(i,j).EQ.0) flux_dagb(i,j)=10.0
+     ENDDO
+  ENDDO
+
 
   !----------------------------------------------------------------!
   !-------------------Set up magnitude info------------------------!
@@ -515,7 +530,7 @@ SUBROUTINE SPS_SETUP(zin)
   END IF  
   !burn the header
   READ(98,*)
-  DO i=1,ndim_basel
+  DO i=1,1221
      READ(98,*) tvega_lam(i), tvega_spec(i)
   ENDDO
   CLOSE(98)
@@ -526,7 +541,7 @@ SUBROUTINE SPS_SETUP(zin)
           LOG10(tvega_spec+tiny_number),LOG10(spec_lambda(i)))
      !convert to fnu
      vega_spec(i) =  vega_spec(i)*spec_lambda(i)**2
-     IF (spec_lambda(i).GT.tvega_lam(ndim_basel)) vega_spec(i)=tiny_number
+     IF (spec_lambda(i).GT.tvega_lam(1221)) vega_spec(i)=tiny_number
   ENDDO
 
   !read in Solar spectrum; units are fnu, flux is appropriate for
@@ -538,7 +553,7 @@ SUBROUTINE SPS_SETUP(zin)
      WRITE(*,*) 'SPS_SETUP ERROR: SPECTRA/SUN_STScI.SED cannot be opened'
      STOP 
   END IF  
-  DO i=1,ndim_basel
+  DO i=1,1221
      READ(98,*) tsun_lam(i), tsun_spec(i)
   ENDDO
   CLOSE(98)
@@ -547,7 +562,7 @@ SUBROUTINE SPS_SETUP(zin)
   DO i=1,nspec
      sun_spec(i) = 10**linterp(LOG10(tsun_lam),LOG10(tsun_spec+tiny_number),&
           LOG10(spec_lambda(i)))
-     IF (spec_lambda(i).GT.tsun_lam(ndim_basel)) sun_spec(i)=tiny_number
+     IF (spec_lambda(i).GT.tsun_lam(1221)) sun_spec(i)=tiny_number
   ENDDO
 
   !read in and set up band-pass filters

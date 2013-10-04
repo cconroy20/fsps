@@ -30,7 +30,8 @@ SUBROUTINE GETSPEC(zz,mact,logt,lbol,logg,phase,ffco,spec)
   !post-AGB non-LTE model spectra from Rauch 2003
   !the H-Ni composition spectra are used here.
   !this library has two Zs, Solar and 0.1Solar, simply use one or the other
-  IF (phase.EQ.6.0.AND.logt.GE.4.699.AND.spec_type.EQ.'basel') THEN
+  IF (phase.EQ.6.0.AND.logt.GE.4.699.AND.&
+       (spec_type.EQ.'basel'.OR.spec_type.EQ.'miles')) THEN
     
      flag = 1
      jlo = MIN(MAX(locate(pagb_logt,logt),1),ndim_pagb-1)
@@ -49,8 +50,9 @@ SUBROUTINE GETSPEC(zz,mact,logt,lbol,logg,phase,ffco,spec)
   !phase information is available
   !NB: there is currently no Z or log(g) dependence in the WR spectra
   !NB: notice also that currently the WN and WC libraries are the same
-  ELSE IF ((phase.EQ.9.0.AND.ffco.LT.10.AND.spec_type.EQ.'basel')&
-       .OR.(phase.NE.6.0.AND.logt.GE.4.699)) THEN
+  ELSE IF (((phase.EQ.9.0.AND.ffco.LT.10).OR.&
+       (phase.NE.6.0.AND.logt.GE.4.699)).AND.&
+       (spec_type.EQ.'basel'.OR.spec_type.EQ.'miles')) THEN
      
      flag = 1
      jlo = MIN(MAX(locate(wr_logt,logt),1),ndim_wr-1)
@@ -62,7 +64,8 @@ SUBROUTINE GETSPEC(zz,mact,logt,lbol,logg,phase,ffco,spec)
           t*(wr_spec(:,jlo+1)-wr_spec(:,jlo)) )
 
   !WC WR stars (C-rich), from Smith et al. 2002
-  ELSE IF (phase.EQ.9.0.AND.ffco.GE.10.AND.spec_type.EQ.'basel') THEN
+  ELSE IF (phase.EQ.9.0.AND.ffco.GE.10.AND.&
+       (spec_type.EQ.'basel'.OR.spec_type.EQ.'miles')) THEN
      
      flag = 1
      jlo = MIN(MAX(locate(wr_logt,logt),1),ndim_wr-1)
