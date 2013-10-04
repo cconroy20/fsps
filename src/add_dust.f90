@@ -186,14 +186,6 @@ SUBROUTINE ADD_DUST(pset,csp1,csp2,specdust,mdust)
 
   ENDIF
 
-  !Rayleigh-Jeans extrapolation for lambda>10um
-  IF (spec_type.EQ.'basel') THEN
-     i=1
-     DO WHILE (spec_lambda(i)/1E5.LT.1.)
-        i=i+1
-     ENDDO
-     specdust(i:) = (1E5/spec_lambda(i:))**2*specdust(i-1)
-  ENDIF
 
   !---------------------------------------------------------------!
   !----------------------Add dust emission------------------------!
@@ -205,8 +197,7 @@ SUBROUTINE ADD_DUST(pset,csp1,csp2,specdust,mdust)
   ! a power-law distribution from Umin to Umax=1E6 and alpha=2
   ! the relative weights of the two components are given by gamma
   
-  !NB: dust is never added with the MILES library
-  IF (add_dust_emission.EQ.1.AND.spec_type.EQ.'basel') THEN 
+  IF (add_dust_emission.EQ.1) THEN 
 
      !only add dust emission if there is absorption
      IF (pset%dust2.GT.tiny_number.OR.pset%dust1.GT.tiny_number) THEN

@@ -118,7 +118,7 @@ MODULE SPS_VARS
   !number of elements per stellar spectrum
 #if (MILES)
   INTEGER, PARAMETER :: nz=5
-  INTEGER, PARAMETER :: nspec=5252
+  INTEGER, PARAMETER :: nspec=5994
   INTEGER, PARAMETER :: min_lam_smooth=355, max_lam_smooth=4575
 #elif (HRLIB)
   INTEGER, PARAMETER :: nz=11
@@ -159,8 +159,6 @@ MODULE SPS_VARS
 
   !max dimension of array for each isochrone
   INTEGER, PARAMETER :: nm=1500
-  !dimension of Kurucz/BaSeL atlas
-  INTEGER, PARAMETER :: ndim_basel=1221
   !max number of lines to read in
   INTEGER, PARAMETER ::  nlines=100000
   !max number of lines in tabulated SFH
@@ -179,6 +177,8 @@ MODULE SPS_VARS
   INTEGER, PARAMETER :: ndim_dl07=1001
   !number of Umin models from Drain & Li 2007 dust model
   INTEGER, PARAMETER :: numin_dl07=22
+  !parameters for circumstellar dust models
+  INTEGER, PARAMETER :: nlam_dagb=93, ntau_dagb=5
 
   !------------IMF-related Constants--------------!
   
@@ -313,6 +313,12 @@ MODULE SPS_VARS
   REAL(SP), DIMENSION(ndim_dl07,numin_dl07*2) :: dustem_dl07=0.0
   REAL(SP), DIMENSION(nspec,7,numin_dl07*2)   :: dustem2_dl07=0.0
 
+  !circumstellar AGB dust model (Villaume et al. in prep)
+  REAL(SP), DIMENSION(nlam_dagb)           :: lambda_dagb=0.0
+  REAL(SP), DIMENSION(nlam_dagb,ntau_dagb) :: fluxin_dagb=0.0
+  REAL(SP), DIMENSION(nspec,ntau_dagb)     :: flux_dagb=0.0
+  REAL(SP), DIMENSION(ntau_dagb)           :: teff_dagb=0.0
+
   !arrays for the isochrone data
   REAL(SP), DIMENSION(nz,nt,nm) :: mact_isoc=0.,logl_isoc=0.,&
        logt_isoc=0.,logg_isoc=0.,ffco_isoc=0.,phase_isoc=0.
@@ -341,7 +347,7 @@ MODULE SPS_VARS
           dust_tesc=7.0,frac_obrun=0.0,uvb=1.0,mwr=3.1,redgb=1.0,&
           dust1_index=-1.0,mdave=0.5,sf_start=0.0,sf_trunc=0.0,sf_theta=0.0,&
           duste_gamma=0.01,duste_umin=1.0,duste_qpah=3.5,fcstar=1.0,&
-          masscut=150.0,vel_broad=0.0
+          masscut=150.0,vel_broad=0.0,agb_dust=1.0
      INTEGER :: zmet=1,sfh=0,wgp1=1,wgp2=1,wgp3=1,evtype=-1
      CHARACTER(50) :: imf_filename='', sfh_filename=''
   END TYPE PARAMS

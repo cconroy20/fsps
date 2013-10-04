@@ -194,8 +194,8 @@ SUBROUTINE SSP_GEN(pset,mass_ssp,lbol_ssp,spec_ssp)
 
         !add circumstellar dust around AGB stars
         IF (phase(i,j).EQ.5.AND.add_agb_dust_model.EQ.1) THEN
-           CALL ADD_AGB_DUST(tspec,mact(i,j),logt(i,j),&
-                logl(i,j),logg(i,j),tco)
+           CALL ADD_AGB_DUST(pset%agb_dust,tspec,mact(i,j),&
+                logt(i,j),logl(i,j),logg(i,j),tco)
         ENDIF
 
         !only construct SSPs for particular evolutionary
