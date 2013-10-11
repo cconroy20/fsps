@@ -53,11 +53,11 @@
 
 
 
-  ! Now lets compute a 1 Gyr tau model SFH with a van Dokkum 2008 IMF,
+  ! Now lets compute a 1 Gyr tau model SFH with a Salpeter IMF
   ! with a simple dust model, at a particular time 
   ! (rather than outputing all the time info)
 
-  imf_type  = 3                !define the IMF (3=van Dokkum 2003)
+  imf_type  = 0                !define the IMF (0=Salpeter)
                                !see sps_vars.f90 for details of this var
   pset%zmet = 20               !define the metallicity (see the lookup table)
                                !20 = solar metallacity

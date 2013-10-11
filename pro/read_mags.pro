@@ -75,8 +75,10 @@ FUNCTION READ_MAGS1, file
          uvis_f775w:0.0,$
          uvis_f814w:0.0,$
          uvis_f850lp:0.0,$
+         wfc3_f098m:0.0,$
          wfc3_f105w:0.0,$
          wfc3_f110w:0.0,$
+         wfc3_f125w:0.0,$
          wfc3_f140w:0.0,$
          wfc3_f160w:0.0,$
          irac1:0.0,$
@@ -133,7 +135,14 @@ FUNCTION READ_MAGS1, file
          iras_100:0.0,$
          bessell_l:0.0,$
          bessell_l_prime:0.0,$
-         bessell_m:0.0}
+         bessell_m:0.0,$
+         stromgren_u:0.0,$
+         stromgren_v:0.0,$
+         stromgren_b:0.0,$
+         stromgren_y:0.0,$
+         m1500:0.0,$
+         m2300:0.0,$
+         m2800:0.0}
 
   str = replicate(str,nn)
 

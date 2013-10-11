@@ -46,7 +46,7 @@ SUBROUTINE GETMAGS(zred,spec,mags)
   lami = (/3.550,4.493,5.731,7.872,70.0,100.0,160.0,250.0,350.0,500.0,&
        12.0,25.0,60.0,100.0/)*1E4
   DO i=1,14
-     ind=(/51,52,53,54,93,94,95,96,97,98,99,100,101,102/)
+     ind=(/53,54,55,56,95,96,97,98,99,100,101,102,103,104/)
      d = TSUM(spec_lambda,(spec_lambda/lami(i))**(-1.0)*bands(ind(i),:)/&
           spec_lambda)
      IF (mags(ind(i)).GT.tiny_number) &
@@ -56,7 +56,7 @@ SUBROUTINE GETMAGS(zred,spec,mags)
   !normalize the MIPS photometry to a BB (beta=2)
   lami(1:3) = (/23.68,71.42,155.9/)*1E4
   DO i=1,3
-     ind(1:3) = (/88,89,90/)
+     ind(1:3) = (/90,91,92/)
      d = TSUM(spec_lambda,(spec_lambda/lami(i))**(-2.0)*bands(ind(i),:)/&
           spec_lambda)
      IF (mags(ind(i)).GT.tiny_number) &
