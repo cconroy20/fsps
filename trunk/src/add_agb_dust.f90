@@ -42,9 +42,10 @@ SUBROUTINE ADD_AGB_DUST(weight,tspec,mact,logt,logl,logg,tco)
 
   !find dusty model given tau1,tco,Teff
 
+
   !need a dusty_tau1 grid and a dusty_teff grid
 
-  !tspec = tspec * (weight*(1/flux_dagb(:,4)-1)+1)
+  tspec = tspec * (weight*(1/flux_dagb(:,4)-1)+1)
 
  
 
