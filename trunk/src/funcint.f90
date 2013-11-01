@@ -21,6 +21,11 @@ FUNCTION FUNCINT(func,a,b)
 
   last = -99999.
 
+  IF (a.EQ.b) THEN
+     funcint=0.0
+     RETURN
+  ENDIF
+
   DO j=1,jmax
   
      nn = init*INT(2**j)
