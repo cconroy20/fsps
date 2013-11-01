@@ -450,18 +450,7 @@ SUBROUTINE SPS_SETUP(zin)
      ENDDO
      CLOSE(99)
      lambda_dl07 = lambda_dl07*1E4  !convert to Ang
-     
-     !expand the wavelength array
-     !i=1
-     !DO WHILE (spec_lambda(i)/1E4.LT.10.)
-     !   i=i+1
-     !ENDDO
-     !j=1
-     !DO WHILE (lambda_dl07(j)/1E4.LE.10.) 
-     !   j=j+1
-     !ENDDO
-     !spec_lambda(i:) = lambda_dl07(j-1:)
-     
+  
      !now interpolate the dust spectra onto the master wavelength array
      DO j=1,numin_dl07*2
         DO i=1,nspec
@@ -474,6 +463,7 @@ SUBROUTINE SPS_SETUP(zin)
      ENDDO
 
   ENDDO
+
 
   !logarithmic wavelength grid used in smoothspec.f90
   dlstep = (LOG(spec_lambda(max_lam_smooth))-&

@@ -105,7 +105,7 @@ MODULE SPS_UTILS
 
   INTERFACE
      FUNCTION INTIND(lam,func,lo,hi)
-       USE sps_vars; USE nr, ONLY : locate
+       USE sps_vars
        REAL(SP), INTENT(in), DIMENSION(nspec) :: lam,func
        REAL(SP), INTENT(in) :: lo,hi
        REAL(SP) :: intind
@@ -156,6 +156,15 @@ MODULE SPS_UTILS
        INTEGER, INTENT(in) :: nmass
      END SUBROUTINE IMF_WEIGHT
   END INTERFACE 
+
+  INTERFACE
+     FUNCTION locate(xx,x)
+       USE nrtype
+       REAL(SP), DIMENSION(:), INTENT(IN) :: xx
+       REAL(SP), INTENT(IN) :: x
+       INTEGER :: locate
+     END FUNCTION locate
+  END INTERFACE
 
   INTERFACE
      SUBROUTINE MOD_GB(zz,t,age,delt,dell,pagb,redgb,&

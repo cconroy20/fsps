@@ -2,8 +2,8 @@ FUNCTION INTIND(lam,func,lo,hi)
 
   !perform integral over spectrum for index computation
 
-  USE sps_vars; USE nr, ONLY : locate
-  USE sps_utils, ONLY : tsum
+  USE sps_vars
+  USE sps_utils, ONLY : tsum, locate
   IMPLICIT NONE
 
   INTEGER :: l1,l2,i
@@ -42,7 +42,7 @@ SUBROUTINE GETINDX(lambda,spec,indices)
   !indices are defined in data/allindices.dat
 
   USE sps_vars
-  USE sps_utils, ONLY : intind; USE nr, ONLY : locate
+  USE sps_utils, ONLY : intind, locate
   IMPLICIT NONE
 
   INTEGER :: j

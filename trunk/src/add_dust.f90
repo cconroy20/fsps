@@ -1,7 +1,7 @@
 SUBROUTINE ADD_DUST(pset,csp1,csp2,specdust,mdust)
 
-  USE sps_vars; USE nr, ONLY : locate 
-  USE sps_utils, ONLY : tsum
+  USE sps_vars
+  USE sps_utils, ONLY : tsum, locate
   IMPLICIT NONE
 
   REAL(SP), DIMENSION(nspec), INTENT(in) :: csp1,csp2

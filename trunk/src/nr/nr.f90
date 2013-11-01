@@ -1427,14 +1427,14 @@ MODULE nr
 		REAL(SP), DIMENSION(:), TARGET, INTENT(INOUT) :: p,xi
 		END SUBROUTINE linmin
 	END INTERFACE
-	INTERFACE
-		FUNCTION locate(xx,x)
-		USE nrtype
-		REAL(SP), DIMENSION(:), INTENT(IN) :: xx
-		REAL(SP), INTENT(IN) :: x
-		INTEGER(I4B) :: locate
-		END FUNCTION locate
-	END INTERFACE
+!	INTERFACE
+!		FUNCTION locate(xx,x)
+!		USE nrtype
+!		REAL(SP), DIMENSION(:), INTENT(IN) :: xx
+!		REAL(SP), INTENT(IN) :: x
+!		INTEGER(I4B) :: locate
+!		END FUNCTION locate
+!	END INTERFACE
 	INTERFACE
 		FUNCTION lop(u)
 		USE nrtype
