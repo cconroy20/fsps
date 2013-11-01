@@ -53,6 +53,21 @@ MODULE SPS_UTILS
   END INTERFACE
 
   INTERFACE
+     FUNCTION FUNCINT(func,a,b)
+       USE sps_vars
+       REAL(SP), INTENT(IN) :: a,b
+       REAL(SP) :: funcint
+       INTERFACE
+          FUNCTION func(x)
+            USE sps_vars
+            REAL(SP), DIMENSION(:), INTENT(IN) :: x
+            REAL(SP), DIMENSION(SIZE(x)) :: func
+          END FUNCTION func
+       END INTERFACE
+     END FUNCTION FUNCINT
+  END INTERFACE
+
+  INTERFACE
      SUBROUTINE GETZMET(smass,pos)
        USE sps_vars
        REAL(SP), INTENT(in) :: smass

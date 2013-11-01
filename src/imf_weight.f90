@@ -10,16 +10,14 @@ SUBROUTINE IMF_WEIGHT(mini,wght,nmass)
   !mass+/-0.5dm, rather than just the values at point i.
   !Then every intergral over mass is just a sum.
 
-  USE sps_vars; USE sps_utils, ONLY : imf
-  USE nr, ONLY : qromb
+  USE sps_vars; USE sps_utils, ONLY : imf, funcint
   IMPLICIT NONE
 
   REAL(SP), INTENT(inout), DIMENSION(nm) :: wght
   REAL(SP), INTENT(in), DIMENSION(nm)    :: mini
   INTEGER, INTENT(in) :: nmass
   INTEGER  :: i
-  REAL(SP) :: m1,m2, i1,i2
-  REAL(SP), DIMENSION(1) :: tm1,tm2,ti1,ti2
+  REAL(SP) :: m1,m2
 
   !--------------------------------------------------------!
   !--------------------------------------------------------!
@@ -42,19 +40,13 @@ SUBROUTINE IMF_WEIGHT(mini,wght,nmass)
         m2 = mini(i) + 0.5*(mini(i+1)-mini(i))
      ENDIF
 
-     wght(i) = qromb(imf,m1,m2)
-
-     !tm1 = m1
-     !tm2 = m2
-     !ti1 = imf(tm1)
-     !ti2 = imf(tm2)
-     !write(*,*) m1,m2,wght(i)/ ((m2-m1)*(ti1+ti2)/2.)-1
+     wght(i) = funcint(imf,m1,m2)
 
   ENDDO
 
   !normalize the weights
   imf_type = imf_type + 10
-  wght = wght / qromb(imf,imf_lower_limit,imf_upper_limit)
+  wght = wght / funcint(imf,imf_lower_limit,imf_upper_limit)
   imf_type = imf_type - 10
 
   RETURN
