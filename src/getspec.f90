@@ -7,7 +7,7 @@ SUBROUTINE GETSPEC(zz,mact,logt,lbol,logg,phase,ffco,spec)
   !This subroutine is a major bottleneck.  The spectra must be
   !recomputed each time the IMF or isochrone parameters change.
 
-  USE sps_vars; USE nr, ONLY: locate
+  USE sps_vars; USE sps_utils, ONLY: locate
   IMPLICIT NONE
 
   REAL(SP), INTENT(in) :: mact,logt,lbol,logg,phase,ffco

@@ -3,8 +3,8 @@ SUBROUTINE SMOOTHSPEC(lambda,spec,sigma)
   !routine to compute velocity broadening of an input spectrum
   !the PSF kernel has a width of m*sigma, where m=4
 
-  USE sps_vars; USE nr, ONLY : locate
-  USE sps_utils, ONLY : linterp
+  USE sps_vars
+  USE sps_utils, ONLY : linterp, locate
   IMPLICIT NONE
   
   REAL(SP), INTENT(in), DIMENSION(nspec) :: lambda

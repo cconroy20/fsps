@@ -16,8 +16,7 @@
 
 SUBROUTINE SSP_GEN(pset,mass_ssp,lbol_ssp,spec_ssp)
 
-  USE sps_vars; USE nr, ONLY : locate
-  USE sps_utils
+  USE sps_vars; USE sps_utils
   IMPLICIT NONE
   
   INTEGER :: i=1, j=1, stat,ii,klo,khi

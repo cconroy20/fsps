@@ -77,7 +77,7 @@ SUBROUTINE ADD_AGB_DUST(weight,tspec,mact,logt,logl,logg,tco)
   !then looks up the corresponding DUSTY model given the C/O
   !ratio and Teff.
   
-  USE sps_vars; USE nr, ONLY: locate
+  USE sps_vars; USE sps_utils, ONLY: locate
   IMPLICIT NONE
 
   REAL(SP), DIMENSION(nspec), INTENT(out) :: tspec

@@ -9,7 +9,7 @@ FUNCTION INTSFR(sfh,tau,const,maxtime,sfstart,t1,t2,tweight)
 
   !routine to integrate an analytic SFH from t1 to t2
 
-  USE sps_vars; USE nr, ONLY : locate; USE sps_utils, ONLY : tsum
+  USE sps_vars; USE sps_utils, ONLY : tsum, locate
   IMPLICIT NONE
 
   INTEGER, INTENT(in)  :: sfh
@@ -82,8 +82,8 @@ SUBROUTINE INTSPEC(pset,nti,spec_ssp,csp,mass_ssp,lbol_ssp,&
   !routine to perform integration of SSP over a SFH,
   !including attenuation by dust.
 
-  USE sps_vars; USE nr, ONLY : locate
-  USE sps_utils, ONLY : add_dust, intsfr
+  USE sps_vars
+  USE sps_utils, ONLY : add_dust, intsfr, locate
   IMPLICIT NONE
   
   INTEGER :: i,imax,indsf,wtesc
@@ -217,8 +217,8 @@ SUBROUTINE COMPSP(write_compsp,nzin,outfile,mass_ssp,&
   !If tage >0  -> run only one integration to t=tage
   !If tage<=0  -> produce outputs from tmin<t<tmax
 
-  USE sps_vars; USE nr, ONLY : locate
-  USE sps_utils, ONLY : getmags, add_dust, linterp, intspec, smoothspec
+  USE sps_vars
+  USE sps_utils, ONLY : getmags,add_dust,linterp,intspec,smoothspec,locate
   IMPLICIT NONE
  
   !write_compsp = (1->write mags), (2->write spectra), (3->write both) 
