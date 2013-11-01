@@ -246,7 +246,11 @@ SUBROUTINE COMPSP(write_compsp,nzin,outfile,mass_ssp,&
   !---------------------Add Nebular Emission--------------------!
   !-------------------------------------------------------------!
 
-  !TBD
+  IF (add_neb_emission.EQ.1) THEN
+
+     !TBD
+
+  ENDIF
 
 
   !-------------------------------------------------------------!

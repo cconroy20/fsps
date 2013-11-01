@@ -12,7 +12,7 @@ SUBROUTINE SPS_SETUP(zin)
   IMPLICIT NONE
   INTEGER, INTENT(in) :: zin
   INTEGER :: stat=1,n,i,j,m,jj,k
-  INTEGER :: n_isoc,z,zmin,zmax
+  INTEGER :: n_isoc,z,zmin,zmax,nlam
   CHARACTER(1) :: char,sqpah
   CHARACTER(6) :: zstype
   REAL(SP) :: dumr1,d1,d2,logage,x,a, zero=0.0
@@ -21,6 +21,7 @@ SUBROUTINE SPS_SETUP(zin)
   REAL(SP), DIMENSION(50000) :: readlamb,readband
   REAL(SP), DIMENSION(25) :: wglam
   REAL(SP), DIMENSION(25,18,2,6) :: wgtmp
+  REAL(SP), DIMENSION(10000) :: lambda_dagb, fluxin_dagb
 
   !---------------------------------------------------------------!
   !---------------------------------------------------------------!
@@ -34,9 +35,6 @@ SUBROUTINE SPS_SETUP(zin)
      WRITE(*,*) 'SPS_SETUP ERROR: zin GT nz', zin,nz
      STOP
   ENDIF
-
-  !initialize the random number generator
-  CALL init_random_seed()
 
   !clean out all the common block arrays
   mini_isoc     = 0.
@@ -488,32 +486,72 @@ SUBROUTINE SPS_SETUP(zin)
   !-------------Read in circumstellar AGB dust models--------------!
   !----------------------------------------------------------------!
 
+  !O-rich spectra
   OPEN(99,FILE=TRIM(SPS_HOME)//'/dust/dusty/Orich_dusty.spec',&
        STATUS='OLD',iostat=stat,ACTION='READ')
   IF (stat.NE.0) THEN 
      WRITE(*,*) 'SPS_SETUP ERROR: error opening dusty models'
      STOP
   ENDIF
-  READ(99,*) !burn the header
-  DO i=1,nlam_dagb
-     READ(99,*,IOSTAT=stat) lambda_dagb(i),fluxin_dagb(i,:)
-     IF (stat.NE.0) THEN 
-        WRITE(*,*) 'SPS_SETUP ERROR: error during dust emission read'
-        STOP
-     ENDIF
+
+  !number of wavelength points in the AGB grid
+  READ(99,*) nlam
+  !read in the wavelength grid
+  READ(99,*,IOSTAT=stat) lambda_dagb(1:nlam)
+
+  lambda_dagb(1:nlam) = lambda_dagb(1:nlam)
+
+  DO i=1,nteff_dagb
+     DO j=1,ntau_dagb
+        READ(99,*,IOSTAT=stat) teff_dagb(1,i), tau1_dagb(j)
+        READ(99,*,IOSTAT=stat) fluxin_dagb(1:nlam)
+        IF (stat.NE.0) THEN 
+           WRITE(*,*) 'SPS_SETUP ERROR: error reading dusty models'
+           STOP
+        ENDIF
+        !interpolate the dust spectra onto the master wavelength array
+        DO k=1,nspec
+           IF (spec_lambda(k).GT.lambda_dagb(1)) THEN
+              flux_dagb(k,1,i,j) = linterp(lambda_dagb(1:nlam),&
+                   fluxin_dagb(1:nlam),spec_lambda(k))
+           ENDIF
+        ENDDO
+     ENDDO
   ENDDO
   CLOSE(99)
 
-  !now interpolate the dust spectra onto the master wavelength array
-  DO j=1,ntau_dagb
-     DO i=1,nspec
-        IF (spec_lambda(i).GT.lambda_dagb(1)) THEN
-           flux_dagb(i,j) = linterp(lambda_dagb,&
-                fluxin_dagb(:,j),spec_lambda(i))
+  !C-rich spectra
+  OPEN(99,FILE=TRIM(SPS_HOME)//'/dust/dusty/Crich_dusty.spec',&
+       STATUS='OLD',iostat=stat,ACTION='READ')
+  IF (stat.NE.0) THEN 
+     WRITE(*,*) 'SPS_SETUP ERROR: error opening dusty models'
+     STOP
+  ENDIF
+
+  !number of wavelength points in the AGB grid
+  READ(99,*) nlam
+  !read in the wavelength grid
+  READ(99,*,IOSTAT=stat) lambda_dagb(1:nlam)
+
+  DO i=1,nteff_dagb
+     DO j=1,ntau_dagb
+        READ(99,*,IOSTAT=stat) teff_dagb(2,i), tau1_dagb(j)
+        READ(99,*,IOSTAT=stat) fluxin_dagb(1:nlam)
+        IF (stat.NE.0) THEN 
+           WRITE(*,*) 'SPS_SETUP ERROR: error reading dusty models'
+           STOP
         ENDIF
-        IF (flux_dagb(i,j).EQ.0) flux_dagb(i,j)=10.0
+        !interpolate the dust spectra onto the master wavelength array
+        DO k=1,nspec
+           IF (spec_lambda(k).GT.lambda_dagb(1)) THEN
+              flux_dagb(k,2,i,j) = linterp(lambda_dagb(1:nlam),&
+                   fluxin_dagb(1:nlam),spec_lambda(k))
+           ENDIF
+        ENDDO
      ENDDO
   ENDDO
+  CLOSE(99)
+
 
 
   !----------------------------------------------------------------!

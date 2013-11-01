@@ -186,14 +186,15 @@ SUBROUTINE SSP_GEN(pset,mass_ssp,lbol_ssp,spec_ssp)
         tco = ffco(i,j)
         IF (phase(i,j).EQ.5.AND.tco.GT.1.0) THEN
            !dilute the C star fraction
-           IF (myran().GE.pset%fcstar) tco = 1.0
+           !IF (1.0.GE.pset%fcstar) tco = 1.0
         ENDIF
 
         CALL GETSPEC(pset%zmet,mact(i,j),logt(i,j),&
              10**logl(i,j),logg(i,j),phase(i,j),tco,tspec)
 
         !add circumstellar dust around AGB stars
-        IF (phase(i,j).EQ.5.AND.add_agb_dust_model.EQ.1) THEN
+        IF ((phase(i,j).EQ.4.OR.phase(i,j).EQ.5)&
+             .AND.add_agb_dust_model.EQ.1) THEN
            CALL ADD_AGB_DUST(pset%agb_dust,tspec,mact(i,j),&
                 logt(i,j),logl(i,j),logg(i,j),tco)
         ENDIF

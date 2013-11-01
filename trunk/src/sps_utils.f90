@@ -186,13 +186,6 @@ MODULE SPS_UTILS
   END INTERFACE
 
   INTERFACE
-     FUNCTION MYRAN()
-       USE sps_vars
-       REAL(SP) :: myran
-     END FUNCTION MYRAN
-  END INTERFACE
-
-  INTERFACE
      FUNCTION TSUM(xin,yin)
        USE sps_vars
        REAL(SP), DIMENSION(:), INTENT(in) :: xin,yin
