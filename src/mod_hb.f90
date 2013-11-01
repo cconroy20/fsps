@@ -14,7 +14,7 @@ SUBROUTINE MOD_HB(f_bhb,t,mini,mact,logl,logt,logg,phase, &
   !Note that the parameter bhb_sbs_time, set in sps_vars.f90,
   !sets the turn-on time for this modification.
 
-  USE sps_vars; USE sps_utils, ONLY : myran
+  USE sps_vars
   IMPLICIT NONE
 
   REAL(SP), INTENT(inout), DIMENSION(nt,nm) :: mini,mact,&
@@ -28,8 +28,8 @@ SUBROUTINE MOD_HB(f_bhb,t,mini,mact,logl,logt,logg,phase, &
 
   !number of blue HB to add per HB star
   !(not important b/c their total weight remains fixed)
-  INTEGER, PARAMETER :: nhb = 40
-  INTEGER :: j, i, flip=0
+  INTEGER, PARAMETER :: nhb=40
+  INTEGER :: j, i, flip=0, tnhb
   REAL(SP) :: tgrad=0., hblum=-999.
   REAL(SP), DIMENSION(nhb) :: dumarr=0.
 
@@ -40,6 +40,16 @@ SUBROUTINE MOD_HB(f_bhb,t,mini,mact,logl,logt,logg,phase, &
   flip    = 0
   hb_wght = 0.
   tphase = phase(t,:)
+
+  !we need to count the total number of HB stars in 
+  !these isochrones
+  IF (isoc_type.EQ.'bsti'.OR.isoc_type.EQ.'mesa') THEN
+     tnhb = 0
+     DO i=1,nm
+        IF (tphase(i).EQ.3) tnhb=tnhb+1
+     ENDDO
+     i=1
+  ENDIF
 
   DO j=2,nm
 
@@ -73,8 +83,8 @@ SUBROUTINE MOD_HB(f_bhb,t,mini,mact,logl,logt,logg,phase, &
                     phase(t,nmass(t)+1:nmass(t)+nhb) = dumarr+8.
                     DO i=1,nhb
                        !distribute Teff uniformly to high T
-                       !logt(t,nmass(t)+i) = logt(t,j)+(4.2-logt(t,j))*myran()
-                       logt(t,nmass(t)+i) = 4.0+(4.3-4.0)*myran()
+                       logt(t,nmass(t)+i) = logt(t,j)+(4.2-logt(t,j))*i/REAL(nhb)
+                       !logt(t,nmass(t)+i) = 4.0+(4.3-4.0)*i/REAL(nhb)
                        !compute logg
                        logg(t,nmass(t)+i) = LOG10( gsig4pi*mact(t,nmass(t)+i)/&
                             10**logl(t,nmass(t)+i) ) + 4*logt(t,nmass(t)+i) 
@@ -114,7 +124,8 @@ SUBROUTINE MOD_HB(f_bhb,t,mini,mact,logl,logt,logg,phase, &
            logl(t,nmass(t))  = logl(t,j)
            phase(t,nmass(t)) = 8.
            !distribute Teff uniformly to high T
-           logt(t,nmass(t)) = logt(t,j)+(4.2-logt(t,j))*myran()
+           logt(t,nmass(t)) = logt(t,j)+(4.2-logt(t,j))*i/REAL(tnhb)
+           i=i+1
            wght(nmass(t)) = f_bhb*wght(j)
            !modify the weight of the existing HB stars
            wght(j)   = wght(j) * (1-f_bhb)                

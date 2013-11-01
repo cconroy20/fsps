@@ -12,8 +12,8 @@ MODULE SPS_VARS
 #define HRLIB 0
 #define RRLIB 0
 !define either Padova, BaSTI, or MESA isochrones
-#define PADOVA 1
-#define BASTI 0
+#define PADOVA 0
+#define BASTI 1
 #define MIST 0
 
   !--------------------------------------------------------------!
@@ -48,7 +48,7 @@ MODULE SPS_VARS
 
   !turn on/off the AGB circumstellar dust model
   !NB: this is not yet implemented
-  INTEGER, PARAMETER :: add_agb_dust_model=0
+  INTEGER, PARAMETER :: add_agb_dust_model=1
 
   !turn on/off a Cloudy-based nebular emission model 
   !NB: this is not yet implemented
@@ -178,7 +178,7 @@ MODULE SPS_VARS
   !number of Umin models from Drain & Li 2007 dust model
   INTEGER, PARAMETER :: numin_dl07=22
   !parameters for circumstellar dust models
-  INTEGER, PARAMETER :: nlam_dagb=93, ntau_dagb=5
+  INTEGER, PARAMETER :: ntau_dagb=50, nteff_dagb=6
 
   !------------IMF-related Constants--------------!
   
@@ -209,13 +209,17 @@ MODULE SPS_VARS
   REAL(SP), PARAMETER :: hc2sig  = 0.105021
   !Solar mass in grams
   REAL(SP), PARAMETER :: msun    = 1.989E33
+  !Solar radius in cm
+  REAL(SP), PARAMETER :: rsun    = 6.955E10
   !Solar luminosity in erg/s
   REAL(SP), PARAMETER :: lsun    = 3.839E33
   !Newton's constant
   REAL(SP), PARAMETER :: newton  = 6.67428E-8
   !cm in a pc
   REAL(SP), PARAMETER :: pc2cm   = 3.08568E18
-  
+  !seconds per year
+  REAL(SP), PARAMETER :: yr2sc   = 3.15569E7
+
   !other important parameters
   REAL(SP), PARAMETER :: huge_number = 1E33
   REAL(SP), PARAMETER :: tiny_number = 1E-33
@@ -314,10 +318,9 @@ MODULE SPS_VARS
   REAL(SP), DIMENSION(nspec,7,numin_dl07*2)   :: dustem2_dl07=0.0
 
   !circumstellar AGB dust model (Villaume et al. in prep)
-  REAL(SP), DIMENSION(nlam_dagb)           :: lambda_dagb=0.0
-  REAL(SP), DIMENSION(nlam_dagb,ntau_dagb) :: fluxin_dagb=0.0
-  REAL(SP), DIMENSION(nspec,ntau_dagb)     :: flux_dagb=0.0
-  REAL(SP), DIMENSION(ntau_dagb)           :: teff_dagb=0.0
+  REAL(SP), DIMENSION(nspec,2,nteff_dagb,ntau_dagb) :: flux_dagb=0.0
+  REAL(SP), DIMENSION(ntau_dagb)           :: tau1_dagb=0.0
+  REAL(SP), DIMENSION(2,nteff_dagb)        :: teff_dagb=0.0
 
   !arrays for the isochrone data
   REAL(SP), DIMENSION(nz,nt,nm) :: mact_isoc=0.,logl_isoc=0.,&
