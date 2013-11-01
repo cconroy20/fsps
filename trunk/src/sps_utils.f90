@@ -174,7 +174,7 @@ MODULE SPS_UTILS
 
   INTERFACE
      FUNCTION locate(xx,x)
-       USE nrtype
+       USE sps_vars
        REAL(SP), DIMENSION(:), INTENT(IN) :: xx
        REAL(SP), INTENT(IN) :: x
        INTEGER :: locate

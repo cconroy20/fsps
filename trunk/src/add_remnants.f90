@@ -5,7 +5,6 @@ SUBROUTINE ADD_REMNANTS(mass,maxmass)
   !formulae are taken from Renzini & Ciotti 1993.
   
   USE sps_vars
-  USE nr, ONLY : qromb
   USE sps_utils, ONLY : imf, funcint
   IMPLICIT NONE
 
