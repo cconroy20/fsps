@@ -352,6 +352,7 @@ MODULE SPS_VARS
           duste_gamma=0.01,duste_umin=1.0,duste_qpah=3.5,fcstar=1.0,&
           masscut=150.0,vel_broad=0.0,agb_dust=1.0
      INTEGER :: zmet=1,sfh=0,wgp1=1,wgp2=1,wgp3=1,evtype=-1
+     INTEGER, DIMENSION(nbands) :: mag_compute=1
      CHARACTER(50) :: imf_filename='', sfh_filename=''
   END TYPE PARAMS
   

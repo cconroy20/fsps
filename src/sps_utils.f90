@@ -101,11 +101,12 @@ MODULE SPS_UTILS
   END INTERFACE
 
   INTERFACE
-     SUBROUTINE GETMAGS(zred,spec,mags) 
+     SUBROUTINE GETMAGS(zred,spec,mags,mag_compute)
        USE sps_vars
-       REAL(SP), INTENT(inout), DIMENSION(nspec) :: spec
        REAL(SP), INTENT(in) :: zred
+       REAL(SP), INTENT(inout), DIMENSION(nspec) :: spec
        REAL(SP), DIMENSION(nbands) :: mags
+       INTEGER, DIMENSION(nbands), INTENT(in), OPTIONAL  :: mag_compute
      END SUBROUTINE GETMAGS
   END INTERFACE
   
@@ -173,12 +174,12 @@ MODULE SPS_UTILS
   END INTERFACE 
 
   INTERFACE
-     FUNCTION locate(xx,x)
+     FUNCTION LOCATE(xx,x)
        USE sps_vars
        REAL(SP), DIMENSION(:), INTENT(IN) :: xx
        REAL(SP), INTENT(IN) :: x
        INTEGER :: locate
-     END FUNCTION locate
+     END FUNCTION LOCATE
   END INTERFACE
 
   INTERFACE

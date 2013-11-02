@@ -557,12 +557,12 @@ SUBROUTINE COMPSP(write_compsp,nzin,outfile,mass_ssp,&
 
       !redshift spectrum; calculate mags
       IF (redshift_colors.EQ.0) THEN
-         CALL GETMAGS(pset%zred,spec_csp,mags)
+         CALL GETMAGS(pset%zred,spec_csp,mags,pset%mag_compute)
       ELSE
          !here we compute the redshift at the corresponding age
          zred = MIN(MAX(linterp(zagespl(:,2),zagespl(:,1),&
               powtime(i)/1E9),0.0),20.0)
-         CALL GETMAGS(zred,spec_csp,mags)
+         CALL GETMAGS(zred,spec_csp,mags,pset%mag_compute)
       ENDIF
 
       !only save results if computing all ages
