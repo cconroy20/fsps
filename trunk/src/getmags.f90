@@ -1,4 +1,4 @@
-SUBROUTINE GETMAGS(zred,spec,mags)
+SUBROUTINE GETMAGS(zred,spec,mags,mag_compute)
 
   !routine to calculate magnitudes in the Vega or AB systems,
   !given an input spectrum and redshift.
@@ -10,16 +10,23 @@ SUBROUTINE GETMAGS(zred,spec,mags)
   IMPLICIT NONE
 
   INTEGER  :: i
-  REAL(SP) :: d
-  REAL(SP), INTENT(inout), DIMENSION(nspec) :: spec
   REAL(SP), INTENT(in) :: zred
+  REAL(SP), INTENT(inout), DIMENSION(nspec) :: spec
   REAL(SP), INTENT(inout), DIMENSION(nbands) :: mags
+  INTEGER, DIMENSION(nbands), INTENT(in), OPTIONAL  :: mag_compute
+  INTEGER, DIMENSION(nbands) :: magflag
   REAL(SP), DIMENSION(nspec)  :: tspec
-  REAL(SP), DIMENSION(14) :: lami
-  INTEGER,  DIMENSION(14) :: ind
 
   !-----------------------------------------------------------!
   !-----------------------------------------------------------!
+
+  !set up the flags determining which mags are computed
+  IF (PRESENT(mag_compute)) THEN
+     magflag = mag_compute
+     magflag(1)=1  !always compute V band mag
+  ELSE
+     magflag=1
+  ENDIF
 
   !redshift the spectrum
   IF (zred.NE.0.0) THEN
@@ -38,34 +45,14 @@ SUBROUTINE GETMAGS(zred,spec,mags)
 
   !integrate over each filter
   DO i=1,nbands
+     IF (magflag(i).EQ.0) CYCLE
      mags(i) = TSUM(spec_lambda,tspec*bands(i,:)/spec_lambda)
      mags(i) = MAX(mags(i),tiny_number)
   ENDDO
 
-  !normalize the IRAC, PACS, SPIRE, and IRAS photometry to nu*fnu=const
-  lami = (/3.550,4.493,5.731,7.872,70.0,100.0,160.0,250.0,350.0,500.0,&
-       12.0,25.0,60.0,100.0/)*1E4
-  DO i=1,14
-     ind=(/53,54,55,56,95,96,97,98,99,100,101,102,103,104/)
-     d = TSUM(spec_lambda,(spec_lambda/lami(i))**(-1.0)*bands(ind(i),:)/&
-          spec_lambda)
-     IF (mags(ind(i)).GT.tiny_number) &
-          mags(ind(i)) = mags(ind(i)) / MAX(d,tiny_number)
-  ENDDO
-
-  !normalize the MIPS photometry to a BB (beta=2)
-  lami(1:3) = (/23.68,71.42,155.9/)*1E4
-  DO i=1,3
-     ind(1:3) = (/90,91,92/)
-     d = TSUM(spec_lambda,(spec_lambda/lami(i))**(-2.0)*bands(ind(i),:)/&
-          spec_lambda)
-     IF (mags(ind(i)).GT.tiny_number) &
-          mags(ind(i)) = mags(ind(i)) / MAX(d,tiny_number)
-  ENDDO
-
-
   !convert to magnitudes in AB system
   DO i=1,nbands
+     IF (magflag(i).EQ.0) CYCLE
      IF (mags(i).LE.tiny_number) THEN
         mags(i) = 99.0 
      ELSE
@@ -79,4 +66,10 @@ SUBROUTINE GETMAGS(zred,spec,mags)
        mags(2:nbands) = (mags(2:nbands)-mags(1)) - &
        (magvega(2:nbands)-magvega(1)) + mags(1)
      
+  !zero out the mags that were not computed
+  DO i=1,nbands
+     IF (magflag(i).EQ.0) mags(i)=99.
+  ENDDO
+
+
 END SUBROUTINE GETMAGS
