@@ -219,11 +219,11 @@ MODULE SPS_UTILS
   END INTERFACE
 
   INTERFACE
-     SUBROUTINE SMOOTHSPEC(lambda,spec,sigma)
+     SUBROUTINE SMOOTHSPEC(lambda,spec,sigma,minl,maxl)
        USE sps_vars
        REAL(SP), INTENT(inout), DIMENSION(nspec) :: spec
        REAL(SP), INTENT(in), DIMENSION(nspec) :: lambda
-       REAL(SP), INTENT(in) :: sigma
+       REAL(SP), INTENT(in) :: sigma,minl,maxl
      END SUBROUTINE SMOOTHSPEC
   END INTERFACE
 

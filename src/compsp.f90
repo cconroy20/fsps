@@ -552,7 +552,8 @@ SUBROUTINE COMPSP(write_compsp,nzin,outfile,mass_ssp,&
       
       !smooth the spectrum
       IF (pset%vel_broad.GT.0.0) THEN
-         CALL SMOOTHSPEC(spec_lambda,spec_csp,pset%vel_broad)
+         CALL SMOOTHSPEC(spec_lambda,spec_csp,pset%vel_broad,&
+              pset%min_wave_smooth,pset%max_wave_smooth)
       ENDIF
 
       !redshift spectrum; calculate mags

@@ -467,13 +467,6 @@ SUBROUTINE SPS_SETUP(zin)
   ENDDO
 
 
-  !logarithmic wavelength grid used in smoothspec.f90
-  dlstep = (LOG(spec_lambda(max_lam_smooth))-&
-       LOG(spec_lambda(min_lam_smooth)))/nspec
-  DO i=1,nspec
-     lnlam(i) = i*dlstep+LOG(spec_lambda(min_lam_smooth))
-  ENDDO
-
   !----------------------------------------------------------------!
   !-------------Read in circumstellar AGB dust models--------------!
   !----------------------------------------------------------------!
