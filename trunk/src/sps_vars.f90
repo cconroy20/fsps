@@ -119,18 +119,14 @@ MODULE SPS_VARS
 #if (MILES)
   INTEGER, PARAMETER :: nz=5
   INTEGER, PARAMETER :: nspec=5994
-  INTEGER, PARAMETER :: min_lam_smooth=355, max_lam_smooth=4575
 #elif (HRLIB)
   INTEGER, PARAMETER :: nz=11
   INTEGER, PARAMETER :: nspec=4296
-  INTEGER, PARAMETER :: min_lam_smooth=1, max_lam_smooth=nspec
 #elif (RRLIB)
   INTEGER, PARAMETER :: nz=1
   INTEGER, PARAMETER :: nspec= 49811
-  INTEGER, PARAMETER :: min_lam_smooth=1, max_lam_smooth=nspec
 #else
   INTEGER, PARAMETER :: nspec=1963
-  INTEGER, PARAMETER :: min_lam_smooth=1, max_lam_smooth=nspec
 #if (BASTI)
   INTEGER, PARAMETER :: nz=10
 #elif (MIST)
@@ -278,10 +274,6 @@ MODULE SPS_VARS
   REAL(SP), DIMENSION(3,ntabmax) :: sfh_tab=0.0
   INTEGER :: ntabsfh=0
 
-  !variables used in smoothspec.f90 routine
-  REAL(SP) :: dlstep
-  REAL(SP), DIMENSION(nspec) :: lnlam
-
   !bandpass filters 
   REAL(SP), DIMENSION(nbands,nspec) :: bands
   !magnitude of the Sun in all filters
@@ -350,7 +342,8 @@ MODULE SPS_VARS
           dust_tesc=7.0,frac_obrun=0.0,uvb=1.0,mwr=3.1,redgb=1.0,&
           dust1_index=-1.0,mdave=0.5,sf_start=0.0,sf_trunc=0.0,sf_theta=0.0,&
           duste_gamma=0.01,duste_umin=1.0,duste_qpah=3.5,fcstar=1.0,&
-          masscut=150.0,vel_broad=0.0,agb_dust=1.0
+          masscut=150.0,vel_broad=0.0,agb_dust=1.0,min_wave_smooth=1E3,&
+          max_wave_smooth=1E4
      INTEGER :: zmet=1,sfh=0,wgp1=1,wgp2=1,wgp3=1,evtype=-1
      INTEGER, DIMENSION(nbands) :: mag_compute=1
      CHARACTER(50) :: imf_filename='', sfh_filename=''

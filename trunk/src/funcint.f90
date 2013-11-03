@@ -9,25 +9,25 @@ FUNCTION MYARTH(first,increment,n)
   INTEGER :: k,k2
   REAL(SP) :: temp
 
-  if (n > 0) myarth(1)=first
-  if (n <= NPAR_ARTH) then
-     do k=2,n
+  IF (n > 0) myarth(1)=first
+  IF (n <= NPAR_ARTH) THEN
+     DO k=2,n
         myarth(k)=myarth(k-1)+increment
-     end do
-  else
-     do k=2,NPAR2_ARTH
+     ENDDO
+  ELSE
+     DO k=2,NPAR2_ARTH
         myarth(k)=myarth(k-1)+increment
-     end do
+     ENDDO
      temp=increment*NPAR2_ARTH
      k=NPAR2_ARTH
-     do
-        if (k >= n) exit
+     DO
+        IF (k >= n) EXIT
         k2=k+k
-        myarth(k+1:min(k2,n))=temp+myarth(1:min(k,n-k))
+        myarth(k+1:MIN(k2,n))=temp+myarth(1:MIN(k,n-k))
         temp=temp+temp
         k=k2
-     end do
-  end if
+     ENDDO
+  ENDIF
 
 END FUNCTION MYARTH
 
@@ -82,31 +82,32 @@ SUBROUTINE MYPOLINT(xa,ya,x,y,dy)
   REAL(SP), INTENT(OUT) :: y,dy
   INTEGER :: m,n,ns
   INTEGER, DIMENSION(1) :: imin
-  REAL(SP), DIMENSION(size(xa)) :: c,d,den,ho
+  REAL(SP), DIMENSION(SIZE(xa)) :: c,d,den,ho
 
-  n=size(xa)
-  c=ya
-  d=ya
-  ho=xa-x
-  imin=minloc(abs(x-xa))
-  ns=imin(1)
-  y=ya(ns)
-  ns=ns-1
-  do m=1,n-1
+  n  = SIZE(xa)
+  c  = ya
+  d  = ya
+  ho = xa-x
+  imin = MINLOC(ABS(x-xa))
+  ns = imin(1)
+  y  = ya(ns)
+  ns = ns-1
+
+  DO m=1,n-1
      den(1:n-m)=ho(1:n-m)-ho(1+m:n)
-     if (any(den(1:n-m) == 0.0)) &
+     IF (ANY(den(1:n-m) == 0.0)) &
           WRITE(*,*) 'POLINT ERROR'
      den(1:n-m)=(c(2:n-m+1)-d(1:n-m))/den(1:n-m)
      d(1:n-m)=ho(1+m:n)*den(1:n-m)
      c(1:n-m)=ho(1:n-m)*den(1:n-m)
-     if (2*ns < n-m) then
+     IF (2*ns < n-m) THEN
         dy=c(ns+1)
-     else
+     ELSE
         dy=d(ns)
         ns=ns-1
-     end if
+     ENDIF
      y=y+dy
-  end do
+  ENDDO
   
 END SUBROUTINE MYPOLINT
 
@@ -141,15 +142,16 @@ FUNCTION FUNCINT(func,a,b)
   INTEGER :: j
 
   h(1)=1.0
-  do j=1,JMAX
-     call mytrapzd(func,a,b,s(j),j)
-     if (j >= K) then
-        call mypolint(h(j-KM:j),s(j-KM:j),zero,funcint,dqromb)
-        if (abs(dqromb) <= EPS*abs(funcint)) RETURN
-     end if
+  DO j=1,JMAX
+     CALL mytrapzd(func,a,b,s(j),j)
+     IF (j >= K) THEN
+        CALL mypolint(h(j-KM:j),s(j-KM:j),zero,funcint,dqromb)
+        IF (abs(dqromb) <= EPS*ABS(funcint)) RETURN
+     ENDIF
      s(j+1)=s(j)
      h(j+1)=0.25*h(j)
-  end do
+  ENDDO
+
   WRITE(*,*) 'FUNCINT ERROR'
 
 END FUNCTION FUNCINT
