@@ -5,7 +5,7 @@ SUBROUTINE SMOOTHSPEC(lambda,spec,sigma,minl,maxl)
   !in dlambda with lambda within each integration
   !integration is truncated at +/-4*sigma
 
-  USE sps_vars; USE sps_utils, ONLY : locate,linterp
+  USE sps_vars; USE sps_utils, ONLY : locate,linterp,tsum
   IMPLICIT NONE
   
   REAL(SP), INTENT(inout), DIMENSION(nspec) :: spec
@@ -43,19 +43,19 @@ SUBROUTINE SMOOTHSPEC(lambda,spec,sigma,minl,maxl)
            ENDIF
            
            xmax = lambda(i)*(m*sigma/ckms+1)
-           ih = MIN(locate(lambda(1:nspec),xmax),nspec)
-           il = MAX(2*i-ih,1)
-           
-           vel(il:ih)  = (lambda(i)/lambda(il:ih)-1)*ckms
-           func(il:ih) = tspec(il:ih) * 1/SQRT(2*mypi)/sigma * &
-                EXP(-vel(il:ih)**2/2./sigma**2)
+           ih   = MIN(locate(lambda(1:nspec),xmax),nspec)
+           il   = MAX(2*i-ih,1)
            
            IF (il.EQ.ih) THEN
               spec(i) = tspec(i)
            ELSE
-              spec(i) = SUM( ABS(vel(il+1:ih)-vel(il:ih-1))*&
-                   (func(il+1:ih)+func(il:ih-1))/2. )
-           ENDIF
+              vel(il:ih)  = (lambda(i)/lambda(il:ih)-1)*ckms
+              func(il:ih) =  1/SQRT(2*mypi)/sigma * &
+                   EXP(-vel(il:ih)**2/2./sigma**2)
+              !normalize the weights to integrate to unity
+              func(il:ih) = func(il:ih) / TSUM(vel(il:ih),func(il:ih))
+              spec(i) = TSUM(vel(il:ih),func(il:ih)*tspec(il:ih))
+          ENDIF
            
         ENDDO
 
