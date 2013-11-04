@@ -58,6 +58,13 @@ MODULE SPS_VARS
   !computation of stellar masses
   INTEGER, PARAMETER :: add_stellar_remnants=1
 
+  !if set, use a simpler, much faster algorithm to smooth
+  !the spectra.  Accurate to ~0.1% and ~20x faster than the 
+  !correct approach.  NB: one should be careful when choosing
+  !to run the slow version, as the accuracy depends on the min/max
+  !wavelength parameters.  Contact me if you are intersted in this feature.
+  INTEGER, PARAMETER :: smoothspec_fast=1
+
   !set attenuation-law for the diffuse ISM
   !0 - power-law attenuation.  See dust_index variable below
   !1 - MW extinction law, parameterized by Cardelli et al. 1989,
