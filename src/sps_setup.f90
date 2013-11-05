@@ -11,7 +11,7 @@ SUBROUTINE SPS_SETUP(zin)
   USE sps_vars; USE sps_utils
   IMPLICIT NONE
   INTEGER, INTENT(in) :: zin
-  INTEGER :: stat=1,n,i,j,m,jj,k
+  INTEGER :: stat=1,n,i,j,m,jj,k,i1,i2
   INTEGER :: n_isoc,z,zmin,zmax,nlam
   CHARACTER(1) :: char,sqpah
   CHARACTER(6) :: zstype
@@ -428,9 +428,6 @@ SUBROUTINE SPS_SETUP(zin)
   !--------Read in dust emission spectra from Draine & Li----------!
   !----------------------------------------------------------------!
   
-  !NB: we need to do this before other things b/c the wavelength
-  !    array is modified here.
-
   DO k=0,6
 
      WRITE(sqpah,'(I1)') k
@@ -455,13 +452,10 @@ SUBROUTINE SPS_SETUP(zin)
   
      !now interpolate the dust spectra onto the master wavelength array
      DO j=1,numin_dl07*2
-        DO i=1,nspec
-           !the dust models only extend to 1um
-           IF (spec_lambda(i)/1E4.GT.1) THEN
-              dustem2_dl07(i,k+1,j) = linterp(lambda_dl07,&
-                   dustem_dl07(:,j),spec_lambda(i))
-           ENDIF
-        ENDDO
+        !the dust models only extend to 1um
+        jj = locate(spec_lambda/1E4,1.d0)
+        dustem2_dl07(jj:,k+1,j) = linterparr(lambda_dl07,&
+             dustem_dl07(:,j),spec_lambda(jj:))
      ENDDO
 
   ENDDO
@@ -495,12 +489,9 @@ SUBROUTINE SPS_SETUP(zin)
            STOP
         ENDIF
         !interpolate the dust spectra onto the master wavelength array
-        DO k=1,nspec
-           IF (spec_lambda(k).GT.lambda_dagb(1)) THEN
-              flux_dagb(k,1,i,j) = linterp(lambda_dagb(1:nlam),&
-                   fluxin_dagb(1:nlam),spec_lambda(k))
-           ENDIF
-        ENDDO
+        jj = locate(spec_lambda,lambda_dagb(1))
+        flux_dagb(jj:,1,i,j) = linterparr(lambda_dagb(1:nlam),&
+             fluxin_dagb(1:nlam),spec_lambda(jj:))
      ENDDO
   ENDDO
   CLOSE(99)
@@ -527,12 +518,9 @@ SUBROUTINE SPS_SETUP(zin)
            STOP
         ENDIF
         !interpolate the dust spectra onto the master wavelength array
-        DO k=1,nspec
-           IF (spec_lambda(k).GT.lambda_dagb(1)) THEN
-              flux_dagb(k,2,i,j) = linterp(lambda_dagb(1:nlam),&
-                   fluxin_dagb(1:nlam),spec_lambda(k))
-           ENDIF
-        ENDDO
+        jj = locate(spec_lambda,lambda_dagb(1))
+        flux_dagb(jj:,2,i,j) = linterparr(lambda_dagb(1:nlam),&
+             fluxin_dagb(1:nlam),spec_lambda(jj:))
      ENDDO
   ENDDO
   CLOSE(99)
@@ -559,13 +547,12 @@ SUBROUTINE SPS_SETUP(zin)
   CLOSE(98)
 
   !interpolate the Vega spectrum onto the wavelength grid
-  DO i=1,nspec
-     vega_spec(i) = 10**linterp(LOG10(tvega_lam),&
-          LOG10(tvega_spec+tiny_number),LOG10(spec_lambda(i)))
-     !convert to fnu
-     vega_spec(i) =  vega_spec(i)*spec_lambda(i)**2
-     IF (spec_lambda(i).GT.tvega_lam(1221)) vega_spec(i)=tiny_number
-  ENDDO
+  !and convert to fnu
+  jj = locate(vega_spec,tvega_lam(1221))
+  vega_spec(:jj) = 10**linterparr(LOG10(tvega_lam),&
+          LOG10(tvega_spec+tiny_number),LOG10(spec_lambda(:jj)))
+  vega_spec = vega_spec*spec_lambda**2
+  vega_spec(jj+1:) = tiny_number
 
   !read in Solar spectrum; units are fnu, flux is appropriate for
   !deriving absolute magnitudes.  spectrum from STScI, extrapolated 
@@ -582,11 +569,10 @@ SUBROUTINE SPS_SETUP(zin)
   CLOSE(98)
 
   !interpolate the Solar spectrum onto the wavelength grid
-  DO i=1,nspec
-     sun_spec(i) = 10**linterp(LOG10(tsun_lam),LOG10(tsun_spec+tiny_number),&
-          LOG10(spec_lambda(i)))
-     IF (spec_lambda(i).GT.tsun_lam(1221)) sun_spec(i)=tiny_number
-  ENDDO
+  jj = locate(sun_spec,tsun_lam(1221))
+  sun_spec(:jj) = 10**linterparr(LOG10(tsun_lam),&
+          LOG10(tsun_spec+tiny_number),LOG10(spec_lambda(:jj)))
+  sun_spec(jj+1:) = tiny_number
 
   !read in and set up band-pass filters
   OPEN(99,FILE=TRIM(SPS_HOME)//'/data/allfilters.dat',&
@@ -629,11 +615,9 @@ SUBROUTINE SPS_SETUP(zin)
      ENDIF
 
      !interpolate the filter onto the master wavelength array
-     DO j=1,nspec
-        IF (spec_lambda(j).GE.readlamb(1).AND.&
-             spec_lambda(j).LE.readlamb(jj)) &
-             bands(i,j) = linterp(readlamb(1:jj),readband(1:jj),spec_lambda(j))
-     ENDDO
+     i1 = locate(spec_lambda,readlamb(1))
+     i2 = locate(spec_lambda,readlamb(jj))
+     bands(i,i1:i2) = linterparr(readlamb(1:jj),readband(1:jj),spec_lambda(i1:i2))
 
      !normalize
      dumr1 = TSUM(spec_lambda,bands(i,:)/spec_lambda)

@@ -101,6 +101,15 @@ MODULE SPS_UTILS
   END INTERFACE
 
   INTERFACE
+     FUNCTION LINTERPARR(xin,yin,xout)
+       USE sps_vars
+       REAL(SP), DIMENSION(:), INTENT(in) :: xin,yin
+       REAL(SP), INTENT(in), DIMENSION(:) :: xout
+       REAL(SP), DIMENSION(SIZE(xout)) :: linterparr
+     END FUNCTION LINTERPARR
+  END INTERFACE
+
+  INTERFACE
      SUBROUTINE GETMAGS(zred,spec,mags,mag_compute)
        USE sps_vars
        REAL(SP), INTENT(in) :: zred
