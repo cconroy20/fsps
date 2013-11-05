@@ -5,7 +5,7 @@ SUBROUTINE SMOOTHSPEC(lambda,spec,sigma,minl,maxl)
   !in dlambda with lambda within each integration
   !integration is truncated at +/-4*sigma
 
-  USE sps_vars; USE sps_utils, ONLY : locate,linterp,tsum
+  USE sps_vars; USE sps_utils, ONLY : locate,linterp,tsum,linterparr
   IMPLICIT NONE
   
   REAL(SP), INTENT(inout), DIMENSION(nspec) :: spec
@@ -59,7 +59,7 @@ SUBROUTINE SMOOTHSPEC(lambda,spec,sigma,minl,maxl)
            
         ENDDO
 
-        !convolve at fixed sigma_wavelength
+     !convolve at fixed sigma_wavelength
      ELSE
         
         DO i=1,nspec
@@ -75,7 +75,7 @@ SUBROUTINE SMOOTHSPEC(lambda,spec,sigma,minl,maxl)
         
      ENDIF
 
-  !compute smoothing the correct (and much slower) way
+  !compute smoothing the correct (and somewhat slower) way
   !NB: the accuracy of this approach depends on the min/max wavelength
   !parameters through the density of the lnlam grid
   ELSE
@@ -85,16 +85,14 @@ SUBROUTINE SMOOTHSPEC(lambda,spec,sigma,minl,maxl)
         lnlam(i) = i*dlstep+LOG(minl)
      ENDDO
 
-     DO i=1,nspec
-        tspec(i) = linterp(LOG(lambda(1:nspec)),spec(1:nspec),lnlam(i))
-     ENDDO
+     tspec = linterparr(LOG(lambda(1:nspec)),spec(1:nspec),lnlam)
   
      fwhm   = sigma*2.35482/ckms/dlstep
      psig   = fwhm/2.0/SQRT(-2.0*LOG(0.5)) ! equivalent sigma for kernel
-     grange = FLOOR(m*psig)	               ! range for kernel (-range:range)
+     grange = FLOOR(m*psig)	           ! range for kernel (-range:range)
 
      DO i=1,2*grange+1
-        psf(i) = 1.d0/SQRT(2.d0*mypi)/psig*EXP(-((i-grange-1)/psig)**2/2.)
+        psf(i) = 1.d0/SQRT(2.*mypi)/psig*EXP(-((i-grange-1)/psig)**2/2.)
      ENDDO
      psf(1:2*grange+1) = psf(1:2*grange+1) / SUM(psf(1:2*grange+1))
      
@@ -103,10 +101,9 @@ SUBROUTINE SMOOTHSPEC(lambda,spec,sigma,minl,maxl)
      ENDDO
      
      !interpolate back to the main array
-     DO i=1,nspec
-        IF (lambda(i).LT.minl.OR.lambda(i).GT.maxl) CYCLE
-        spec(i) = linterp(EXP(lnlam),tnspec,lambda(i))
-     ENDDO
+     il = locate(lambda,minl)
+     ih = locate(lambda,maxl)
+     spec(il:ih) = linterparr(EXP(lnlam),tnspec,lambda(il:ih))
 
   ENDIF
 
