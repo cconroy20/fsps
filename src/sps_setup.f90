@@ -168,7 +168,7 @@ SUBROUTINE SPS_SETUP(zin)
      READ(91,*) spec_lambda(i)
   ENDDO
   CLOSE(91)
-  
+
   !read in basel logg and logt arrays
   !NB: these are the same for all spectral libraries
   OPEN(91,FILE=TRIM(SPS_HOME)//'/SPECTRA/BaSeL3.1/basel_logt.dat',&
@@ -460,7 +460,6 @@ SUBROUTINE SPS_SETUP(zin)
 
   ENDDO
 
-
   !----------------------------------------------------------------!
   !-------------Read in circumstellar AGB dust models--------------!
   !----------------------------------------------------------------!
@@ -482,7 +481,7 @@ SUBROUTINE SPS_SETUP(zin)
 
   DO i=1,nteff_dagb
      DO j=1,ntau_dagb
-        READ(99,*,IOSTAT=stat) teff_dagb(1,i), tau1_dagb(j)
+        READ(99,*,IOSTAT=stat) teff_dagb(1,i), tau1_dagb(1,j)
         READ(99,*,IOSTAT=stat) fluxin_dagb(1:nlam)
         IF (stat.NE.0) THEN 
            WRITE(*,*) 'SPS_SETUP ERROR: error reading dusty models'
@@ -511,7 +510,7 @@ SUBROUTINE SPS_SETUP(zin)
 
   DO i=1,nteff_dagb
      DO j=1,ntau_dagb
-        READ(99,*,IOSTAT=stat) teff_dagb(2,i), tau1_dagb(j)
+        READ(99,*,IOSTAT=stat) teff_dagb(2,i), tau1_dagb(2,j)
         READ(99,*,IOSTAT=stat) fluxin_dagb(1:nlam)
         IF (stat.NE.0) THEN 
            WRITE(*,*) 'SPS_SETUP ERROR: error reading dusty models'
@@ -524,7 +523,6 @@ SUBROUTINE SPS_SETUP(zin)
      ENDDO
   ENDDO
   CLOSE(99)
-
 
 
   !----------------------------------------------------------------!
@@ -579,6 +577,7 @@ SUBROUTINE SPS_SETUP(zin)
        STATUS='OLD',iostat=stat,ACTION='READ')
   READ(99,*)
 
+
   !loop over all the transmission filters
   DO i=1,nbands
 
@@ -605,6 +604,7 @@ SUBROUTINE SPS_SETUP(zin)
      ENDDO
 
 909  CONTINUE
+
      IF (j.EQ.50000) THEN
         WRITE(*,*) 'SPS_SETUP ERROR: did not finish reading in filters!'
         STOP
@@ -615,17 +615,18 @@ SUBROUTINE SPS_SETUP(zin)
      ENDIF
 
      !interpolate the filter onto the master wavelength array
-     i1 = locate(spec_lambda,readlamb(1))
+     i1 = MAX(locate(spec_lambda,readlamb(1)),1)
      i2 = locate(spec_lambda,readlamb(jj))
-     bands(i,i1:i2) = linterparr(readlamb(1:jj),readband(1:jj),spec_lambda(i1:i2))
+     IF (i1.NE.i2) bands(i,i1:i2) = &
+          linterparr(readlamb(1:jj),readband(1:jj),spec_lambda(i1:i2))
 
      !normalize
      dumr1 = TSUM(spec_lambda,bands(i,:)/spec_lambda)
      !in this case the band is entirely outside the wavelength array
-     IF (dumr1.EQ.0.0) dumr1=1.0 
+     IF (dumr1.LE.tiny_number) dumr1=1.0 
      bands(i,:) = bands(i,:) / dumr1
 
-     !compute absolute magnitude of the Sun in all filters
+     !compute absolute magnitude of the Sun
      magsun(i) = TSUM(spec_lambda,sun_spec*bands(i,:)/spec_lambda)
      IF (magsun(i).LT.2*tiny_number) THEN
         magsun(i) = 99.0

@@ -194,6 +194,7 @@ SUBROUTINE SSP_GEN(pset,mass_ssp,lbol_ssp,spec_ssp)
         !add circumstellar dust around AGB stars
         IF ((phase(i,j).EQ.4.OR.phase(i,j).EQ.5)&
              .AND.add_agb_dust_model.EQ.1) THEN
+           !WRITE(*,'("#",F6.2,ES12.4,F8.3)') time(i),wght(j),tco
            CALL ADD_AGB_DUST(pset%agb_dust,tspec,mact(i,j),&
                 logt(i,j),logl(i,j),logg(i,j),tco)
         ENDIF
@@ -220,7 +221,8 @@ SUBROUTINE SSP_GEN(pset,mass_ssp,lbol_ssp,spec_ssp)
         dt  = (time_full(j)-time(klo))/(time(klo+1)-time(klo))
         klo = 1+(klo-1)*time_res_incr
         khi = klo+time_res_incr
-        spec_ssp(j,:) = (1-dt)*spec_ssp(klo,:) + dt*spec_ssp(khi,:)
+        spec_ssp(j,:) = 10**( (1-dt)*LOG10(spec_ssp(klo,:)) + &
+             dt*LOG10(spec_ssp(khi,:)))
         lbol_ssp(j)   = (1-dt)*lbol_ssp(klo)   + dt*lbol_ssp(khi)
         mass_ssp(j)   = (1-dt)*mass_ssp(klo)   + dt*mass_ssp(khi)
      ENDDO

@@ -100,6 +100,14 @@ SUBROUTINE SMOOTHSPEC(lambda,spec,sigma,minl,maxl)
         tnspec(i) = SUM( psf(1:2*grange+1)*tspec(i-grange:i+grange) )
      ENDDO
      
+     !the ends are not smoothed
+     DO i=1,grange
+        tnspec(i)=tspec(i)
+     ENDDO
+     DO i=nspec-grange+1,nspec
+        tnspec(i)=tspec(i)
+     ENDDO
+
      !interpolate back to the main array
      il = locate(lambda,minl)
      ih = locate(lambda,maxl)
