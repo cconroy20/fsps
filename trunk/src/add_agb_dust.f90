@@ -61,7 +61,7 @@ FUNCTION COMPUTE_TAU1(cstar,mact,logt,logl,logg)
   compute_tau1 = kappa * delta * (mdot*msun/yr2sc) &
        / rin / (4*mypi) / (vexp*1E5)
 
-  !WRITE(66,'(13ES11.2)') mact,logl,logg,radius,period,mdot,rin,&
+  !WRITE(*,'(13ES11.2)') mact,logl,logg,radius,period,mdot,rin,&
   !     vexp,delta,compute_tau1
 
 END FUNCTION COMPUTE_TAU1
@@ -102,16 +102,20 @@ SUBROUTINE ADD_AGB_DUST(weight,tspec,mact,logt,logl,logg,tco)
   !by an overall scale factor
   tau1 = tau1*weight
 
+  IF (tau1.EQ.0.0) RETURN
+
+  !WRITE(*,'(I2,F6.2,F7.1)') cstar,LOG10(tau1),10**logt
+
   !find dusty model given tau1,tco,Teff
   jlo = MIN(MAX(locate(teff_dagb(cstar+1,:),10**logt),1),&
        nteff_dagb-1)
-  klo = MIN(MAX(locate(tau1_dagb,tau1),1),ntau_dagb-1)
+  klo = MIN(MAX(locate(tau1_dagb(cstar+1,:),LOG10(tau1)),1),ntau_dagb-1)
 
   dj   = (10**logt-teff_dagb(cstar+1,jlo)) / &
        (teff_dagb(cstar+1,jlo+1)-teff_dagb(cstar+1,jlo))
-  dk   = (tau1-tau1_dagb(klo)) / &
-       (tau1_dagb(klo+1)-tau1_dagb(klo))
-   
+  dk   = (LOG10(tau1)-tau1_dagb(cstar+1,klo)) / &
+       (tau1_dagb(cstar+1,klo+1)-tau1_dagb(cstar+1,klo))
+
   !don't allow extrapolation off the grid
   dj = MIN(MAX(dj,-1.0),1.0)
   dk = MIN(MAX(dk,-1.0),1.0)

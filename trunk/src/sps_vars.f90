@@ -11,7 +11,7 @@ MODULE SPS_VARS
 !the following two options are not yet included in the public release
 #define HRLIB 0
 #define RRLIB 0
-!define either Padova, BaSTI, or MESA isochrones
+!define either Padova, BaSTI, or MIST isochrones
 #define PADOVA 1
 #define BASTI 0
 #define MIST 0
@@ -48,7 +48,7 @@ MODULE SPS_VARS
 
   !turn on/off the AGB circumstellar dust model
   !NB: this is not yet implemented
-  INTEGER, PARAMETER :: add_agb_dust_model=0
+  INTEGER, PARAMETER :: add_agb_dust_model=1
 
   !turn on/off a Cloudy-based nebular emission model 
   !NB: this is not yet implemented
@@ -318,7 +318,7 @@ MODULE SPS_VARS
 
   !circumstellar AGB dust model (Villaume et al. in prep)
   REAL(SP), DIMENSION(nspec,2,nteff_dagb,ntau_dagb) :: flux_dagb=0.0
-  REAL(SP), DIMENSION(ntau_dagb)           :: tau1_dagb=0.0
+  REAL(SP), DIMENSION(2,ntau_dagb)         :: tau1_dagb=0.0
   REAL(SP), DIMENSION(2,nteff_dagb)        :: teff_dagb=0.0
 
   !arrays for the isochrone data
