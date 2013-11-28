@@ -22,14 +22,14 @@
 
 FUNCTION READ_INDX1, file
 
-  res = (read_ascii(file[0])).(0)
+  res = (read_ascii(file[0],data_start=8)).(0)
 
   nn  = n_elements(res[0,*])
   str = {agegyr:0.0,CN1:0.0,CN2:0.0,CA4227:0.0,G4300:0.0,Fe4383:0.0,$
          Ca4455:0.0,Fe4531:0.0,C4668:0.0,Hb:0.0,Fe5015:0.0,Mg1:0.0,$
          Mg2:0.0,Mgb:0.0,Fe5270:0.0,Fe5335:0.0,Fe5406:0.0,Fe5709:0.0,$ 
          Fe5782:0.0,NaD:0.0,TiO1:0.0,TiO2:0.0,HdA:0.0,HgA:0.0,HdF:0.0,$
-         HgF:0.0,Dn4000:0.0,MgFe:0.0,CO:0.0,H2O:0.0,cn_ir:0.0,C2:0.0}
+         HgF:0.0,Dn4000:0.0,CO:0.0,H2O:0.0,cn_ir:0.0,C2:0.0,MgFe:0.0}
   str = replicate(str,nn)
 
   str.agegyr = reform(res[0,*])
