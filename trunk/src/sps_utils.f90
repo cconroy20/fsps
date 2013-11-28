@@ -79,7 +79,7 @@ MODULE SPS_UTILS
      SUBROUTINE GETINDX(lambda,spec,indices)
        USE sps_vars
        REAL(SP), INTENT(in), DIMENSION(nspec) :: spec,lambda
-       REAL(SP), INTENT(inout), DIMENSION(nindsps) :: indices
+       REAL(SP), INTENT(inout), DIMENSION(nindx) :: indices
      END SUBROUTINE GETINDX
   END INTERFACE
 
@@ -237,10 +237,10 @@ MODULE SPS_UTILS
   END INTERFACE
 
   INTERFACE
-     SUBROUTINE WRITE_ISOCHRONE(file,zz)
+     SUBROUTINE WRITE_ISOCHRONE(outfile,zz)
        USE sps_vars
        INTEGER, INTENT(in) :: zz
-       CHARACTER(100), INTENT(in)  :: file
+       CHARACTER(100), INTENT(in)  :: outfile
      END SUBROUTINE WRITE_ISOCHRONE
   END INTERFACE
 

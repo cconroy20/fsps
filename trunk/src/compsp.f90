@@ -218,10 +218,13 @@ SUBROUTINE COMPSP(write_compsp,nzin,outfile,mass_ssp,&
   !If tage<=0  -> produce outputs from tmin<t<tmax
 
   USE sps_vars
-  USE sps_utils, ONLY : getmags,add_dust,linterp,intspec,smoothspec,locate
+  USE sps_utils, ONLY : getmags,add_dust,linterp,intspec,&
+       smoothspec,locate,getindx,write_isochrone
   IMPLICIT NONE
  
-  !write_compsp = (1->write mags), (2->write spectra), (3->write both) 
+  !write_compsp = 1->write mags, 2->write spectra
+  !               3->write mags+spec, 4->write indices
+  !               5->write CMDs
   INTEGER, INTENT(in) :: write_compsp,nzin
   REAL(SP), INTENT(in), DIMENSION(nzin,ntfull) :: lbol_ssp,mass_ssp
   REAL(SP), INTENT(in), DIMENSION(nzin,ntfull,nspec) :: spec_ssp
@@ -231,16 +234,26 @@ SUBROUTINE COMPSP(write_compsp,nzin,outfile,mass_ssp,&
   REAL(SP) :: tau,const,maxtime,writeage,psfr,sfstart,zhist,sftrunc
   REAL(SP) :: mass_csp,lbol_csp,dtb,dt,dz,zred=0.,t1,t2,mdust
   REAL(SP) :: mass_burst=0.0,lbol_burst=0.0,delt_burst=0.0,zero=0.0
-  REAL(SP), DIMENSION(nbands)       :: mags
+  REAL(SP), DIMENSION(nbands)  :: mags
+  REAL(SP), DIMENSION(nindx)   :: indx
   REAL(SP), DIMENSION(ntfull,nspec) :: ispec
-  REAL(SP), DIMENSION(nspec)  :: spec_burst=0.0,csp1,csp2,spec1,spec_csp
-  REAL(SP), DIMENSION(ntfull) :: imass,ilbol,powtime
-  REAL(SP), DIMENSION(ntfull) :: sfr,tsfr,tzhist
+  REAL(SP), DIMENSION(nspec)   :: spec_burst=0.0,csp1,csp2,spec1,spec_csp
+  REAL(SP), DIMENSION(ntfull)  :: imass,ilbol,powtime
+  REAL(SP), DIMENSION(ntfull)  :: sfr,tsfr,tzhist
   REAL(SP), DIMENSION(ntabmax) :: tlb
 
   !(TYPE objects defined in sps_vars.f90)
   TYPE(PARAMS), INTENT(in) :: pset
   TYPE(COMPSPOUT), INTENT(inout), DIMENSION(ntfull) :: ocompsp
+
+  !-------------------------------------------------------------!
+  !-----------------Write the CMDs and exit---------------------!
+  !-------------------------------------------------------------!
+
+  IF (write_compsp.EQ.5) THEN
+     CALL WRITE_ISOCHRONE(outfile,pset%zmet)
+     RETURN
+  ENDIF
 
   !-------------------------------------------------------------!
   !---------------------Add Nebular Emission--------------------!
@@ -412,6 +425,13 @@ SUBROUTINE COMPSP(write_compsp,nzin,outfile,mass_ssp,&
      CALL COMPSP_HEADER(20,pset)
   ENDIF
 
+  !open output file for indices
+  IF (write_compsp.EQ.4) THEN
+     OPEN(30,FILE=TRIM(SPS_HOME)//'/OUTPUTS/'//TRIM(outfile)//'.indx',&
+          STATUS='REPLACE')
+     CALL COMPSP_HEADER(30,pset)
+  ENDIF
+
   IF (pset%sfh.EQ.0) THEN
      IF (verbose.NE.0) WRITE(*,*) '  Processing SSP'
      IF (write_compsp.EQ.1.OR.write_compsp.EQ.3) THEN
@@ -426,6 +446,11 @@ SUBROUTINE COMPSP(write_compsp,nzin,outfile,mass_ssp,&
         IF (imax-imin.EQ.1) WRITE(20,'(I3,1x,I6)') 1,nspec
         IF (imax-imin.GT.1) WRITE(20,'(I3,1x,I6)') ntfull,nspec
         WRITE(20,'(50000(F15.4))') spec_lambda
+     ENDIF
+     IF (write_compsp.EQ.4) THEN
+        WRITE(30,'("#   Processing SSP")')
+        WRITE(30,'("#")') 
+        WRITE(30,34) 
      ENDIF
   ELSE
     IF (pset%sfh.EQ.2.OR.pset%sfh.EQ.3) THEN
@@ -447,6 +472,9 @@ SUBROUTINE COMPSP(write_compsp,nzin,outfile,mass_ssp,&
         IF (write_compsp.EQ.2.OR.write_compsp.EQ.3) &
              WRITE(20,33) writeage,LOG10(tau),const,pset%fburst,&
              pset%tburst,pset%sf_start,pset%dust1,pset%dust2
+        IF (write_compsp.EQ.4) &
+             WRITE(30,33) writeage,LOG10(tau),const,pset%fburst,&
+             pset%tburst,pset%sf_start,pset%dust1,pset%dust2
      ENDIF
      IF (write_compsp.EQ.1.OR.write_compsp.EQ.3) THEN 
         WRITE(10,'("#")') 
@@ -458,6 +486,10 @@ SUBROUTINE COMPSP(write_compsp,nzin,outfile,mass_ssp,&
         IF (imax-imin.EQ.1) WRITE(20,'(I3,1x,I4)') 1,nspec
         IF (imax-imin.GT.1) WRITE(20,'(I3,1x,I4)') ntfull,nspec
         WRITE(20,*) spec_lambda
+       ENDIF
+       IF (write_compsp.EQ.4) THEN
+          WRITE(20,'("#")') 
+          WRITE(20,34) 
        ENDIF
    ENDIF
 
@@ -556,6 +588,13 @@ SUBROUTINE COMPSP(write_compsp,nzin,outfile,mass_ssp,&
               pset%min_wave_smooth,pset%max_wave_smooth)
       ENDIF
 
+      !compute spectral indices
+      IF (write_compsp.EQ.4) THEN
+         CALL GETINDX(spec_lambda,spec_csp,indx)
+      ELSE
+         indx=0.0
+      ENDIF
+
       !redshift spectrum; calculate mags
       IF (redshift_colors.EQ.0) THEN
          CALL GETMAGS(pset%zred,spec_csp,mags,pset%mag_compute)
@@ -569,12 +608,13 @@ SUBROUTINE COMPSP(write_compsp,nzin,outfile,mass_ssp,&
       !only save results if computing all ages
       IF (imax-imin.GT.1.OR.pset%tage.EQ.-99.0) THEN
          CALL SAVE_COMPSP(write_compsp,ocompsp(i),time_full(i),&
-              mass_csp,lbol_csp,tsfr(i),mags,spec_csp,mdust)
+              mass_csp,lbol_csp,tsfr(i),mags,spec_csp,mdust,indx)
       ELSE
          !save results temporarily for later interpolation
          ocompsp(i)%mass_csp = mass_csp
          ocompsp(i)%lbol_csp = lbol_csp
          ocompsp(i)%mags     = mags
+         ocompsp(i)%indx     = indx
          ocompsp(i)%spec     = spec_csp
       ENDIF
 
@@ -592,11 +632,15 @@ SUBROUTINE COMPSP(write_compsp,nzin,outfile,mass_ssp,&
          mags(i) = (1-dt)*ocompsp(imin)%mags(i) + &
               dt*ocompsp(imax)%mags(i)
       ENDDO
+      DO i=1,nindx
+         indx(i) = (1-dt)*ocompsp(imin)%indx(i) + &
+              dt*ocompsp(imax)%indx(i)
+      ENDDO
       spec_csp = (1-dt)*ocompsp(imin)%spec + &
            dt*ocompsp(imax)%spec
       CALL SAVE_COMPSP(write_compsp,ocompsp(1),&
            LOG10(maxtime),mass_csp,lbol_csp,zero,mags,&
-           spec_csp,mdust)
+           spec_csp,mdust,indx)
    ENDIF
 
    IF (write_compsp.EQ.1.OR.write_compsp.EQ.3) CLOSE(10)
@@ -610,13 +654,14 @@ SUBROUTINE COMPSP(write_compsp,nzin,outfile,mass_ssp,&
 33 FORMAT('#   SFH: Tage=',F6.2,' Gyr, log(tau/Gyr)= ',F6.3,&
         ', const= ',F5.3,', fb= ',F5.3,', tb= ',F6.2,&
         ' Gyr, sf_start= 'F5.3,', dust=(',F6.2,','F6.2,')')
+34 FORMAT('#   log(age) indices (see allindices.dat)')
 
 END SUBROUTINE COMPSP
 
 !------------------------------------------------------------!
 !------------------------------------------------------------!
  
-SUBROUTINE COMPSP_WARNING(maxtime, pset, nzin, write_compsp)
+SUBROUTINE COMPSP_WARNING(maxtime,pset,nzin,write_compsp)
 
   !check that variables are properly set
 
@@ -716,8 +761,9 @@ SUBROUTINE COMPSP_WARNING(maxtime, pset, nzin, write_compsp)
      STOP
   ENDIF
 
-  IF (write_compsp.NE.1.AND.write_compsp.NE.2 &
-       .AND.write_compsp.NE.3.AND.write_compsp.NE.0) THEN
+  IF (write_compsp.NE.0.AND.write_compsp.NE.1 &
+       .AND.write_compsp.NE.2.AND.write_compsp.NE.3 &
+       .AND.write_compsp.NE.4.AND.write_compsp.NE.5) THEN
      WRITE(*,*) 'COMPSP ERROR: invalid write_compsp value:', &
           write_compsp
      STOP
@@ -730,7 +776,7 @@ END SUBROUTINE COMPSP_WARNING
 
 SUBROUTINE COMPSP_HEADER(unit,pset)
 
-  !writes headers for the .mag and .spec files
+  !writes headers for the .mag, .spec, .indx files
 
   USE sps_vars
   IMPLICIT NONE
@@ -758,9 +804,9 @@ SUBROUTINE COMPSP_HEADER(unit,pset)
      WRITE(unit,'("#   IMF: ",I1)') imf_type
   ENDIF
   IF (compute_vega_mags.EQ.1) THEN
-     WRITE(unit,'("#   Mag Zero Point: Vega (not relevant for *spec files)")')
+     WRITE(unit,'("#   Mag Zero Point: Vega (not relevant for spec/indx files)")')
   ELSE
-     WRITE(unit,'("#   Mag Zero Point: AB (not relevant for *spec files)")')
+     WRITE(unit,'("#   Mag Zero Point: AB (not relevant for spec/indx files)")')
   ENDIF
 
 END SUBROUTINE COMPSP_HEADER
@@ -769,7 +815,7 @@ END SUBROUTINE COMPSP_HEADER
 !------------------------------------------------------------!
 
 SUBROUTINE SAVE_COMPSP(write_compsp,cspo,time,mass,&
-     lbol,sfr,mags,spec,mdust)
+     lbol,sfr,mags,spec,mdust,indx)
 
   !routine to print and save outputs
 
@@ -779,6 +825,7 @@ SUBROUTINE SAVE_COMPSP(write_compsp,cspo,time,mass,&
   REAL(SP), INTENT(in)    :: time,mass,lbol,sfr,mdust
   REAL(SP), DIMENSION(nspec), INTENT(in)  :: spec
   REAL(SP), DIMENSION(nbands), INTENT(in) :: mags
+  REAL(SP), DIMENSION(nindx), INTENT(in)  :: indx
   TYPE(COMPSPOUT), INTENT(inout) :: cspo
   CHARACTER(34) :: fmt
 
@@ -795,12 +842,13 @@ SUBROUTINE SAVE_COMPSP(write_compsp,cspo,time,mass,&
   cspo%mags     = mags
   cspo%spec     = spec
   cspo%mdust    = mdust
+  cspo%indx     = indx
 
   !write to mags file
   IF (write_compsp.EQ.1.OR.write_compsp.EQ.3) &
        WRITE(10,fmt) time,LOG10(mass+tiny_number),&
        lbol,LOG10(sfr+tiny_number),mags
-  
+ 
   !write to spectra file
   IF (write_compsp.EQ.2.OR.write_compsp.EQ.3) THEN
      WRITE(20,'(4(F8.4,1x))') time,&
@@ -808,4 +856,8 @@ SUBROUTINE SAVE_COMPSP(write_compsp,cspo,time,mass,&
      WRITE(20,'(50000(E14.6))') spec
   ENDIF
 
+  !write to indx file
+  IF (write_compsp.EQ.4) &
+       WRITE(30,'(F8.4,99(F7.3,1x))') time,indx
+  
 END SUBROUTINE SAVE_COMPSP

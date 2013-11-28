@@ -8,9 +8,7 @@ MODULE SPS_VARS
 !define either BaSeL/Kurucz, MILES, or a HR spectral library
 #define BASEL 1
 #define MILES 0
-!the following two options are not yet included in the public release
-#define HRLIB 0
-#define RRLIB 0
+#define CKC14 0
 !define either Padova, BaSTI, or MIST isochrones
 #define PADOVA 1
 #define BASTI 0
@@ -18,8 +16,8 @@ MODULE SPS_VARS
 
   !--------------------------------------------------------------!
 
-  INTEGER, PARAMETER :: SP = KIND(1.0d0)
-  INTEGER, PARAMETER :: RSP = KIND(1.0)
+  !note that "SP" actually means double precision
+  INTEGER, PARAMETER :: SP  = KIND(1.d0)
 
   !------Common parameters that may be altered by the user-------!
   
@@ -37,6 +35,7 @@ MODULE SPS_VARS
   INTEGER, PARAMETER :: pzcon=0
   
   !the factor by which we increase the time array
+  !NB: if CKC14 is used, this parameter *must* be set to 1
   INTEGER, PARAMETER :: time_res_incr=2
 
   !turn on/off computation of light-weighted stellar ages
@@ -113,10 +112,8 @@ MODULE SPS_VARS
   !flag indicating type of spectral library to use
 #if (MILES)
   CHARACTER(5), PARAMETER :: spec_type = 'miles'
-#elif (HRLIB)
-  CHARACTER(5), PARAMETER :: spec_type = 'hrlib'
-#elif (RRLIB)
-  CHARACTER(5), PARAMETER :: spec_type = 'rrlib'
+#elif (CKC14)
+  CHARACTER(5), PARAMETER :: spec_type = 'ckc14'
 #else
   CHARACTER(5), PARAMETER :: spec_type = 'basel'
 #endif
@@ -126,12 +123,9 @@ MODULE SPS_VARS
 #if (MILES)
   INTEGER, PARAMETER :: nz=5
   INTEGER, PARAMETER :: nspec=5994
-#elif (HRLIB)
-  INTEGER, PARAMETER :: nz=11
-  INTEGER, PARAMETER :: nspec=4296
-#elif (RRLIB)
-  INTEGER, PARAMETER :: nz=1
-  INTEGER, PARAMETER :: nspec= 49811
+#elif (CKC14)
+  INTEGER, PARAMETER :: nz=9
+  INTEGER, PARAMETER :: nspec=26500
 #else
   INTEGER, PARAMETER :: nspec=1963
 #if (BASTI)
@@ -155,7 +149,7 @@ MODULE SPS_VARS
   !filters are added to allfilters.dat
   INTEGER, PARAMETER :: nbands=114
   !number of indices defined in allindices.dat
-  INTEGER, PARAMETER :: nindsps=30
+  INTEGER, PARAMETER :: nindx=30
   
   !The following parameters should never be changed
    !unless you are changing the libraries
@@ -260,7 +254,7 @@ MODULE SPS_VARS
   INTEGER, PARAMETER :: ntfull = time_res_incr*nt
 
   !array of index definitions
-  REAL(SP), DIMENSION(7,nindsps) :: indexdefined=0.0
+  REAL(SP), DIMENSION(7,nindx) :: indexdefined=0.0
 
   !array holding MW extinction curve indices
   INTEGER, DIMENSION(6) :: mwdindex=0
@@ -294,8 +288,7 @@ MODULE SPS_VARS
   !arrays for stellar spectral information in HR diagram
   REAL(SP), DIMENSION(ndim_logt) :: basel_logt=0.0
   REAL(SP), DIMENSION(ndim_logg) :: basel_logg=0.0
-  REAL(SP), DIMENSION(nspec,nz,ndim_logt,ndim_logg)  :: speclib=0.0
-  REAL(RSP), DIMENSION(nspec,nz,ndim_logt,ndim_logg) :: rspeclib=0.0
+  REAL(KIND(1.0)), DIMENSION(nspec,nz,ndim_logt,ndim_logg) :: speclib=0.0
   
   !AGB library (Lancon & Mouhcine 2002)
   REAL(SP), DIMENSION(nspec,n_agb_o) :: agb_spec_o=0.
@@ -318,8 +311,8 @@ MODULE SPS_VARS
 
   !circumstellar AGB dust model (Villaume et al. in prep)
   REAL(SP), DIMENSION(nspec,2,nteff_dagb,ntau_dagb) :: flux_dagb=0.0
-  REAL(SP), DIMENSION(2,ntau_dagb)         :: tau1_dagb=0.0
-  REAL(SP), DIMENSION(2,nteff_dagb)        :: teff_dagb=0.0
+  REAL(SP), DIMENSION(2,ntau_dagb)                  :: tau1_dagb=0.0
+  REAL(SP), DIMENSION(2,nteff_dagb)                 :: teff_dagb=0.0
 
   !arrays for the isochrone data
   REAL(SP), DIMENSION(nz,nt,nm) :: mact_isoc=0.,logl_isoc=0.,&
@@ -361,6 +354,7 @@ MODULE SPS_VARS
      REAL(SP) :: age=0.,mass_csp=0.,lbol_csp=0.,sfr=0.,mdust=0.0
      REAL(SP), DIMENSION(nbands) :: mags=0.
      REAL(SP), DIMENSION(nspec)  :: spec=0.
+     REAL(SP), DIMENSION(nindx)  :: indx=0.
   END TYPE COMPSPOUT
   
   !-----the following structures are not used in the public code-----!

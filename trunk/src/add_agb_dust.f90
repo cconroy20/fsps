@@ -22,7 +22,7 @@ FUNCTION COMPUTE_TAU1(cstar,mact,logt,logl,logg)
   !extinction coefficient depends on grain composition (C/O)
   IF (cstar.EQ.1) THEN
      !sum of AmC and SiC (90%+10%)
-     kappa = 3000.
+     kappa = 3200.
   ELSE
      !Sil
      kappa = 3000.
@@ -89,7 +89,7 @@ SUBROUTINE ADD_AGB_DUST(weight,tspec,mact,logt,logl,logg,tco)
   !-----------------------------------------------------------!
   !-----------------------------------------------------------!
 
-  IF (tco.GT.1) THEN 
+  IF (tco.GT.1) THEN
      cstar=1 
   ELSE 
      cstar=0
@@ -103,8 +103,6 @@ SUBROUTINE ADD_AGB_DUST(weight,tspec,mact,logt,logl,logg,tco)
   tau1 = tau1*weight
 
   IF (tau1.EQ.0.0) RETURN
-
-  !WRITE(*,'(I2,F6.2,F7.1)') cstar,LOG10(tau1),10**logt
 
   !find dusty model given tau1,tco,Teff
   jlo = MIN(MAX(locate(teff_dagb(cstar+1,:),10**logt),1),&

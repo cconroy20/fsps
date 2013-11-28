@@ -12,12 +12,13 @@ SUBROUTINE SPS_SETUP(zin)
   IMPLICIT NONE
   INTEGER, INTENT(in) :: zin
   INTEGER :: stat=1,n,i,j,m,jj,k,i1,i2
+  INTEGER, PARAMETER :: ntlam=1221
   INTEGER :: n_isoc,z,zmin,zmax,nlam
   CHARACTER(1) :: char,sqpah
   CHARACTER(6) :: zstype
-  REAL(SP) :: dumr1,d1,d2,logage,x,a, zero=0.0,d
+  REAL(SP) :: dumr1,d1,d2,logage,x,a, zero=0.0,d,one=1.0
   REAL(SP), DIMENSION(nspec) :: tspec
-  REAL(SP), DIMENSION(1221) :: tvega_lam,tvega_spec,tsun_lam,tsun_spec
+  REAL(SP), DIMENSION(ntlam) :: tvega_lam,tvega_spec,tsun_lam,tsun_spec
   REAL(SP), DIMENSION(50000) :: readlamb,readband
   REAL(SP), DIMENSION(25) :: wglam
   REAL(SP), DIMENSION(25,18,2,6) :: wgtmp
@@ -80,8 +81,8 @@ SUBROUTINE SPS_SETUP(zin)
      STOP
   ENDIF
 
-  IF (spec_type.NE.'basel'.AND.spec_type.NE.'miles'.AND.spec_type.NE.'picks'&
-       .AND.spec_type(1:5).NE.'hrlib'.AND.spec_type.NE.'rrlib') THEN
+  IF (spec_type.NE.'basel'.AND.spec_type.NE.'miles'&
+       .AND.spec_type(1:5).NE.'ckc14') THEN
      WRITE(*,*) 'SPS_SETUP ERROR: spec_type var set to invalid type: ',spec_type
      STOP
   ENDIF
@@ -135,11 +136,6 @@ SUBROUTINE SPS_SETUP(zin)
      zmax = zin
   ENDIF
 
-  !force the Z to be Zsol when using Pickles library
-  IF (spec_type.EQ.'picks') THEN
-     zmin = 1
-     zmax = 1
-  ENDIF
 
   !----------------------------------------------------------------!
   !-----------------Read in spectral libraries---------------------!
@@ -152,11 +148,8 @@ SUBROUTINE SPS_SETUP(zin)
   ELSE IF (spec_type.EQ.'miles') THEN
      OPEN(91,FILE=TRIM(SPS_HOME)//'/SPECTRA/MILES/miles.lambda',&
           STATUS='OLD',iostat=stat,ACTION='READ')
-  ELSE IF (spec_type.EQ.'picks') THEN
-     OPEN(91,FILE=TRIM(SPS_HOME)//'/SPECTRA/Pickles/pickles.lambda',&
-          STATUS='OLD',iostat=stat,ACTION='READ')
-  ELSE IF (spec_type(1:5).EQ.'hrlib'.OR.spec_type.EQ.'rrlib') THEN
-     OPEN(91,FILE=TRIM(SPS_HOME)//'/SPECTRA/HRLIB/'//spec_type(1:5)//&
+  ELSE IF (spec_type(1:5).EQ.'ckc14') THEN
+     OPEN(91,FILE=TRIM(SPS_HOME)//'/SPECTRA/CKC14/'//spec_type(1:5)//&
           '.lambda',STATUS='OLD',iostat=stat,ACTION='READ')
   ENDIF
   IF (stat.NE.0) THEN
@@ -200,13 +193,8 @@ SUBROUTINE SPS_SETUP(zin)
              //zstype//'.spectra.bin',FORM='UNFORMATTED',&
              STATUS='OLD',iostat=stat,ACTION='READ',access='direct',&
              recl=nspec*ndim_logg*ndim_logt*4)
-     ELSE IF (spec_type.EQ.'picks') THEN
-        OPEN(92,FILE=TRIM(SPS_HOME)//'/SPECTRA/Pickles/pickles.'&
-             //'spectra.bin',FORM='UNFORMATTED',&
-             STATUS='OLD',iostat=stat,ACTION='READ',access='direct',&
-             recl=nspec*ndim_logg*ndim_logt*4)
-     ELSE IF (spec_type(1:5).EQ.'hrlib'.OR.spec_type.EQ.'rrlib') THEN
-        OPEN(92,FILE=TRIM(SPS_HOME)//'/SPECTRA/HRLIB/'//spec_type//'_z'&
+     ELSE IF (spec_type(1:5).EQ.'CKC14') THEN
+        OPEN(92,FILE=TRIM(SPS_HOME)//'/SPECTRA/CKC14/'//spec_type//'_z'&
              //zstype//'.spectra.bin',FORM='UNFORMATTED',&
              STATUS='OLD',iostat=stat,ACTION='READ',access='direct',&
              recl=nspec*ndim_logg*ndim_logt*4)
@@ -217,12 +205,10 @@ SUBROUTINE SPS_SETUP(zin)
         STOP 
      ENDIF
 
-     READ(92,rec=1) rspeclib(:,z,:,:)
+     READ(92,rec=1) speclib(:,z,:,:)
      CLOSE(92)
 
   ENDDO
-
-  speclib = rspeclib
 
   !these stars are only included with BaSeL or MILES libraries
   IF (spec_type.EQ.'miles'.OR.spec_type.EQ.'basel') THEN
@@ -453,7 +439,7 @@ SUBROUTINE SPS_SETUP(zin)
      !now interpolate the dust spectra onto the master wavelength array
      DO j=1,numin_dl07*2
         !the dust models only extend to 1um
-        jj = locate(spec_lambda/1E4,1.d0)
+        jj = locate(spec_lambda/1E4,one)
         dustem2_dl07(jj:,k+1,j) = linterparr(lambda_dl07,&
              dustem_dl07(:,j),spec_lambda(jj:))
      ENDDO
@@ -539,14 +525,14 @@ SUBROUTINE SPS_SETUP(zin)
   END IF  
   !burn the header
   READ(98,*)
-  DO i=1,1221
+  DO i=1,ntlam
      READ(98,*) tvega_lam(i), tvega_spec(i)
   ENDDO
   CLOSE(98)
 
   !interpolate the Vega spectrum onto the wavelength grid
   !and convert to fnu
-  jj = locate(vega_spec,tvega_lam(1221))
+  jj = locate(vega_spec,tvega_lam(ntlam))
   vega_spec(:jj) = 10**linterparr(LOG10(tvega_lam),&
           LOG10(tvega_spec+tiny_number),LOG10(spec_lambda(:jj)))
   vega_spec = vega_spec*spec_lambda**2
@@ -561,13 +547,13 @@ SUBROUTINE SPS_SETUP(zin)
      WRITE(*,*) 'SPS_SETUP ERROR: SPECTRA/SUN_STScI.SED cannot be opened'
      STOP 
   END IF  
-  DO i=1,1221
+  DO i=1,ntlam
      READ(98,*) tsun_lam(i), tsun_spec(i)
   ENDDO
   CLOSE(98)
 
   !interpolate the Solar spectrum onto the wavelength grid
-  jj = locate(sun_spec,tsun_lam(1221))
+  jj = locate(sun_spec,tsun_lam(ntlam))
   sun_spec(:jj) = 10**linterparr(LOG10(tsun_lam),&
           LOG10(tsun_spec+tiny_number),LOG10(spec_lambda(:jj)))
   sun_spec(jj+1:) = tiny_number
@@ -749,10 +735,10 @@ SUBROUTINE SPS_SETUP(zin)
 
   OPEN(99,FILE=TRIM(SPS_HOME)//'/data/allindices.dat',&
        STATUS='OLD',iostat=stat,ACTION='READ')
-  DO i=1,4
+  DO i=1,4  !burn the header
      READ(99,*)
   ENDDO
-  DO i=1,nindsps
+  DO i=1,nindx
      READ(99,*,IOSTAT=stat) indexdefined(:,i)
      IF (stat.NE.0) THEN 
         WRITE(*,*) 'SPS_SETUP ERROR: error during index defintion read'
