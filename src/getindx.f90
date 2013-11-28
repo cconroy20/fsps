@@ -39,7 +39,7 @@ END FUNCTION INTIND
 SUBROUTINE GETINDX(lambda,spec,indices)
 
   !routine to calculate indices from an input spectrum
-  !indices are defined in data/allindices.dat
+  !indices are defined in fsps/data/allindices.dat
 
   USE sps_vars
   USE sps_utils, ONLY : intind, locate
@@ -47,7 +47,7 @@ SUBROUTINE GETINDX(lambda,spec,indices)
 
   INTEGER :: j
   REAL(SP), INTENT(in), DIMENSION(nspec) :: spec,lambda
-  REAL(SP), INTENT(inout), DIMENSION(nindsps) :: indices
+  REAL(SP), INTENT(inout), DIMENSION(nindx) :: indices
   REAL(SP) :: intfifc,cb,cr,lr,lb
 
   !---------------------------------------------------------------!
@@ -55,7 +55,7 @@ SUBROUTINE GETINDX(lambda,spec,indices)
 
   indices = 999.
 
-  DO j=1,nindsps
+  DO j=1,nindx
 
      !blue continuum
      cb = intind(lambda,spec,indexdefined(3,j),indexdefined(4,j))

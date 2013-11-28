@@ -115,9 +115,6 @@ SUBROUTINE SSP_GEN(pset,mass_ssp,lbol_ssp,spec_ssp)
   nmass = nmass_isoc(pset%zmet,:)   !number of elements per isochrone
   time  = timestep_isoc(pset%zmet,:)!age of each isochrone in log(yr)
 
-  !convert to alpha-enhanced iso
-  logt = LOG10(10**logt-100.0)
-
   !write for control
   IF (verbose.EQ.1) THEN
      WRITE(*,*)
@@ -177,7 +174,6 @@ SUBROUTINE SSP_GEN(pset,mass_ssp,lbol_ssp,spec_ssp)
      !compute IMF-weighted bolometric luminosity (actually log(Lbol))
      lbol_ssp(ii) = LOG10(SUM(wght(1:nmass(i))*10**logl(i,1:nmass(i))))
 
-
      !compute SSP spectrum
      spec_ssp(ii,:) = 0.
      DO j=1,nmass(i)
@@ -194,7 +190,6 @@ SUBROUTINE SSP_GEN(pset,mass_ssp,lbol_ssp,spec_ssp)
         !add circumstellar dust around AGB stars
         IF ((phase(i,j).EQ.4.OR.phase(i,j).EQ.5)&
              .AND.add_agb_dust_model.EQ.1) THEN
-           !WRITE(*,'("#",F6.2,ES12.4,F8.3)') time(i),wght(j),tco
            CALL ADD_AGB_DUST(pset%agb_dust,tspec,mact(i,j),&
                 logt(i,j),logl(i,j),logg(i,j),tco)
         ENDIF
