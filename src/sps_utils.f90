@@ -120,10 +120,10 @@ MODULE SPS_UTILS
   END INTERFACE
   
   INTERFACE
-     SUBROUTINE GETSPEC(zz,mact,logt,lbol,logg,phase,ffco,spec)
+     SUBROUTINE GETSPEC(pset,mact,logt,lbol,logg,phase,ffco,spec)
        USE sps_vars
        REAL(SP), INTENT(in) :: mact,logt,lbol,logg,phase,ffco
-       INTEGER,  INTENT(in) :: zz
+       TYPE(PARAMS), INTENT(in) :: pset
        REAL(SP), INTENT(inout), DIMENSION(nspec) :: spec 
      END SUBROUTINE GETSPEC
   END INTERFACE
@@ -237,9 +237,9 @@ MODULE SPS_UTILS
   END INTERFACE
 
   INTERFACE
-     SUBROUTINE WRITE_ISOCHRONE(outfile,zz)
+     SUBROUTINE WRITE_ISOCHRONE(outfile,pset)
        USE sps_vars
-       INTEGER, INTENT(in) :: zz
+       TYPE(PARAMS), INTENT(in) :: pset
        CHARACTER(100), INTENT(in)  :: outfile
      END SUBROUTINE WRITE_ISOCHRONE
   END INTERFACE

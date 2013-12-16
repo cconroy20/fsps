@@ -251,7 +251,7 @@ SUBROUTINE COMPSP(write_compsp,nzin,outfile,mass_ssp,&
   !-------------------------------------------------------------!
 
   IF (write_compsp.EQ.5) THEN
-     CALL WRITE_ISOCHRONE(outfile,pset%zmet)
+     CALL WRITE_ISOCHRONE(outfile,pset)
      RETURN
   ENDIF
 

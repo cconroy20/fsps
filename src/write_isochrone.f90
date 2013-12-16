@@ -1,12 +1,12 @@
-SUBROUTINE WRITE_ISOCHRONE(outfile,zz)
+SUBROUTINE WRITE_ISOCHRONE(outfile,pset)
 
   !routine to write all isochrones and CMDs at a given metallicity
 
   USE sps_vars; USE sps_utils, ONLY : getmags,getspec,imf_weight
   IMPLICIT NONE
 
-  INTEGER :: i,tt
-  INTEGER, INTENT(in) :: zz
+  INTEGER :: i,tt,zz
+  TYPE(PARAMS), INTENT(in) :: pset
   CHARACTER(100), INTENT(in)  :: outfile
   CHARACTER(34)  :: fmt
   REAL(SP) :: dz=0.0
@@ -16,6 +16,8 @@ SUBROUTINE WRITE_ISOCHRONE(outfile,zz)
 
   !---------------------------------------------------------------!
   !---------------------------------------------------------------!
+
+  zz = pset%zmet
 
   fmt = '(F7.4,1x,7(F8.4,1x),000(F7.3,1x))'
   WRITE(fmt(21:23),'(I3,1x,I4)') nbands
@@ -33,7 +35,7 @@ SUBROUTINE WRITE_ISOCHRONE(outfile,zz)
      DO i=1,nmass_isoc(zz,tt)
         
         !get the spectrum
-        CALL GETSPEC(zz,mact_isoc(zz,tt,i),logt_isoc(zz,tt,i),&
+        CALL GETSPEC(pset,mact_isoc(zz,tt,i),logt_isoc(zz,tt,i),&
              10**logl_isoc(zz,tt,i),logg_isoc(zz,tt,i),&
              phase_isoc(zz,tt,i),ffco_isoc(zz,tt,i),spec)
         !calculate magnitudes
