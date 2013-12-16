@@ -1,4 +1,4 @@
-SUBROUTINE GETSPEC(zz,mact,logt,lbol,logg,phase,ffco,spec)
+SUBROUTINE GETSPEC(pset,mact,logt,lbol,logg,phase,ffco,spec)
 
   ! Routine to return the spectrum of a star with an input logg,logt
   ! the phase flag determines if the star is a WR, P-AGB, or TP-AGB star
@@ -11,7 +11,7 @@ SUBROUTINE GETSPEC(zz,mact,logt,lbol,logg,phase,ffco,spec)
   IMPLICIT NONE
 
   REAL(SP), INTENT(in) :: mact,logt,lbol,logg,phase,ffco
-  INTEGER,  INTENT(in) :: zz
+  TYPE(PARAMS), INTENT(in) :: pset
   REAL(SP), INTENT(inout), DIMENSION(nspec) :: spec  
   REAL(SP) :: t,u,r2,tpagbtdiff,sum1,sum2,sum3,sum4,loggi
   INTEGER  :: klo,jlo,flag
@@ -39,7 +39,7 @@ SUBROUTINE GETSPEC(zz,mact,logt,lbol,logg,phase,ffco,spec)
           (pagb_logt(jlo+1)-pagb_logt(jlo))
      t = MIN(MAX(t,-1.0),1.0) !no extrapolation
      klo = 1
-     IF (zlegend(zz)/0.0190.GT.0.5) klo=2 
+     IF (zlegend(pset%zmet)/0.0190.GT.0.5) klo=2 
      !the post-agb library is normalized to unity
      spec = lbol * ( pagb_spec(:,jlo,klo) + &
           t*(pagb_spec(:,jlo+1,klo)-pagb_spec(:,jlo,klo)) )
@@ -80,21 +80,22 @@ SUBROUTINE GETSPEC(zz,mact,logt,lbol,logg,phase,ffco,spec)
   ELSE IF (phase.EQ.5.0.AND.logt.LT.3.6.AND.ffco.LE.1.0) THEN
      
      flag = 1
-     jlo = MAX(MIN(locate(agb_logt_o(zz,:),logt),n_agb_o-1),1)
+     jlo = MAX(MIN(locate(agb_logt_o(pset%zmet,:),logt),n_agb_o-1),1)
      !never let the TP-AGB spectra be an extrapolation
-     IF (logt.LT.agb_logt_o(zz,1)) THEN
+     IF (logt.LT.agb_logt_o(pset%zmet,1)) THEN
         tpagbtdiff = 0.0
-     ELSE IF (logt.GT.agb_logt_o(zz,n_agb_o)) THEN
-        tpagbtdiff = agb_logt_o(zz,jlo+1)-agb_logt_o(zz,jlo)
+     ELSE IF (logt.GT.agb_logt_o(pset%zmet,n_agb_o)) THEN
+        tpagbtdiff = agb_logt_o(pset%zmet,jlo+1)-agb_logt_o(pset%zmet,jlo)
      ELSE
-        tpagbtdiff = logt - agb_logt_o(zz,jlo)
+        tpagbtdiff = logt - agb_logt_o(pset%zmet,jlo)
      ENDIF
 
      !The spectra are Fdlambda, need to convert to Fdnu and 
      !interpolate in Teff.
      spec = lbol*spec_lambda*spec_lambda/clight * &
           ( agb_spec_o(:,jlo) + tpagbtdiff * (agb_spec_o(:,jlo+1) - &
-          agb_spec_o(:,jlo))/(agb_logt_o(zz,jlo+1)-agb_logt_o(zz,jlo)) )
+          agb_spec_o(:,jlo))/ &
+          (agb_logt_o(pset%zmet,jlo+1)-agb_logt_o(pset%zmet,jlo)) )
 
   !C-rich TP-AGB spectra, from Lancon & Mouhcine 2002
   ELSE IF (phase.EQ.5.0.AND.logt.LT.3.6.AND.ffco.GT.1.0) THEN
@@ -131,26 +132,26 @@ SUBROUTINE GETSPEC(zz,mact,logt,lbol,logg,phase,ffco,spec)
      
      IF (verbose.EQ.1) THEN 
         !catch stars that fall off part of the grid
-        sum1 = SUM(speclib(:,zz,jlo,klo))
-        sum2 = SUM(speclib(:,zz,jlo+1,klo))
-        sum3 = SUM(speclib(:,zz,jlo,klo+1))
-        sum4 = SUM(speclib(:,zz,jlo+1,klo+1))
+        sum1 = SUM(speclib(:,pset%zmet,jlo,klo))
+        sum2 = SUM(speclib(:,pset%zmet,jlo+1,klo))
+        sum3 = SUM(speclib(:,pset%zmet,jlo,klo+1))
+        sum4 = SUM(speclib(:,pset%zmet,jlo+1,klo+1))
         IF ((sum1.EQ.0.0.OR.sum2.EQ.0.OR.sum3.EQ.0.OR.sum4.EQ.0)&
              .AND.phase.NE.6.0) &
              write(*,'("GETSPEC WARNING: A '//&
              'star is off the grid: Z=",I2,'//&
              '" logT=",F5.2," logg=",F5.2," phase=",F2.0)') &
-             zz,logt,loggi,phase
+             pset%zmet,logt,loggi,phase
      ENDIF
      
      !bilinear interpolation over every spectral element
      !NB: extra factor of 4pi, that I can't explain,
      !but its needed for everything to work out.
      spec = 4*mypi*4*mypi*r2/lsun* ( &
-          (1-t)*(1-u)*speclib(:,zz,jlo,klo) + &
-          t*(1-u)*speclib(:,zz,jlo+1,klo) + &
-          t*u*speclib(:,zz,jlo+1,klo+1) + &
-          (1-t)*u*speclib(:,zz,jlo,klo+1) )
+          (1-t)*(1-u)*speclib(:,pset%zmet,jlo,klo) + &
+          t*(1-u)*speclib(:,pset%zmet,jlo+1,klo) + &
+          t*u*speclib(:,pset%zmet,jlo+1,klo+1) + &
+          (1-t)*u*speclib(:,pset%zmet,jlo,klo+1) )
 
   ENDIF
  
@@ -163,6 +164,14 @@ SUBROUTINE GETSPEC(zz,mact,logt,lbol,logg,phase,ffco,spec)
   ELSE IF (flag.GT.1) THEN
      WRITE(*,*) 'GETSPEC ERROR: isochrone point assigned *two* spectra!'
   ENDIF
+
+  !add circumstellar dust around AGB stars
+  IF ((phase.EQ.4.OR.phase.EQ.5) &
+       .AND.add_agb_dust_model.EQ.1.AND.pset%agb_dust.GT.0.0) THEN
+     CALL ADD_AGB_DUST(pset%agb_dust,spec,mact,&
+          logt,LOG10(lbol),logg,ffco)
+  ENDIF
+
 
   !pure blackbody; no longer used but kept here for posterity
   !teffi = 10**logt
