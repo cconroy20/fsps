@@ -50,6 +50,8 @@ SUBROUTINE SPS_SETUP(zin)
   nmass_isoc    = 0
   timestep_isoc = 0.
   spec_lambda   = 0.
+  vega_spec     = 0.
+  sun_spec      = 0.
   speclib       = 0.
   basel_logg    = 0.
   basel_logt    = 0.
