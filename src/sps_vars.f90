@@ -47,7 +47,7 @@ MODULE SPS_VARS
 
   !turn on/off the AGB circumstellar dust model
   !NB: this is not yet implemented
-  INTEGER, PARAMETER :: add_agb_dust_model=1
+  INTEGER, PARAMETER :: add_agb_dust_model=0
 
   !turn on/off a Cloudy-based nebular emission model 
   !NB: this is not yet implemented
