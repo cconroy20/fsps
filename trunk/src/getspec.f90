@@ -169,7 +169,7 @@ SUBROUTINE GETSPEC(pset,mact,logt,lbol,logg,phase,ffco,spec)
   IF ((phase.EQ.4.OR.phase.EQ.5) &
        .AND.add_agb_dust_model.EQ.1.AND.pset%agb_dust.GT.0.0) THEN
      CALL ADD_AGB_DUST(pset%agb_dust,spec,mact,&
-          logt,LOG10(lbol),logg,ffco)
+          logt,LOG10(lbol),logg,zlegend(pset%zmet),ffco)
   ENDIF
 
 

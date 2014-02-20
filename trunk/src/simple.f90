@@ -62,6 +62,9 @@
   pset%zmet = 20               !define the metallicity (see the lookup table)
                                !20 = solar metallacity
 
+  !NB: you only need to re-run SPS_SETUP if you have changed the metallicity
+  !    or, even better (but slower), you can call SPS_SETUP(-1) and this will
+  !    set up all the metallicities at once.
   CALL SPS_SETUP(pset%zmet)    !read in the isochrones and spectral libraries
 
   !define the parameter set. 

@@ -561,8 +561,13 @@ SUBROUTINE SPS_SETUP(zin)
   sun_spec(jj+1:) = tiny_number
 
   !read in and set up band-pass filters
-  OPEN(99,FILE=TRIM(SPS_HOME)//'/data/allfilters.dat',&
-       STATUS='OLD',iostat=stat,ACTION='READ')
+  IF (TRIM(alt_filter_file).EQ.'') THEN
+     OPEN(99,FILE=TRIM(SPS_HOME)//'/data/allfilters.dat',&
+          STATUS='OLD',iostat=stat,ACTION='READ')
+  ELSE
+     OPEN(99,FILE=TRIM(SPS_HOME)//'/data/'//TRIM(alt_filter_file),&
+          STATUS='OLD',iostat=stat,ACTION='READ')
+  ENDIF
   READ(99,*)
 
 
@@ -638,25 +643,44 @@ SUBROUTINE SPS_SETUP(zin)
   ENDDO
   CLOSE(99)
 
-  !normalize the IRAC, PACS, SPIRE, and IRAS photometry to nu*fnu=const
-  lami = (/3.550,4.493,5.731,7.872,70.0,100.0,160.0,250.0,350.0,500.0,&
-       12.0,25.0,60.0,100.0/)*1E4
-  ind=(/53,54,55,56,95,96,97,98,99,100,101,102,103,104/)
-  DO j=1,14
-     d = TSUM(spec_lambda,(spec_lambda/lami(j))**(-1.0)*bands(ind(j),:)/&
-          spec_lambda)
-     bands(ind(j),:) = bands(ind(j),:) / MAX(d,tiny_number)
-  ENDDO
-  
-  !normalize the MIPS photometry to a BB (beta=2)
-  lami(1:3) = (/23.68,71.42,155.9/)*1E4
-  ind(1:3) = (/90,91,92/)
-  DO j=1,3
-     d = TSUM(spec_lambda,(spec_lambda/lami(j))**(-2.0)*bands(ind(j),:)/&
-          spec_lambda)
-     bands(ind(j),:) = bands(ind(j),:) / MAX(d,tiny_number)
-  ENDDO
+  !only execute this loop for the standard filter list
+  IF (TRIM(alt_filter_file).EQ.'') THEN
+     !normalize the IRAC, PACS, SPIRE, and IRAS photometry to nu*fnu=const
+     lami = (/3.550,4.493,5.731,7.872,70.0,100.0,160.0,250.0,350.0,500.0,&
+          12.0,25.0,60.0,100.0/)*1E4
+     ind=(/53,54,55,56,95,96,97,98,99,100,101,102,103,104/)
+     DO j=1,14
+        IF (ind(j).GT.nbands) THEN
+           WRITE(*,*) 'SPS_SETUP ERROR: trying to index a filter that does not exist!'
+           EXIT
+        ENDIF
+        d = TSUM(spec_lambda,(spec_lambda/lami(j))**(-1.0)*bands(ind(j),:)/&
+             spec_lambda)
+        bands(ind(j),:) = bands(ind(j),:) / MAX(d,tiny_number)
+     ENDDO
+     
+     !normalize the MIPS photometry to a BB (beta=2)
+     lami(1:3) = (/23.68,71.42,155.9/)*1E4
+     ind(1:3) = (/90,91,92/)
+     DO j=1,3
+        IF (ind(j).GT.nbands) THEN
+           WRITE(*,*) 'SPS_SETUP ERROR: trying to index a filter that does not exist!'
+           EXIT
+        ENDIF
+        d = TSUM(spec_lambda,(spec_lambda/lami(j))**(-2.0)*bands(ind(j),:)/&
+             spec_lambda)
+        bands(ind(j),:) = bands(ind(j),:) / MAX(d,tiny_number)
+     ENDDO
+  ENDIF
 
+  !compute the effective wavelength of each filter
+  !NB: These are sometimes referred to as "pivot" wavelengths
+  ! in the literature.  See Bessell & Murphy 2012 A.2.1 for details'
+  DO i=1,nbands
+     filter_leff(i) = TSUM(spec_lambda,spec_lambda*bands(i,:)) / &
+          TSUM(spec_lambda,bands(i,:)/spec_lambda)
+     filter_leff(i) = SQRT(filter_leff(i))
+  ENDDO
 
   !----------------------------------------------------------------!
   !---------------Set up extinction curve indices------------------!
