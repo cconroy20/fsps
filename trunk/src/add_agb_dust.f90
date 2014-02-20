@@ -39,8 +39,8 @@ FUNCTION COMPUTE_TAU1(cstar,mact,logt,logl,logg,zz)
   !metallicity dependent maximum (Bressan et al. 1998)
   !this implicitly introduces a (strong) metallicity
   !dependence on the dust-to-gas ratio (see below)
-  vexp_max = 6.5*zz/0.008 + 0.00226*period
-  vexp     = MAX(MIN(vexp,vexp_max),3.0)
+  !vexp_max = 6.5*zz/0.008 + 0.00226*period
+  vexp     = MAX(MIN(vexp,15.0),3.0)
 
   !mass-loss rate in Msun/yr
   !see Vassiliadis & Wood (1993) for details
@@ -60,6 +60,10 @@ FUNCTION COMPUTE_TAU1(cstar,mact,logt,logl,logg,zz)
 
   !dust-to-gas ratio
   delta = delta_agb * vexp**2 / 225. * (10**logl/1E4)**(-0.6)
+  IF (cstar.EQ.0) THEN
+     !scale d/g by metallicity for O stars
+     delta = delta * (zz/0.019)  
+  ENDIF
 
   !finally, compute tau (convert to cgs)
   compute_tau1 = kappa * delta * (mdot*msun/yr2sc) &
