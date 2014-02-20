@@ -1,4 +1,4 @@
-FUNCTION COMPUTE_TAU1(cstar,mact,logt,logl,logg)
+FUNCTION COMPUTE_TAU1(cstar,mact,logt,logl,logg,zz)
 
   !routine to compute tau at 1um from input
   !stellar parameters.  See Villaume et al. (in prep)
@@ -6,8 +6,8 @@ FUNCTION COMPUTE_TAU1(cstar,mact,logt,logl,logg)
   USE sps_vars
   IMPLICIT NONE
   INTEGER, INTENT(in) :: cstar
-  REAL(SP), INTENT(in)  :: mact,logt,logl,logg
-  REAL(SP) :: compute_tau1, radius, period, vexp
+  REAL(SP), INTENT(in)  :: mact,logt,logl,logg,zz
+  REAL(SP) :: compute_tau1, radius, period, vexp, vexp_max
   REAL(SP) :: rin, delta, kappa, delta_agb, mdot
 
   !-----------------------------------------------------------!
@@ -35,8 +35,12 @@ FUNCTION COMPUTE_TAU1(cstar,mact,logt,logl,logg)
   period = 10**( -2.07 + 1.94*LOG10(radius)-0.9*LOG10(mact) )
   
   !expansion velocity in km/s
-  vexp = -13.5 + 0.056*period
-  vexp = MAX(MIN(vexp,15.0),3.0)
+  vexp     = -13.5 + 0.056*period
+  !metallicity dependent maximum (Bressan et al. 1998)
+  !this implicitly introduces a (strong) metallicity
+  !dependence on the dust-to-gas ratio (see below)
+  vexp_max = 6.5*zz/0.008 + 0.00226*period
+  vexp     = MAX(MIN(vexp,vexp_max),3.0)
 
   !mass-loss rate in Msun/yr
   !see Vassiliadis & Wood (1993) for details
@@ -70,7 +74,7 @@ END FUNCTION COMPUTE_TAU1
 !------------------------------------------------------------!
 !------------------------------------------------------------!
 
-SUBROUTINE ADD_AGB_DUST(weight,tspec,mact,logt,logl,logg,tco)
+SUBROUTINE ADD_AGB_DUST(weight,tspec,mact,logt,logl,logg,zz,tco)
 
   !routine to add a circumstellar dust shell to AGB stars
   !computes the optical depth at 1um from stellar parameters
@@ -81,7 +85,7 @@ SUBROUTINE ADD_AGB_DUST(weight,tspec,mact,logt,logl,logg,tco)
   IMPLICIT NONE
 
   REAL(SP), DIMENSION(nspec), INTENT(out) :: tspec
-  REAL(SP), INTENT(in)  :: weight,mact,logt,logl,logg,tco
+  REAL(SP), INTENT(in)  :: weight,mact,logt,logl,logg,zz,tco
   INTEGER :: cstar,jlo,klo
   REAL(SP) :: tau1,dj,dk, compute_tau1
   REAL(SP), DIMENSION(nspec) :: dusty
@@ -96,13 +100,13 @@ SUBROUTINE ADD_AGB_DUST(weight,tspec,mact,logt,logl,logg,tco)
   ENDIF
 
   !compute tau1 based on input stellar parameters
-  tau1 = compute_tau1(cstar,mact,logt,logl,logg)
+  tau1 = compute_tau1(cstar,mact,logt,logl,logg,zz)
 
   !allow the user to manually adjust the tau1 value
   !by an overall scale factor
   tau1 = tau1*weight
 
-  IF (tau1.EQ.0.0) RETURN
+  IF (tau1.LE.tiny_number) RETURN
 
   !find dusty model given tau1,tco,Teff
   jlo = MIN(MAX(locate(teff_dagb(cstar+1,:),10**logt),1),&

@@ -47,7 +47,7 @@ MODULE SPS_VARS
 
   !turn on/off the AGB circumstellar dust model
   !NB: this is not yet implemented
-  INTEGER, PARAMETER :: add_agb_dust_model=0
+  INTEGER, PARAMETER :: add_agb_dust_model=1
 
   !turn on/off a Cloudy-based nebular emission model 
   !NB: this is not yet implemented
@@ -147,7 +147,7 @@ MODULE SPS_VARS
 
   !You must change the number of bands here if
   !filters are added to allfilters.dat
-  INTEGER, PARAMETER :: nbands=114
+  INTEGER, PARAMETER :: nbands=114 !kr06=61 !kr01=102  !normal=114
   !number of indices defined in allindices.dat
   INTEGER, PARAMETER :: nindx=30
   
@@ -246,6 +246,8 @@ MODULE SPS_VARS
 
   !environment variable for SPS home directory
   CHARACTER(250) :: SPS_HOME=''
+  !name of the filter file, if blank it defaults to allfilters.dat
+  CHARACTER(20)  :: alt_filter_file=''
 
   !Age of Universe in Gyr (set in sps_setup.f90, based on cosmo params)
   REAL(SP) :: tuniv=0.0
@@ -278,7 +280,7 @@ MODULE SPS_VARS
   !bandpass filters 
   REAL(SP), DIMENSION(nbands,nspec) :: bands
   !magnitude of the Sun in all filters
-  REAL(SP), DIMENSION(nbands) :: magsun,magvega
+  REAL(SP), DIMENSION(nbands) :: magsun,magvega,filter_leff
   !Vega-like star spectrum for Vega magnitude zero-point
   !spectrum of Sun, for absolute mags of Sun
   REAL(SP), DIMENSION(nspec)  :: vega_spec=0.,sun_spec=0.0
@@ -364,7 +366,7 @@ MODULE SPS_VARS
   TYPE OBSDAT
      REAL(SP)                    :: zred=0.0,logsmass=0.0
      REAL(SP), DIMENSION(nbands) :: mags=0.0,magerr=0.0
-     REAL(SP), DIMENSION(nspec)  :: spec=0.0, specerr=99.
+     REAL(SP), DIMENSION(nspec)  :: spec=0.0,specerr=99.
   END TYPE OBSDAT
 
   !structure for using P(z) in chi2
@@ -374,6 +376,6 @@ MODULE SPS_VARS
   END TYPE TPZPHOT
 
   !used for Powell minimization
-  TYPE(OBSDAT) :: powell_data
+  TYPE(OBSDAT) :: powell_data, sedfit_data
 
 END MODULE SPS_VARS
