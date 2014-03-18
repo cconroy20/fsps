@@ -130,7 +130,7 @@ SUBROUTINE INTSPEC(pset,nti,spec_ssp,csp,mass_ssp,lbol_ssp,&
         t1   = time(nti)-sfstart-time(i)+time(1)
         IF (i.EQ.indsf) t2 = 0.0
         IF (i.NE.indsf) t2 = time(nti)-sfstart-time(i+1)+time(1)
-        
+
         IF (pset%sfh.EQ.5) THEN
            IF ((t1+sfstart).LT.pset%sf_trunc*1E9) THEN
               isfr(i) = (EXP(-t2/tau/1E9)*(1+t2/tau/1E9) - &
@@ -572,7 +572,7 @@ SUBROUTINE COMPSP(write_compsp,nzin,outfile,mass_ssp,&
             CALL INTSPEC(pset,i,spec_ssp,csp2,mass_ssp,lbol_ssp,&
                  mass_csp,lbol_csp,spec_burst,mass_burst,&
                  lbol_burst,delt_burst,sfstart,tau,const,maxtime,mdust,1)
-            spec_csp = 10**time_full(i)/1E9 - csp2 / csp1
+            spec_csp = 10**time_full(i)/1E9 - csp2 / csp1 - sfstart/1E9
          ELSE
             spec_csp = csp1
          ENDIF
@@ -583,8 +583,8 @@ SUBROUTINE COMPSP(write_compsp,nzin,outfile,mass_ssp,&
       ENDIF
       
       !smooth the spectrum
-      IF (pset%vel_broad.GT.0.0) THEN
-         CALL SMOOTHSPEC(spec_lambda,spec_csp,pset%vel_broad,&
+      IF (pset%sigma_smooth.GT.0.0) THEN
+         CALL SMOOTHSPEC(spec_lambda,spec_csp,pset%sigma_smooth,&
               pset%min_wave_smooth,pset%max_wave_smooth)
       ENDIF
 

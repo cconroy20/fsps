@@ -64,6 +64,11 @@ MODULE SPS_VARS
   !wavelength parameters.  Contact me if you are intersted in this feature.
   INTEGER, PARAMETER :: smoothspec_fast=1
 
+  !if set, smooth the spectrum in velocity space, otherwise
+  !smooth in Angstrom space (in all cases the width of the 
+  !kernel is a sigma, not FWHM)
+  INTEGER, PARAMETER :: smooth_velocity=1
+
   !set attenuation-law for the diffuse ISM
   !0 - power-law attenuation.  See dust_index variable below
   !1 - MW extinction law, parameterized by Cardelli et al. 1989,
@@ -344,7 +349,7 @@ MODULE SPS_VARS
           dust_tesc=7.0,frac_obrun=0.0,uvb=1.0,mwr=3.1,redgb=1.0,&
           dust1_index=-1.0,mdave=0.5,sf_start=0.0,sf_trunc=0.0,sf_theta=0.0,&
           duste_gamma=0.01,duste_umin=1.0,duste_qpah=3.5,fcstar=1.0,&
-          masscut=150.0,vel_broad=0.0,agb_dust=1.0,min_wave_smooth=1E3,&
+          masscut=150.0,sigma_smooth=0.0,agb_dust=1.0,min_wave_smooth=1E3,&
           max_wave_smooth=1E4
      INTEGER :: zmet=1,sfh=0,wgp1=1,wgp2=1,wgp3=1,evtype=-1
      INTEGER, DIMENSION(nbands) :: mag_compute=1
