@@ -47,10 +47,10 @@ MODULE SPS_VARS
 
   !turn on/off the AGB circumstellar dust model
   !NB: this is not yet implemented
-  INTEGER, PARAMETER :: add_agb_dust_model=0
+  INTEGER, PARAMETER :: add_agb_dust_model=1
 
   !turn on/off a Cloudy-based nebular emission model 
-  !NB: this is not yet implemented
+  !NB: this is currently in process
   INTEGER, PARAMETER :: add_neb_emission=0
 
   !turn on/off the addition of stellar remnants to the 
@@ -129,7 +129,7 @@ MODULE SPS_VARS
   INTEGER, PARAMETER :: nz=5
   INTEGER, PARAMETER :: nspec=5994
 #elif (CKC14)
-  INTEGER, PARAMETER :: nz=9
+  INTEGER, PARAMETER :: nz=10
   INTEGER, PARAMETER :: nspec=26500
 #else
   INTEGER, PARAMETER :: nspec=1963
@@ -152,12 +152,13 @@ MODULE SPS_VARS
 
   !You must change the number of bands here if
   !filters are added to allfilters.dat
-  INTEGER, PARAMETER :: nbands=114 !kr06=61 !kr01=102  !normal=114
+  !kr06=61, kr02,kr03,kr04=101, kr01,kr11=102, normal=114
+  INTEGER, PARAMETER :: nbands=114
   !number of indices defined in allindices.dat
   INTEGER, PARAMETER :: nindx=30
   
   !The following parameters should never be changed
-   !unless you are changing the libraries
+  !unless you are changing the libraries
 
   !max dimension of array for each isochrone
   INTEGER, PARAMETER :: nm=1500
@@ -181,6 +182,10 @@ MODULE SPS_VARS
   INTEGER, PARAMETER :: numin_dl07=22
   !parameters for circumstellar dust models
   INTEGER, PARAMETER :: ntau_dagb=50, nteff_dagb=6
+  !number of emission lines and continuum emission points
+  INTEGER, PARAMETER :: nemline=108, nlam_nebcont=8548
+  !number of metallicity, age, and ionization parameter points
+  INTEGER, PARAMETER :: nebnz=5, nebnage=5, nebnip=5
 
   !------------IMF-related Constants--------------!
   
@@ -252,9 +257,9 @@ MODULE SPS_VARS
   !environment variable for SPS home directory
   CHARACTER(250) :: SPS_HOME=''
   !name of the filter file, if blank it defaults to allfilters.dat
-  CHARACTER(20)  :: alt_filter_file=''
+  CHARACTER(30)  :: alt_filter_file=''
 
-  !Age of Universe in Gyr (set in sps_setup.f90, based on cosmo params)
+  !Age of Universe in Gyr (set in sps_setup.f90)
   REAL(SP) :: tuniv=0.0
   
   !this specifies the size of the full time grid
@@ -321,6 +326,14 @@ MODULE SPS_VARS
   REAL(SP), DIMENSION(2,ntau_dagb)                  :: tau1_dagb=0.0
   REAL(SP), DIMENSION(2,nteff_dagb)                 :: teff_dagb=0.0
 
+  !nebular emission model
+  REAL(SP), DIMENSION(nemline) :: nebem_line_pos=0.0
+  REAL(SP), DIMENSION(nemline,nebnz,nebnage,nebnip) :: nebem_line=0.
+  REAL(SP), DIMENSION(nspec,nebnz,nebnage) :: nebem_cont=0.
+  REAL(SP), DIMENSION(nebnz)   :: nebem_zgas=0.
+  REAL(SP), DIMENSION(nebnage) :: nebem_age=0.
+  REAL(SP), DIMENSION(nebnip)  :: nebem_logu=0.
+
   !arrays for the isochrone data
   REAL(SP), DIMENSION(nz,nt,nm) :: mact_isoc=0.,logl_isoc=0.,&
        logt_isoc=0.,logg_isoc=0.,ffco_isoc=0.,phase_isoc=0.
@@ -344,13 +357,13 @@ MODULE SPS_VARS
   TYPE PARAMS
      REAL(SP) :: pagb=1.0,dell=0.0,delt=0.0,fbhb=0.0,sbss=0.0,tau=1.0,&
           const=0.0,tage=0.0,fburst=0.0,tburst=11.0,dust1=0.0,dust2=0.0,&
-          logzsol=-0.2,zred=0.0,pmetals=0.02,imf1=1.3,imf2=2.3,imf3=2.3,&
+          logzsol=0.0,zred=0.0,pmetals=0.02,imf1=1.3,imf2=2.3,imf3=2.3,&
           vdmc=0.08,dust_clumps=-99.,frac_nodust=0.0,dust_index=-0.7,&
           dust_tesc=7.0,frac_obrun=0.0,uvb=1.0,mwr=3.1,redgb=1.0,&
           dust1_index=-1.0,mdave=0.5,sf_start=0.0,sf_trunc=0.0,sf_theta=0.0,&
           duste_gamma=0.01,duste_umin=1.0,duste_qpah=3.5,fcstar=1.0,&
           masscut=150.0,sigma_smooth=0.0,agb_dust=1.0,min_wave_smooth=1E3,&
-          max_wave_smooth=1E4
+          max_wave_smooth=1E4,gas_logu=-2.0,gas_logzsol=0.0
      INTEGER :: zmet=1,sfh=0,wgp1=1,wgp2=1,wgp3=1,evtype=-1
      INTEGER, DIMENSION(nbands) :: mag_compute=1
      CHARACTER(50) :: imf_filename='', sfh_filename=''

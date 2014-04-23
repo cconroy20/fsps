@@ -32,6 +32,15 @@ MODULE SPS_UTILS
   END INTERFACE
 
   INTERFACE
+     SUBROUTINE ADD_NEBULAR(pset,sspi,sspo)
+       USE sps_vars
+       TYPE(PARAMS), INTENT(in) :: pset
+       REAL(SP), INTENT(in), DIMENSION(ntfull,nspec)    :: sspi
+       REAL(SP), INTENT(inout), DIMENSION(ntfull,nspec) :: sspo
+     END SUBROUTINE ADD_NEBULAR
+  END INTERFACE
+
+  INTERFACE
      SUBROUTINE ADD_REMNANTS(mass,maxmass)
        USE sps_vars
        REAL(SP), INTENT(inout) :: mass

@@ -25,6 +25,7 @@ SUBROUTINE SPS_SETUP(zin)
   REAL(SP), DIMENSION(10000) :: lambda_dagb, fluxin_dagb
   REAL(SP), DIMENSION(14) :: lami
   INTEGER,  DIMENSION(14) :: ind
+  REAL(SP), DIMENSION(20000) :: readlambneb,readcontneb
 
   !---------------------------------------------------------------!
   !---------------------------------------------------------------!
@@ -514,6 +515,75 @@ SUBROUTINE SPS_SETUP(zin)
 
 
   !----------------------------------------------------------------!
+  !----------------Set up nebular emission arrays------------------!
+  !----------------------------------------------------------------!
+
+  !read in grid properties
+  OPEN(99,FILE=TRIM(SPS_HOME)//'nebular/age_grid.dat',&
+       STATUS='OLD',iostat=stat,ACTION='READ')
+  DO i=1,nebnage
+     READ(99,*) nebem_age(i)
+  ENDDO
+  CLOSE(99)
+  nebem_age = LOG10(nebem_age*1E6) !convert to log(yr)
+  OPEN(99,FILE=TRIM(SPS_HOME)//'nebular/zgas_grid.dat',&
+       STATUS='OLD',iostat=stat,ACTION='READ')
+  DO i=1,nebnz
+     READ(99,*) nebem_zgas(i)
+  ENDDO
+  CLOSE(99)
+  OPEN(99,FILE=TRIM(SPS_HOME)//'nebular/logu_grid.dat',&
+       STATUS='OLD',iostat=stat,ACTION='READ')
+  DO i=1,nebnip
+     READ(99,*) nebem_logu(i)
+  ENDDO
+  CLOSE(99)
+
+  !read in nebular continuum arrays
+  OPEN(99,FILE=TRIM(SPS_HOME)//'nebular/ZAU115.out_cont',&
+       STATUS='OLD',iostat=stat,ACTION='READ')
+  IF (stat.NE.0) THEN
+     WRITE(*,*) 'SPS_SETUP ERROR: nebular cont. files cannot be opened'
+     STOP
+  ENDIF
+  !burn the header
+  READ(99,*)
+  READ(99,*)
+  DO i=1,20000
+     READ(99,*,iostat=stat) readlambneb(i),d1,d2,readcontneb(i)
+     IF (stat.NE.0) GOTO 509
+  ENDDO
+509 CONTINUE
+  CLOSE(99)
+
+  !interpolate onto the main wavelength grid
+  nebem_cont(1:nspec,1,1) = 10**linterparr(readlambneb(1:i-1),&
+       LOG10(readcontneb(1:i-1))+tiny_number,spec_lambda(1:nspec))-tiny_number
+
+  !read in nebular emission line luminosities
+  OPEN(99,FILE=TRIM(SPS_HOME)//'nebular/ZAU115.out_lines',&
+       STATUS='OLD',iostat=stat,ACTION='READ')
+  IF (stat.NE.0) THEN
+     WRITE(*,*) 'SPS_SETUP ERROR: nebular cont. files cannot be opened'
+     STOP
+  ENDIF
+  !burn the header
+  READ(99,*)
+  READ(99,*)
+  DO i=1,nemline
+     READ(99,*) nebem_line_pos(i),nebem_line(i,1,1,1)
+  ENDDO
+  CLOSE(99)
+
+  !renormalize
+  DO i=1,nebnz
+     DO j=1,nebnage
+        nebem_cont(:,i,j) = nebem_cont(:,i,j)/Lsun * spec_lambda**2/clight
+     ENDDO
+  ENDDO
+
+
+  !----------------------------------------------------------------!
   !-------------------Set up magnitude info------------------------!
   !----------------------------------------------------------------!
 
@@ -524,7 +594,7 @@ SUBROUTINE SPS_SETUP(zin)
   IF (stat.NE.0) THEN
      WRITE(*,*) 'SPS_SETUP ERROR: SPECTRA/A0V_KURUCZ_92.SED cannot be opened'
      STOP 
-  END IF  
+  ENDIF  
   !burn the header
   READ(98,*)
   DO i=1,ntlam
@@ -573,7 +643,6 @@ SUBROUTINE SPS_SETUP(zin)
 
   !loop over all the transmission filters
   DO i=1,nbands
-
      jj=0
      readlamb = 0.0
      readband = 0.0

@@ -195,7 +195,6 @@ SUBROUTINE SSP_GEN(pset,mass_ssp,lbol_ssp,spec_ssp)
 
      ENDDO
 
-
   ENDDO
 
   !-------------------------------------------------------------!
