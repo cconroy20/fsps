@@ -211,7 +211,7 @@ END SUBROUTINE INTSPEC
 !------------------------------------------------------------!
 
 SUBROUTINE COMPSP(write_compsp,nzin,outfile,mass_ssp,&
-     lbol_ssp,spec_ssp,pset,ocompsp)
+     lbol_ssp,tspec_ssp,pset,ocompsp)
 
   !for sfh=1 or 4:
   !If tage >0  -> run only one integration to t=tage
@@ -227,8 +227,9 @@ SUBROUTINE COMPSP(write_compsp,nzin,outfile,mass_ssp,&
   !               5->write CMDs
   INTEGER, INTENT(in) :: write_compsp,nzin
   REAL(SP), INTENT(in), DIMENSION(nzin,ntfull) :: lbol_ssp,mass_ssp
-  REAL(SP), INTENT(in), DIMENSION(nzin,ntfull,nspec) :: spec_ssp
-  CHARACTER(100), INTENT(in) :: outfile
+  REAL(SP), INTENT(in), DIMENSION(nzin,ntfull,nspec) :: tspec_ssp
+  REAL(SP), DIMENSION(nzin,ntfull,nspec) :: spec_ssp
+   CHARACTER(100), INTENT(in) :: outfile
 
   INTEGER  :: i,j,n,k,stat,klo,jlo,ilo,imin,imax,indsf,indsft
   REAL(SP) :: tau,const,maxtime,writeage,psfr,sfstart,zhist,sftrunc
@@ -241,10 +242,12 @@ SUBROUTINE COMPSP(write_compsp,nzin,outfile,mass_ssp,&
   REAL(SP), DIMENSION(ntfull)  :: imass,ilbol,powtime
   REAL(SP), DIMENSION(ntfull)  :: sfr,tsfr,tzhist
   REAL(SP), DIMENSION(ntabmax) :: tlb
-
-  !(TYPE objects defined in sps_vars.f90)
   TYPE(PARAMS), INTENT(in) :: pset
   TYPE(COMPSPOUT), INTENT(inout), DIMENSION(ntfull) :: ocompsp
+
+  !dump the input SSPs into a temporary array so that we can
+  !edit the SSPs (currently this is only done in add_nebular)
+  spec_ssp = tspec_ssp
 
   !-------------------------------------------------------------!
   !-----------------Write the CMDs and exit---------------------!
@@ -261,7 +264,13 @@ SUBROUTINE COMPSP(write_compsp,nzin,outfile,mass_ssp,&
 
   IF (add_neb_emission.EQ.1) THEN
 
-     !TBD
+     IF (nzin.GT.1) THEN
+        WRITE(*,*) 'COMPSP ERROR: cannot handle both nebular '//&
+             'emission and mult-metallicity SSPs in compsp'
+        STOP
+     ENDIF
+     
+     CALL ADD_NEBULAR(pset,tspec_ssp(1,:,:),spec_ssp(1,:,:))
 
   ENDIF
 
@@ -652,8 +661,8 @@ SUBROUTINE COMPSP(write_compsp,nzin,outfile,mass_ssp,&
 31 FORMAT('#   log(age) log(mass) Log(lbol) log(SFR) spectra')
 32 FORMAT('#   log(age) log(mass) Log(lbol) log(SFR) mags (see FILTER_LIST)')
 33 FORMAT('#   SFH: Tage=',F6.2,' Gyr, log(tau/Gyr)= ',F6.3,&
-        ', const= ',F5.3,', fb= ',F5.3,', tb= ',F6.2,&
-        ' Gyr, sf_start= 'F5.3,', dust=(',F6.2,','F6.2,')')
+        ', const= ',F6.3,', fb= ',F6.3,', tb= ',F6.2,&
+        ' Gyr, sf_start= 'F6.3,', dust=(',F6.2,','F6.2,')')
 34 FORMAT('#   log(age) indices (see allindices.dat)')
 
 END SUBROUTINE COMPSP

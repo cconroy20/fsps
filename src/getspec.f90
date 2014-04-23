@@ -4,8 +4,8 @@ SUBROUTINE GETSPEC(pset,mact,logt,lbol,logg,phase,ffco,spec)
   ! the phase flag determines if the star is a WR, P-AGB, or TP-AGB star
   ! ffco specifies the chemical composition of WR and TP-AGB stars
 
-  !This subroutine is a major bottleneck.  The spectra must be
-  !recomputed each time the IMF or isochrone parameters change.
+  ! This subroutine is a major bottleneck.  The spectra must be
+  ! recomputed each time the IMF or isochrone parameters change.
 
   USE sps_vars; USE sps_utils, ONLY: locate
   IMPLICIT NONE
@@ -56,8 +56,7 @@ SUBROUTINE GETSPEC(pset,mact,logt,lbol,logg,phase,ffco,spec)
      
      flag = 1
      jlo = MIN(MAX(locate(wr_logt,logt),1),ndim_wr-1)
-     t   = (logt-wr_logt(jlo)) / &
-          (wr_logt(jlo+1)-wr_logt(jlo))
+     t   = (logt-wr_logt(jlo)) / (wr_logt(jlo+1)-wr_logt(jlo))
      t = MIN(MAX(t,-1.0),1.0) !no extrapolation
      !the WR library is normalized to unity
      spec = lbol * ( wr_spec(:,jlo) + &
@@ -69,8 +68,7 @@ SUBROUTINE GETSPEC(pset,mact,logt,lbol,logg,phase,ffco,spec)
      
      flag = 1
      jlo = MIN(MAX(locate(wr_logt,logt),1),ndim_wr-1)
-     t   = (logt-wr_logt(jlo)) / &
-          (wr_logt(jlo+1)-wr_logt(jlo))
+     t   = (logt-wr_logt(jlo)) / (wr_logt(jlo+1)-wr_logt(jlo))
      t = MIN(MAX(t,-1.0),1.0) !no extrapolation
      !the WR library is normalized to unity
      spec = lbol * ( wr_spec(:,jlo) + &
