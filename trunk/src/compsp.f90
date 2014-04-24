@@ -796,7 +796,7 @@ SUBROUTINE COMPSP_HEADER(unit,pset)
 
   IF (pset%sfh.NE.2) THEN
      WRITE(unit,'("#   Log(Z/Zsol): ",F6.3)') &
-          LOG10(zlegend(pset%zmet)/0.0190)
+          LOG10(zlegend(pset%zmet)/zsol)
   ELSE
      WRITE(unit,'("#   Log(Z/Zsol): tabulated")')
   ENDIF

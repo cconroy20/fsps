@@ -98,7 +98,7 @@ PROGRAM AUTOSPS
         STOP
      ENDIF
      WRITE(6,'(" ---> Using metallicity",1x,I2," corresponding to log(Z/Zsol)=",1x,F5.2)') &
-          pset%zmet,LOG10(zlegend(pset%zmet)/0.0190)
+          pset%zmet,LOG10(zlegend(pset%zmet)/zsol)
   ENDIF
 
   !set dust

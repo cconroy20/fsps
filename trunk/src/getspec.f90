@@ -39,7 +39,7 @@ SUBROUTINE GETSPEC(pset,mact,logt,lbol,logg,phase,ffco,spec)
           (pagb_logt(jlo+1)-pagb_logt(jlo))
      t = MIN(MAX(t,-1.0),1.0) !no extrapolation
      klo = 1
-     IF (zlegend(pset%zmet)/0.0190.GT.0.5) klo=2 
+     IF (zlegend(pset%zmet)/zsol.GT.0.5) klo=2 
      !the post-agb library is normalized to unity
      spec = lbol * ( pagb_spec(:,jlo,klo) + &
           t*(pagb_spec(:,jlo+1,klo)-pagb_spec(:,jlo,klo)) )
