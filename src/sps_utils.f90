@@ -259,7 +259,7 @@ MODULE SPS_UTILS
        REAL(SP),INTENT(in) :: zpos
        REAL(SP),INTENT(inout),DIMENSION(ntfull) :: mass, lbol
        REAL(SP),INTENT(inout),DIMENSION(nspec,ntfull) :: spec
-     END SUBROUTINE ZINTERP
+     END SUBROUTINE ZTINTERP
   END INTERFACE
 
 END MODULE SPS_UTILS
