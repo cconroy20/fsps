@@ -346,8 +346,8 @@ MODULE SPS_VARS
   REAL(SP), DIMENSION(nz)    :: zlegend=-99.
   
   !arrays for the full Z-dep SSP spectra
-  REAL(SP), DIMENSION(nz,ntfull,nspec) :: spec_ssp_zz=0.
-  REAL(SP), DIMENSION(nz,ntfull)       :: mass_ssp_zz=0.,lbol_ssp_zz=0.
+  REAL(SP), DIMENSION(nspec,ntfull,nz) :: spec_ssp_zz=0.
+  REAL(SP), DIMENSION(ntfull,nz)       :: mass_ssp_zz=0.,lbol_ssp_zz=0.
   
   REAL(SP), DIMENSION(ntfull) :: time_full=0.
 

@@ -12,7 +12,7 @@ SUBROUTINE PZ_CONVOL(yield,zave,spec_pz,lbol_pz,mass_pz)
   
   INTEGER  :: i,t,z
   REAL(SP) :: norm
-  REAL(SP), INTENT(out), DIMENSION(ntfull,nspec) :: spec_pz
+  REAL(SP), INTENT(out), DIMENSION(nspec,ntfull) :: spec_pz
   REAL(SP), INTENT(out), DIMENSION(ntfull) :: mass_pz, lbol_pz
   REAL(SP), INTENT(out)    :: zave
   REAL(SP), DIMENSION(nz)  ::  pzz1
@@ -36,11 +36,11 @@ SUBROUTINE PZ_CONVOL(yield,zave,spec_pz,lbol_pz,mass_pz)
      !integrate over P(Z)
      DO z=1,nz-1
         spec_pz = spec_pz + (LOG(zlegend(z+1))-LOG(zlegend(z))) * &
-             (pzz1(z+1)*spec_ssp_zz(z+1,:,:) + pzz1(z)*spec_ssp_zz(z,:,:))/2.
+             (pzz1(z+1)*spec_ssp_zz(:,:,z+1) + pzz1(z)*spec_ssp_zz(:,:,z))/2.
         lbol_pz = lbol_pz + (LOG(zlegend(z+1))-LOG(zlegend(z))) * &
-             (pzz1(z+1)*lbol_ssp_zz(z+1,:) + pzz1(z)*lbol_ssp_zz(z,:))/2.
+             (pzz1(z+1)*lbol_ssp_zz(:,z+1) + pzz1(z)*lbol_ssp_zz(:,z))/2.
         mass_pz = mass_pz + (LOG(zlegend(z+1))-LOG(zlegend(z))) * &
-             (pzz1(z+1)*mass_ssp_zz(z+1,:) + pzz1(z)*mass_ssp_zz(z,:))/2.
+             (pzz1(z+1)*mass_ssp_zz(:,z+1) + pzz1(z)*mass_ssp_zz(:,z))/2.
         norm    = norm + (LOG(zlegend(z+1))-LOG(zlegend(z))) * &
           (pzz1(z+1)+pzz1(z))/2.
         zave    = zave + (LOG(zlegend(z+1))-LOG(zlegend(z))) * &
@@ -63,11 +63,11 @@ SUBROUTINE PZ_CONVOL(yield,zave,spec_pz,lbol_pz,mass_pz)
            !interpolate
            DO z=1,100
               zzspec(z) = 10**linterp(log10(zlegend),&
-                   log10(spec_ssp_zz(:,t,i)),log10(zz2(z)))
+                   log10(spec_ssp_zz(i,t,:)),log10(zz2(z)))
            ENDDO
            !integrate
            DO z=1,100-1
-              spec_pz(t,i) = spec_pz(t,i) + (LOG(zz2(z+1))-LOG(zz2(z))) * &
+              spec_pz(i,t) = spec_pz(i,t) + (LOG(zz2(z+1))-LOG(zz2(z))) * &
                    (pzz2(z+1)*zzspec(z+1) + pzz2(z)*zzspec(z))/2.
            ENDDO
         ENDDO
