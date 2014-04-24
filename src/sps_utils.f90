@@ -253,4 +253,13 @@ MODULE SPS_UTILS
      END SUBROUTINE WRITE_ISOCHRONE
   END INTERFACE
 
+  INTERFACE
+     SUBROUTINE ZTINTERP(zpos,spec,lbol,mass)
+       USE sps_vars
+       REAL(SP),INTENT(in) :: zpos
+       REAL(SP),INTENT(inout),DIMENSION(ntfull) :: mass, lbol
+       REAL(SP),INTENT(inout),DIMENSION(nspec,ntfull) :: spec
+     END SUBROUTINE ZINTERP
+  END INTERFACE
+
 END MODULE SPS_UTILS
