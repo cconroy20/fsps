@@ -13,7 +13,7 @@ SUBROUTINE MOD_GB(zz,t,age,delt,dell,pagb,redgb,&
   REAL(SP), INTENT(in) :: delt, dell, pagb,redgb
   REAL(SP), INTENT(in), DIMENSION(nt) :: age
   INTEGER  :: i
-  REAL(SP) :: age8=8.0_sp,age91=9.1_sp,zsol=0.0190_sp
+  REAL(SP) :: age8=8.0_sp,age91=9.1_sp
 
   !---------------------------------------------------------------!
   !---------------------------------------------------------------!

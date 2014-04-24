@@ -23,6 +23,7 @@ MODULE SPS_VARS
   
   !setup cosmology (WMAP7).  Used only for z(t) relation.
   REAL(SP) :: om0=0.27, ol0=0.73, H0=72.
+  REAL(SP), PARAMETER :: zsol=0.0190 !solar metallicity
   
   !controls the level of output (0 = minimal output to screen)
   INTEGER, PARAMETER :: verbose=0

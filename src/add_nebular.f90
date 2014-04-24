@@ -26,7 +26,7 @@ SUBROUTINE ADD_NEBULAR(pset,sspi,sspo)
 
      !interpolate in Zgas, logU, age
      a1 = MAX(MIN(locate(nebem_age,time_full(t)),nebnage-1),1)
-     z1 = MAX(MIN(locate(nebem_zgas,10**pset%gas_logzsol*0.016),&
+     z1 = MAX(MIN(locate(nebem_zgas,10**pset%gas_logzsol*zsol),&
           nebnz-1),1)
      u1 = MAX(MIN(locate(nebem_logu,pset%gas_logu),nebnip-1),1)
 
