@@ -35,8 +35,8 @@ MODULE SPS_UTILS
      SUBROUTINE ADD_NEBULAR(pset,sspi,sspo)
        USE sps_vars
        TYPE(PARAMS), INTENT(in) :: pset
-       REAL(SP), INTENT(in), DIMENSION(ntfull,nspec)    :: sspi
-       REAL(SP), INTENT(inout), DIMENSION(ntfull,nspec) :: sspo
+       REAL(SP), INTENT(in), DIMENSION(nspec,ntfull)    :: sspi
+       REAL(SP), INTENT(inout), DIMENSION(nspec,ntfull) :: sspo
      END SUBROUTINE ADD_NEBULAR
   END INTERFACE
 
@@ -53,8 +53,8 @@ MODULE SPS_UTILS
           lbol_ssp,spec_ssp,pset,ocompsp)
        USE sps_vars
        INTEGER, INTENT(in) :: write_compsp,nzin
-       REAL(SP), INTENT(in), DIMENSION(nzin,ntfull) :: lbol_ssp,mass_ssp
-       REAL(SP), INTENT(in), DIMENSION(nzin,ntfull,nspec) :: spec_ssp
+       REAL(SP), INTENT(in), DIMENSION(ntfull,nzin) :: lbol_ssp,mass_ssp
+       REAL(SP), INTENT(in), DIMENSION(nspec,ntfull,nzin) :: spec_ssp
        CHARACTER(100), INTENT(in) :: outfile
        TYPE(PARAMS), INTENT(in)   :: pset
        TYPE(COMPSPOUT), INTENT(inout), DIMENSION(ntfull) :: ocompsp
@@ -166,7 +166,7 @@ MODULE SPS_UTILS
        REAL(SP), INTENT(in)    :: massb,lbolb,deltb,sfstart,tau,const,maxtime
        REAL(SP), INTENT(inout) :: mass, lbol, mdust
        REAL(SP), INTENT(in), DIMENSION(ntfull) :: mass_ssp,lbol_ssp
-       REAL(SP), INTENT(in), DIMENSION(ntfull,nspec) :: spec_ssp
+       REAL(SP), INTENT(in), DIMENSION(nspec,ntfull) :: spec_ssp
        REAL(SP), INTENT(in), DIMENSION(nspec)    :: specb
        REAL(SP), INTENT(inout), DIMENSION(nspec) :: csp
        REAL(SP), DIMENSION(nspec)  :: csp1,csp2

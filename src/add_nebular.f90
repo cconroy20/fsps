@@ -6,8 +6,8 @@ SUBROUTINE ADD_NEBULAR(pset,sspi,sspo)
   INTEGER :: t,i,nti,a1,z1,u1
   REAL(SP) :: da,dz,du,sigma,dlam
   TYPE(PARAMS), INTENT(in) :: pset
-  REAL(SP), INTENT(in), DIMENSION(ntfull,nspec)    :: sspi
-  REAL(SP), INTENT(inout), DIMENSION(ntfull,nspec) :: sspo
+  REAL(SP), INTENT(in), DIMENSION(nspec,ntfull)    :: sspi
+  REAL(SP), INTENT(inout), DIMENSION(nspec,ntfull) :: sspo
 
   !-----------------------------------------------------------!
   !-----------------------------------------------------------!
@@ -31,16 +31,16 @@ SUBROUTINE ADD_NEBULAR(pset,sspi,sspo)
      u1 = MAX(MIN(locate(nebem_logu,pset%gas_logu),nebnip-1),1)
 
      !remove ionizing photons from the stellar source
-     sspo(t,:) = sspi(t,:)
+     sspo(:,t) = sspi(:,t)
      
      !add nebular continuum emission
      !note that the continuum tables are stored per unit U.
-   !  sspo(t,:) = sspo(t,:) + nebem_cont(:,1,1) !* 10**pset%gas_logu
+   !  sspo(:,t) = sspo(:,t) + nebem_cont(:,1,1) !* 10**pset%gas_logu
 
      !add line emission
      DO i=1,nemline
         dlam = nebem_line_pos(i) * sigma/clight*1E13
-        !sspo(t,:) = sspo(t,:) + nebem_line(i,1,1,1)/SQRT(2*mypi)/dlam*&
+        !sspo(:,t) = sspo(:,t) + nebem_line(i,1,1,1)/SQRT(2*mypi)/dlam*&
         !     EXP(-(spec_lambda-nebem_line_pos(i))**2/2/dlam**2)
      ENDDO
 

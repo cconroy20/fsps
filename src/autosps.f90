@@ -135,7 +135,7 @@ PROGRAM AUTOSPS
      CALL SPS_SETUP(-1) 
      DO z=1,nz
         pset%zmet=z
-        CALL SSP_GEN(pset,mass_ssp_zz(z,:),lbol_ssp_zz(z,:),spec_ssp_zz(z,:,:))
+        CALL SSP_GEN(pset,mass_ssp_zz(:,z),lbol_ssp_zz(:,z),spec_ssp_zz(:,:,z))
      ENDDO
      CALL COMPSP(3,nz,file1,mass_ssp_zz,lbol_ssp_zz,spec_ssp_zz,pset,ocompsp)
   ELSE

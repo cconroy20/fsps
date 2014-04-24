@@ -36,8 +36,8 @@ PROGRAM LESSSIMPLE
   !in the common block set up in sps_vars.f90
   DO i=1,nz
      pset%zmet = i
-     CALL SSP_GEN(pset,mass_ssp_zz(i,:),&
-          lbol_ssp_zz(i,:),spec_ssp_zz(i,:,:))
+     CALL SSP_GEN(pset,mass_ssp_zz(:,i),&
+          lbol_ssp_zz(:,i),spec_ssp_zz(:,:,i))
   ENDDO
 
   !define the yield for a closed box distribution

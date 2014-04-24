@@ -94,7 +94,7 @@ SUBROUTINE INTSPEC(pset,nti,spec_ssp,csp,mass_ssp,lbol_ssp,&
   REAL(SP), INTENT(in)    :: massb,lbolb,deltb,sfstart,tau,const,maxtime
   REAL(SP), INTENT(inout) :: mass, lbol, mdust
   REAL(SP), INTENT(in), DIMENSION(ntfull) :: mass_ssp,lbol_ssp
-  REAL(SP), INTENT(in), DIMENSION(ntfull,nspec) :: spec_ssp
+  REAL(SP), INTENT(in), DIMENSION(nspec,ntfull) :: spec_ssp
   REAL(SP), INTENT(in), DIMENSION(nspec)    :: specb
   REAL(SP), INTENT(inout), DIMENSION(nspec) :: csp
   REAL(SP), DIMENSION(nspec)  :: csp1,csp2
@@ -153,20 +153,20 @@ SUBROUTINE INTSPEC(pset,nti,spec_ssp,csp,mass_ssp,lbol_ssp,&
      ENDDO
 
      IF (indsf.EQ.1) THEN
-        csp1 = isfr(1)*spec_ssp(1,:)
+        csp1 = isfr(1)*spec_ssp(:,1)
      ELSE
         !t<tesc
         DO i=1,imax-1
-           csp1 = csp1 + isfr(i)*0.5*(spec_ssp(i+1,:)+spec_ssp(i,:))
+           csp1 = csp1 + isfr(i)*0.5*(spec_ssp(:,i+1)+spec_ssp(:,i))
         ENDDO
         !t>tesc
         IF (nti.GT.wtesc) THEN
            DO i=wtesc,indsf-1
-              csp2 = csp2 + isfr(i)*0.5*(spec_ssp(i+1,:)+spec_ssp(i,:))
+              csp2 = csp2 + isfr(i)*0.5*(spec_ssp(:,i+1)+spec_ssp(:,i))
            ENDDO
-           csp2 = csp2 + isfr(indsf)*spec_ssp(indsf,:)
+           csp2 = csp2 + isfr(indsf)*spec_ssp(:,indsf)
         ELSE
-           csp1 = csp1 + isfr(indsf)*spec_ssp(indsf,:)
+           csp1 = csp1 + isfr(indsf)*spec_ssp(:,indsf)
         ENDIF
      ENDIF
 
@@ -226,10 +226,10 @@ SUBROUTINE COMPSP(write_compsp,nzin,outfile,mass_ssp,&
   !               3->write mags+spec, 4->write indices
   !               5->write CMDs
   INTEGER, INTENT(in) :: write_compsp,nzin
-  REAL(SP), INTENT(in), DIMENSION(nzin,ntfull) :: lbol_ssp,mass_ssp
-  REAL(SP), INTENT(in), DIMENSION(nzin,ntfull,nspec) :: tspec_ssp
-  REAL(SP), DIMENSION(nzin,ntfull,nspec) :: spec_ssp
-   CHARACTER(100), INTENT(in) :: outfile
+  REAL(SP), INTENT(in), DIMENSION(ntfull,nzin) :: lbol_ssp,mass_ssp
+  REAL(SP), INTENT(in), DIMENSION(nspec,ntfull,nzin) :: tspec_ssp
+  REAL(SP), DIMENSION(nspec,ntfull,nzin) :: spec_ssp
+  CHARACTER(100), INTENT(in) :: outfile
 
   INTEGER  :: i,j,n,k,stat,klo,jlo,ilo,imin,imax,indsf,indsft
   REAL(SP) :: tau,const,maxtime,writeage,psfr,sfstart,zhist,sftrunc
@@ -237,7 +237,7 @@ SUBROUTINE COMPSP(write_compsp,nzin,outfile,mass_ssp,&
   REAL(SP) :: mass_burst=0.0,lbol_burst=0.0,delt_burst=0.0,zero=0.0
   REAL(SP), DIMENSION(nbands)  :: mags
   REAL(SP), DIMENSION(nindx)   :: indx
-  REAL(SP), DIMENSION(ntfull,nspec) :: ispec
+  REAL(SP), DIMENSION(nspec,ntfull) :: ispec
   REAL(SP), DIMENSION(nspec)   :: spec_burst=0.0,csp1,csp2,spec1,spec_csp
   REAL(SP), DIMENSION(ntfull)  :: imass,ilbol,powtime
   REAL(SP), DIMENSION(ntfull)  :: sfr,tsfr,tzhist
@@ -270,7 +270,7 @@ SUBROUTINE COMPSP(write_compsp,nzin,outfile,mass_ssp,&
         STOP
      ENDIF
      
-     CALL ADD_NEBULAR(pset,tspec_ssp(1,:,:),spec_ssp(1,:,:))
+     CALL ADD_NEBULAR(pset,tspec_ssp(:,:,1),spec_ssp(:,:,1))
 
   ENDIF
 
@@ -533,15 +533,15 @@ SUBROUTINE COMPSP(write_compsp,nzin,outfile,mass_ssp,&
                dz  = (LOG10(zhist)-LOG10(zlegend(klo))) / &
                   (LOG10(zlegend(klo+1))-LOG10(zlegend(klo)))
                dz = MAX(MIN(dz,1.0),-1.0) !don't extrapolate
-               ispec(j,:) = (1-dz)*spec_ssp(klo,j,:)+dz*spec_ssp(klo+1,j,:)
-               ilbol(j)   = (1-dz)*lbol_ssp(klo,j)  +dz*lbol_ssp(klo+1,j)
-               imass(j)   = (1-dz)*mass_ssp(klo,j)  +dz*mass_ssp(klo+1,j)
+               ispec(:,j) = (1-dz)*spec_ssp(:,j,klo)+dz*spec_ssp(:,j,klo+1)
+               ilbol(j)   = (1-dz)*lbol_ssp(j,klo)  +dz*lbol_ssp(j,klo+1)
+               imass(j)   = (1-dz)*mass_ssp(j,klo)  +dz*mass_ssp(j,klo+1)
             ENDDO
 
          ELSE
-            ispec = spec_ssp(1,:,:)
-            ilbol = lbol_ssp(1,:)
-            imass = mass_ssp(1,:)
+            ispec = spec_ssp(:,:,1)
+            ilbol = lbol_ssp(:,1)
+            imass = mass_ssp(:,1)
          ENDIF
 
       !set up an instantaneous burst
@@ -553,9 +553,9 @@ SUBROUTINE COMPSP(write_compsp,nzin,outfile,mass_ssp,&
             klo = MAX(MIN(locate(time_full,LOG10(delt_burst)),ntfull-1),1)
             dtb = (LOG10(delt_burst)-time_full(klo))/&
                  (time_full(klo+1)-time_full(klo))
-            spec_burst = (1-dtb)*spec_ssp(1,klo,:)+dtb*spec_ssp(1,klo+1,:)
-            mass_burst = (1-dtb)*mass_ssp(1,klo)  +dtb*mass_ssp(1,klo+1)
-            lbol_burst = (1-dtb)*lbol_ssp(1,klo)  +dtb*lbol_ssp(1,klo+1)
+            spec_burst = (1-dtb)*spec_ssp(:,klo,1)+dtb*spec_ssp(:,klo+1,1)
+            mass_burst = (1-dtb)*mass_ssp(klo,1)  +dtb*mass_ssp(klo+1,1)
+            lbol_burst = (1-dtb)*lbol_ssp(klo,1)  +dtb*lbol_ssp(klo+1,1)
          ENDIF
 
       ENDIF
@@ -565,14 +565,14 @@ SUBROUTINE COMPSP(write_compsp,nzin,outfile,mass_ssp,&
          csp1 = 0.0
          csp2 = 0.0
          IF (time_full(i).LT.pset%dust_tesc) THEN
-            csp1 = spec_ssp(1,i,:)
+            csp1 = spec_ssp(:,i,1)
          ELSE
-            csp2 = spec_ssp(1,i,:)
+            csp2 = spec_ssp(:,i,1)
          ENDIF
          !add dust and combine young and old csp
          CALL ADD_DUST(pset,csp1,csp2,spec_csp,mdust)
-         mass_csp = mass_ssp(1,i)
-         lbol_csp = lbol_ssp(1,i)
+         mass_csp = mass_ssp(i,1)
+         lbol_csp = lbol_ssp(i,1)
       ELSE IF (pset%sfh.EQ.1.OR.pset%sfh.EQ.4.OR.pset%sfh.EQ.5) THEN
          CALL INTSPEC(pset,i,spec_ssp,csp1,mass_ssp,lbol_ssp,&
               mass_csp,lbol_csp,spec_burst,mass_burst,&

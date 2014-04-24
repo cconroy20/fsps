@@ -25,7 +25,7 @@ SUBROUTINE SSP_GEN(pset,mass_ssp,lbol_ssp,spec_ssp)
   !array of IMF weights
   REAL(SP), DIMENSION(nm) :: wght
   !SSP spectrum
-  REAL(SP), INTENT(inout), DIMENSION(ntfull,nspec) :: spec_ssp
+  REAL(SP), INTENT(inout), DIMENSION(nspec,ntfull) :: spec_ssp
   !Mass and Lbol info
   REAL(SP), INTENT(inout), DIMENSION(ntfull) :: mass_ssp, lbol_ssp
 
@@ -175,7 +175,7 @@ SUBROUTINE SSP_GEN(pset,mass_ssp,lbol_ssp,spec_ssp)
      lbol_ssp(ii) = LOG10(SUM(wght(1:nmass(i))*10**logl(i,1:nmass(i))))
 
      !compute SSP spectrum
-     spec_ssp(ii,:) = 0.
+     spec_ssp(:,ii) = 0.
      DO j=1,nmass(i)
 
         tco = ffco(i,j)
@@ -191,7 +191,7 @@ SUBROUTINE SSP_GEN(pset,mass_ssp,lbol_ssp,spec_ssp)
         !phases if evtype NE -1
         IF ((pset%evtype.EQ.-1.OR.pset%evtype.EQ.phase(i,j))&
              .AND.mini(i,j).LT.pset%masscut) &
-             spec_ssp(ii,:) = wght(j)*tspec + spec_ssp(ii,:)
+             spec_ssp(:,ii) = wght(j)*tspec + spec_ssp(:,ii)
 
      ENDDO
 
@@ -208,8 +208,8 @@ SUBROUTINE SSP_GEN(pset,mass_ssp,lbol_ssp,spec_ssp)
         dt  = (time_full(j)-time(klo))/(time(klo+1)-time(klo))
         klo = 1+(klo-1)*time_res_incr
         khi = klo+time_res_incr
-        spec_ssp(j,:) = 10**( (1-dt)*LOG10(spec_ssp(klo,:)) + &
-             dt*LOG10(spec_ssp(khi,:)))
+        spec_ssp(:,j) = 10**( (1-dt)*LOG10(spec_ssp(:,klo)) + &
+             dt*LOG10(spec_ssp(:,khi)))
         lbol_ssp(j)   = (1-dt)*lbol_ssp(klo)   + dt*lbol_ssp(khi)
         mass_ssp(j)   = (1-dt)*mass_ssp(klo)   + dt*mass_ssp(khi)
      ENDDO
