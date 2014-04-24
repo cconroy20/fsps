@@ -62,12 +62,12 @@ MODULE SPS_VARS
   !correct approach.  NB: one should be careful when choosing
   !to run the slow version, as the accuracy depends on the min/max
   !wavelength parameters.  Contact me if you are intersted in this feature.
-  INTEGER, PARAMETER :: smoothspec_fast=1
+  INTEGER :: smoothspec_fast=1
 
   !if set, smooth the spectrum in velocity space, otherwise
   !smooth in Angstrom space (in all cases the width of the 
   !kernel is a sigma, not FWHM)
-  INTEGER, PARAMETER :: smooth_velocity=1
+  INTEGER :: smooth_velocity=1
 
   !set attenuation-law for the diffuse ISM
   !0 - power-law attenuation.  See dust_index variable below
