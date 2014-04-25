@@ -196,7 +196,7 @@ SUBROUTINE SPS_SETUP(zin)
              //zstype//'.spectra.bin',FORM='UNFORMATTED',&
              STATUS='OLD',iostat=stat,ACTION='READ',access='direct',&
              recl=nspec*ndim_logg*ndim_logt*4)
-     ELSE IF (spec_type(1:5).EQ.'CKC14') THEN
+     ELSE IF (spec_type(1:5).EQ.'ckc14') THEN
         OPEN(92,FILE=TRIM(SPS_HOME)//'/SPECTRA/CKC14/'//spec_type//'_z'&
              //zstype//'.spectra.bin',FORM='UNFORMATTED',&
              STATUS='OLD',iostat=stat,ACTION='READ',access='direct',&
@@ -205,6 +205,11 @@ SUBROUTINE SPS_SETUP(zin)
      IF (stat.NE.0) THEN 
         WRITE(*,*) 'SPS_SETUP ERROR: '//spec_type//&
              ' spectral library cannot be opened ', zstype
+        IF (spec_type(1:5).EQ.'ckc14') THEN
+           WRITE(*,*) 'you are attempting to use the CKC14 grid but you'//&
+                ' seem to not have the files.  Download them here XXX, and put them'//&
+                ' in the SPECTRA/CKC14/ directory'
+        ENDIF
         STOP 
      ENDIF
 
@@ -575,7 +580,7 @@ SUBROUTINE SPS_SETUP(zin)
   ENDDO
   CLOSE(99)
 
-  !renormalize
+  !renormalize to Lsun/Hz
   DO i=1,nebnz
      DO j=1,nebnage
         nebem_cont(:,i,j) = nebem_cont(:,i,j)/Lsun * spec_lambda**2/clight

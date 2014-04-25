@@ -136,7 +136,7 @@ SUBROUTINE GETSPEC(pset,mact,logt,lbol,logg,phase,ffco,spec)
         sum4 = SUM(speclib(:,pset%zmet,jlo+1,klo+1))
         IF ((sum1.EQ.0.0.OR.sum2.EQ.0.OR.sum3.EQ.0.OR.sum4.EQ.0)&
              .AND.phase.NE.6.0) &
-             write(*,'("GETSPEC WARNING: A '//&
+             write(*,'(" GETSPEC WARNING: A '//&
              'star is off the grid: Z=",I2,'//&
              '" logT=",F5.2," logg=",F5.2," phase=",F2.0)') &
              pset%zmet,logt,loggi,phase
@@ -156,11 +156,14 @@ SUBROUTINE GETSPEC(pset,mact,logt,lbol,logg,phase,ffco,spec)
   !make sure the spectrum never has any zero's
   spec = MAX(spec,tiny_number)
   
-  IF (flag.EQ.0.AND.spec_type.EQ.'basel') THEN
-     WRITE(*,*) 'GETSPEC ERROR: isochrone point not assigned a spectrum',&
-          logt,loggi,phase
-  ELSE IF (flag.GT.1) THEN
-     WRITE(*,*) 'GETSPEC ERROR: isochrone point assigned *two* spectra!'
+  IF (verbose.EQ.1) THEN
+     IF (flag.EQ.0.AND.(spec_type.EQ.'basel'.OR.spec_type.EQ.'ckc14').AND.&
+          phase.NE.6.AND.phase.NE.9) THEN
+        WRITE(*,'(" GETSPEC WARNING: point off the grid: ",2F6.3,1x,I1)') ,&
+             logt,loggi,INT(phase)
+     ELSE IF (flag.GT.1) THEN
+        WRITE(*,'(" GETSPEC WARNING: isochrone point assigned *two* spectra!")') 
+     ENDIF
   ENDIF
 
   !add circumstellar dust around AGB stars
