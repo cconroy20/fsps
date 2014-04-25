@@ -35,13 +35,14 @@ SUBROUTINE ADD_NEBULAR(pset,sspi,sspo)
      
      !add nebular continuum emission
      !note that the continuum tables are stored per unit U.
-   !  sspo(:,t) = sspo(:,t) + nebem_cont(:,1,1) !* 10**pset%gas_logu
+     sspo(:,t) = sspo(:,t) + nebem_cont(:,1,1) !* 10**pset%gas_logu
 
      !add line emission
      DO i=1,nemline
         dlam = nebem_line_pos(i) * sigma/clight*1E13
-        !sspo(:,t) = sspo(:,t) + nebem_line(i,1,1,1)/SQRT(2*mypi)/dlam*&
-        !     EXP(-(spec_lambda-nebem_line_pos(i))**2/2/dlam**2)
+        sspo(:,t) = sspo(:,t) + nebem_line(i,1,1,1)/SQRT(2*mypi)/dlam*&
+             EXP(-(spec_lambda-nebem_line_pos(i))**2/2/dlam**2) &
+             / Lsun * spec_lambda**2/clight
      ENDDO
 
   ENDDO

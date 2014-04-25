@@ -37,7 +37,7 @@ MODULE SPS_VARS
   
   !the factor by which we increase the time array
   !NB: if CKC14 is used, this parameter *must* be set to 1
-  INTEGER, PARAMETER :: time_res_incr=2
+  INTEGER, PARAMETER :: time_res_incr=1
 
   !turn on/off computation of light-weighted stellar ages
   !NB: This is only partially implemented, and only for tau models
@@ -130,7 +130,7 @@ MODULE SPS_VARS
   INTEGER, PARAMETER :: nz=5
   INTEGER, PARAMETER :: nspec=5994
 #elif (CKC14)
-  INTEGER, PARAMETER :: nz=10
+  INTEGER, PARAMETER :: nz=8
   INTEGER, PARAMETER :: nspec=26500
 #else
   INTEGER, PARAMETER :: nspec=1963
