@@ -8,11 +8,13 @@ MODULE SPS_VARS
 !set the spectral library
 #define BASEL 1
 #define MILES 0
-#define CKC14 0    ! currently under development.  do not use!
+! "CKC14" currently under development.  do not use!
+#define CKC14 0    
 !set the isochrone library
 #define PADOVA 1
 #define BASTI 0
-#define MIST 0     ! currently under development.  do not use!
+! "MIST" currently under development.  do not use!
+#define MIST 0     
 
 
   !--------------------------------------------------------------!
