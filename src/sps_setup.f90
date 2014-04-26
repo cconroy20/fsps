@@ -54,8 +54,8 @@ SUBROUTINE SPS_SETUP(zin)
   vega_spec     = 0.
   sun_spec      = 0.
   speclib       = 0.
-  basel_logg    = 0.
-  basel_logt    = 0.
+  speclib_logg  = 0.
+  speclib_logt  = 0.
   agb_spec_o    = 0.
   agb_logt_o    = 0.
   agb_spec_c    = 0.
@@ -170,13 +170,13 @@ SUBROUTINE SPS_SETUP(zin)
   OPEN(91,FILE=TRIM(SPS_HOME)//'/SPECTRA/BaSeL3.1/basel_logt.dat',&
        STATUS='OLD',iostat=stat,ACTION='READ')
   DO i=1,ndim_logt
-     READ(91,*) basel_logt(i)
+     READ(91,*) speclib_logt(i)
   ENDDO
   CLOSE(91)
   OPEN(91,FILE=TRIM(SPS_HOME)//'/SPECTRA/BaSeL3.1/basel_logg.dat',&
        STATUS='OLD',iostat=stat,ACTION='READ')
   DO i=1,ndim_logg
-     READ(91,*) basel_logg(i)
+     READ(91,*) speclib_logg(i)
   ENDDO
   CLOSE(91)
 

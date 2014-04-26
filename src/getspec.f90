@@ -120,13 +120,13 @@ SUBROUTINE GETSPEC(pset,mact,logt,lbol,logg,phase,ffco,spec)
      
      flag = 1
      !find the subgrid containing point i 
-     klo = MIN(MAX(locate(basel_logg,loggi),1),ndim_logg-1)
-     jlo = MIN(MAX(locate(basel_logt,logt),1),ndim_logt-1)
+     klo = MIN(MAX(locate(speclib_logg,loggi),1),ndim_logg-1)
+     jlo = MIN(MAX(locate(speclib_logt,logt),1),ndim_logt-1)
 
-     t   = (logt-basel_logt(jlo)) / &
-          (basel_logt(jlo+1)-basel_logt(jlo))
-     u   = (loggi-basel_logg(klo))   / &
-          (basel_logg(klo+1)-basel_logg(klo))
+     t   = (logt-speclib_logt(jlo)) / &
+          (speclib_logt(jlo+1)-speclib_logt(jlo))
+     u   = (loggi-speclib_logg(klo))   / &
+          (speclib_logg(klo+1)-speclib_logg(klo))
      
      IF (verbose.EQ.1) THEN 
         !catch stars that fall off part of the grid
