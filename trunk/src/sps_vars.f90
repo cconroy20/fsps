@@ -5,18 +5,21 @@ MODULE SPS_VARS
   IMPLICIT NONE
   SAVE
 
-!define either BaSeL/Kurucz, MILES, or a HR spectral library
+!set the spectral library
 #define BASEL 1
 #define MILES 0
-#define CKC14 0
-!define either Padova, BaSTI, or MIST isochrones
+#define CKC14 0    ! currently under development.  do not use!
+!set the isochrone library
 #define PADOVA 1
 #define BASTI 0
-#define MIST 0
+#define MIST 0     ! currently under development.  do not use!
+
 
   !--------------------------------------------------------------!
+  !--------------------------------------------------------------!
 
-  !note that "SP" actually means double precision
+  !note that "SP" actually means double precision; this is a hack
+  !for the nr routines
   INTEGER, PARAMETER :: SP  = KIND(1.d0)
 
   !------Common parameters that may be altered by the user-------!
@@ -25,18 +28,19 @@ MODULE SPS_VARS
   REAL(SP) :: om0=0.27, ol0=0.73, H0=72.
   REAL(SP), PARAMETER :: zsol=0.0190 !solar metallicity
   
-  !controls the level of output (0 = minimal output to screen)
-  INTEGER, PARAMETER :: verbose=1
+  !controls the level of output
+  !0 = minimal output to screen.
+  !1 = lots of output to screen.  useful for debugging.
+  INTEGER, PARAMETER :: verbose=0
 
-  !Turn-on time for BHB and SBS phases, time is in log(yrs)
+  !turn-on time for BHB and SBS phases, time is in log(yrs)
   REAL(SP), PARAMETER :: bhb_sbs_time=9.3
   
-  !turn on/off convolution of SSP with P(Z)
-  !NB: P(Z) convolution has not been tested in some time, use with caution
+  !turn on/off convolution of SSP with P(Z) (pz_convol.f90)
+  !NB: pz_convol.f90 has not been tested in some time, use with caution
   INTEGER, PARAMETER :: pzcon=0
   
   !the factor by which we increase the time array
-  !NB: if CKC14 is used, this parameter *must* be set to 1
   INTEGER, PARAMETER :: time_res_incr=2
 
   !turn on/off computation of light-weighted stellar ages
@@ -47,11 +51,11 @@ MODULE SPS_VARS
   INTEGER, PARAMETER :: add_dust_emission=1
 
   !turn on/off the AGB circumstellar dust model
-  !NB: this is not yet implemented
-  INTEGER, PARAMETER :: add_agb_dust_model=1
+  !NB: this feature is currently under development, do not use!
+  INTEGER, PARAMETER :: add_agb_dust_model=0
 
   !turn on/off a Cloudy-based nebular emission model 
-  !NB: this is currently in process
+  !NB: this feature is currently under development, do not use!
   INTEGER, PARAMETER :: add_neb_emission=0
 
   !turn on/off the addition of stellar remnants to the 
@@ -71,11 +75,11 @@ MODULE SPS_VARS
   INTEGER :: smooth_velocity=1
 
   !set attenuation-law for the diffuse ISM
-  !0 - power-law attenuation.  See dust_index variable below
-  !1 - MW extinction law, parameterized by Cardelli et al. 1989,
+  !0 = power-law attenuation.  See dust_index variable below
+  !1 = MW extinction law, parameterized by Cardelli et al. 1989,
   !    with a UV bump strength parameterized by uvb (see params below)
-  !2 - Calzetti attenuation law
-  !3 - Witt & Gordon 2000 attenuation curve models
+  !2 = Calzetti attenuation law
+  !3 = Witt & Gordon 2000 attenuation curve models
   INTEGER :: dust_type=0
 
   !IMF definition
@@ -88,16 +92,16 @@ MODULE SPS_VARS
   INTEGER :: imf_type=2
 
   !flag specifying zero-point of magnitudes
-  !0 - AB system
-  !1 - Vega system
+  !0 = AB system
+  !1 = Vega system
   INTEGER  :: compute_vega_mags=0
 
   !flag indicating whether or not the output colors
   !will be redshifted to the age of the Universe corresponding
   !to the age of the SSP or CSP 
   !(only works when using compsp.f90 to compute mags)
-  !0 - colors redshifted to a fixed redshift, specified in parameter set
-  !1 - colors redshifted according to the age of the SSP or CSP
+  !0 = colors redshifted to a fixed redshift, specified in parameter set
+  !1 = colors redshifted according to the age of the SSP or CSP
   INTEGER :: redshift_colors=0
 
   !------------Pre-compiler defintions------------!
@@ -200,6 +204,7 @@ MODULE SPS_VARS
   !van Dokkum 2008 IMF parameters
   REAL(SP), PARAMETER :: vd_sigma2=0.69*0.69, vd_ah=0.0443,&
        vd_ind=1.3, vd_al=0.14, vd_nc=25.
+  !mass limits for BH and neutron star initial-mass mass relations
   REAL(SP) :: mlim_bh=40.0, mlim_ns=8.5
 
   !-------------Physical Constants---------------!
@@ -228,7 +233,8 @@ MODULE SPS_VARS
   !seconds per year
   REAL(SP), PARAMETER :: yr2sc   = 3.15569E7
 
-  !other important parameters
+  !define large and small numbers.  numbers whose abs values
+  !are less than tiny_number are treated as equal to 0.0
   REAL(SP), PARAMETER :: huge_number = 1E33
   REAL(SP), PARAMETER :: tiny_number = 1E-33
   
@@ -263,6 +269,7 @@ MODULE SPS_VARS
   !Age of Universe in Gyr (set in sps_setup.f90)
   REAL(SP) :: tuniv=0.0
 
+  !index in the wavelength array where lambda=5000A
   INTEGER :: whlam5000
   
   !this specifies the size of the full time grid
@@ -290,7 +297,7 @@ MODULE SPS_VARS
   REAL(SP), DIMENSION(3,ntabmax) :: sfh_tab=0.0
   INTEGER :: ntabsfh=0
 
-  !bandpass filters 
+  !array of bandpass filters
   REAL(SP), DIMENSION(nspec,nbands) :: bands
   !magnitude of the Sun in all filters
   REAL(SP), DIMENSION(nbands) :: magsun,magvega,filter_leff
@@ -301,8 +308,8 @@ MODULE SPS_VARS
   REAL(SP), DIMENSION(nspec)  :: spec_lambda=0.0
 
   !arrays for stellar spectral information in HR diagram
-  REAL(SP), DIMENSION(ndim_logt) :: basel_logt=0.0
-  REAL(SP), DIMENSION(ndim_logg) :: basel_logg=0.0
+  REAL(SP), DIMENSION(ndim_logt) :: speclib_logt=0.0
+  REAL(SP), DIMENSION(ndim_logg) :: speclib_logg=0.0
   REAL(KIND(1.0)), DIMENSION(nspec,nz,ndim_logt,ndim_logg) :: speclib=0.0
   
   !AGB library (Lancon & Mouhcine 2002)
