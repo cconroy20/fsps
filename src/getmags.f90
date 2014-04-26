@@ -20,16 +20,18 @@ SUBROUTINE GETMAGS(zred,spec,mags,mag_compute)
   !-----------------------------------------------------------!
   !-----------------------------------------------------------!
 
+  mags = 99.
+  
   !set up the flags determining which mags are computed
   IF (PRESENT(mag_compute)) THEN
      magflag = mag_compute
-     magflag(1)=1  !always compute V band mag
+     magflag(1) = 1  !always compute V band mag
   ELSE
-     magflag=1
+     magflag = 1
   ENDIF
 
   !redshift the spectrum
-  IF (zred.NE.0.0) THEN
+  IF (ABS(zred).GT.tiny_number) THEN
      DO i=1,nspec
         tspec(i) = MAX(linterp(spec_lambda*(1+zred),spec,&
         spec_lambda(i)),0.0)
@@ -46,7 +48,7 @@ SUBROUTINE GETMAGS(zred,spec,mags,mag_compute)
   !integrate over each filter
   DO i=1,nbands
      IF (magflag(i).EQ.0) CYCLE
-     mags(i) = TSUM(spec_lambda,tspec*bands(i,:)/spec_lambda)
+     mags(i) = TSUM(spec_lambda,tspec*bands(:,i)/spec_lambda)
      mags(i) = MAX(mags(i),tiny_number)
   ENDDO
 
@@ -65,11 +67,6 @@ SUBROUTINE GETMAGS(zred,spec,mags,mag_compute)
   IF (compute_vega_mags.EQ.1) &
        mags(2:nbands) = (mags(2:nbands)-mags(1)) - &
        (magvega(2:nbands)-magvega(1)) + mags(1)
-     
-  !zero out the mags that were not computed
-  DO i=1,nbands
-     IF (magflag(i).EQ.0) mags(i)=99.
-  ENDDO
 
 
 END SUBROUTINE GETMAGS

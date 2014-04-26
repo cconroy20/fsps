@@ -130,14 +130,16 @@ SUBROUTINE GETSPEC(pset,mact,logt,lbol,logg,phase,ffco,spec)
      
      IF (verbose.EQ.1) THEN 
         !catch stars that fall off part of the grid
-        sum1 = SUM(speclib(:,pset%zmet,jlo,klo))
-        sum2 = SUM(speclib(:,pset%zmet,jlo+1,klo))
-        sum3 = SUM(speclib(:,pset%zmet,jlo,klo+1))
-        sum4 = SUM(speclib(:,pset%zmet,jlo+1,klo+1))
-        IF ((sum1.EQ.0.0.OR.sum2.EQ.0.OR.sum3.EQ.0.OR.sum4.EQ.0)&
+        !the flux at 5000A should never be zero unless a spec is missing
+        sum1 = speclib(whlam5000,pset%zmet,jlo,klo)
+        sum2 = speclib(whlam5000,pset%zmet,jlo+1,klo)
+        sum3 = speclib(whlam5000,pset%zmet,jlo,klo+1)
+        sum4 = speclib(whlam5000,pset%zmet,jlo+1,klo+1)
+        IF ((sum1.LE.tiny_number.OR.sum2.LE.tiny_number.OR.&
+             sum3.LE.tiny_number.OR.sum4.LE.tiny_number) &
              .AND.phase.NE.6.0) &
-             write(*,'(" GETSPEC WARNING: A '//&
-             'star is off the grid: Z=",I2,'//&
+             WRITE(*,'(" GETSPEC WARNING: Part of the '//&
+             'point is off the grid: Z=",I2,'//&
              '" logT=",F5.2," logg=",F5.2," phase=",F2.0)') &
              pset%zmet,logt,loggi,phase
      ENDIF
