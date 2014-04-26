@@ -26,7 +26,7 @@ MODULE SPS_VARS
   REAL(SP), PARAMETER :: zsol=0.0190 !solar metallicity
   
   !controls the level of output (0 = minimal output to screen)
-  INTEGER, PARAMETER :: verbose=0
+  INTEGER, PARAMETER :: verbose=1
 
   !Turn-on time for BHB and SBS phases, time is in log(yrs)
   REAL(SP), PARAMETER :: bhb_sbs_time=9.3
@@ -37,7 +37,7 @@ MODULE SPS_VARS
   
   !the factor by which we increase the time array
   !NB: if CKC14 is used, this parameter *must* be set to 1
-  INTEGER, PARAMETER :: time_res_incr=1
+  INTEGER, PARAMETER :: time_res_incr=2
 
   !turn on/off computation of light-weighted stellar ages
   !NB: This is only partially implemented, and only for tau models
@@ -262,6 +262,8 @@ MODULE SPS_VARS
 
   !Age of Universe in Gyr (set in sps_setup.f90)
   REAL(SP) :: tuniv=0.0
+
+  INTEGER :: whlam5000
   
   !this specifies the size of the full time grid
   INTEGER, PARAMETER :: ntfull = time_res_incr*nt
@@ -289,7 +291,7 @@ MODULE SPS_VARS
   INTEGER :: ntabsfh=0
 
   !bandpass filters 
-  REAL(SP), DIMENSION(nbands,nspec) :: bands
+  REAL(SP), DIMENSION(nspec,nbands) :: bands
   !magnitude of the Sun in all filters
   REAL(SP), DIMENSION(nbands) :: magsun,magvega,filter_leff
   !Vega-like star spectrum for Vega magnitude zero-point

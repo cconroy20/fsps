@@ -204,7 +204,7 @@ SUBROUTINE SPS_SETUP(zin)
      ENDIF
      IF (stat.NE.0) THEN 
         WRITE(*,*) 'SPS_SETUP ERROR: '//spec_type//&
-             ' spectral library cannot be opened ', zstype
+             ' spectral library cannot be opened Z=', zstype
         IF (spec_type(1:5).EQ.'ckc14') THEN
            WRITE(*,*) 'you are attempting to use the CKC14 grid but you'//&
                 ' seem to not have the files.  Download them here XXX, and put them'//&
@@ -684,17 +684,17 @@ SUBROUTINE SPS_SETUP(zin)
      !interpolate the filter onto the master wavelength array
      i1 = MAX(locate(spec_lambda,readlamb(1)),1)
      i2 = locate(spec_lambda,readlamb(jj))
-     IF (i1.NE.i2) bands(i,i1:i2) = &
+     IF (i1.NE.i2) bands(i1:i2,i) = &
           linterparr(readlamb(1:jj),readband(1:jj),spec_lambda(i1:i2))
 
      !normalize
-     dumr1 = TSUM(spec_lambda,bands(i,:)/spec_lambda)
+     dumr1 = TSUM(spec_lambda,bands(:,i)/spec_lambda)
      !in this case the band is entirely outside the wavelength array
      IF (dumr1.LE.tiny_number) dumr1=1.0 
-     bands(i,:) = bands(i,:) / dumr1
+     bands(:,i) = bands(:,i) / dumr1
 
      !compute absolute magnitude of the Sun
-     magsun(i) = TSUM(spec_lambda,sun_spec*bands(i,:)/spec_lambda)
+     magsun(i) = TSUM(spec_lambda,sun_spec*bands(:,i)/spec_lambda)
      IF (magsun(i).LT.2*tiny_number) THEN
         magsun(i) = 99.0
      ELSE
@@ -702,7 +702,7 @@ SUBROUTINE SPS_SETUP(zin)
      ENDIF
 
      !compute mags of Vega
-     magvega(i) = TSUM(spec_lambda,vega_spec*bands(i,:)/spec_lambda)
+     magvega(i) = TSUM(spec_lambda,vega_spec*bands(:,i)/spec_lambda)
      IF (magvega(i).LE.tiny_number) THEN
         magvega(i) = 99.0 
      ELSE
@@ -728,9 +728,9 @@ SUBROUTINE SPS_SETUP(zin)
            WRITE(*,*) 'SPS_SETUP ERROR: trying to index a filter that does not exist!'
            EXIT
         ENDIF
-        d = TSUM(spec_lambda,(spec_lambda/lami(j))**(-1.0)*bands(ind(j),:)/&
+        d = TSUM(spec_lambda,(spec_lambda/lami(j))**(-1.0)*bands(:,ind(j))/&
              spec_lambda)
-        bands(ind(j),:) = bands(ind(j),:) / MAX(d,tiny_number)
+        bands(:,ind(j)) = bands(:,ind(j)) / MAX(d,tiny_number)
      ENDDO
      
      !normalize the MIPS photometry to a BB (beta=2)
@@ -741,9 +741,9 @@ SUBROUTINE SPS_SETUP(zin)
            WRITE(*,*) 'SPS_SETUP ERROR: trying to index a filter that does not exist!'
            EXIT
         ENDIF
-        d = TSUM(spec_lambda,(spec_lambda/lami(j))**(-2.0)*bands(ind(j),:)/&
+        d = TSUM(spec_lambda,(spec_lambda/lami(j))**(-2.0)*bands(:,ind(j))/&
              spec_lambda)
-        bands(ind(j),:) = bands(ind(j),:) / MAX(d,tiny_number)
+        bands(:,ind(j)) = bands(:,ind(j)) / MAX(d,tiny_number)
      ENDDO
   ENDIF
 
@@ -751,8 +751,8 @@ SUBROUTINE SPS_SETUP(zin)
   !NB: These are sometimes referred to as "pivot" wavelengths
   ! in the literature.  See Bessell & Murphy 2012 A.2.1 for details'
   DO i=1,nbands
-     filter_leff(i) = TSUM(spec_lambda,spec_lambda*bands(i,:)) / &
-          TSUM(spec_lambda,bands(i,:)/spec_lambda)
+     filter_leff(i) = TSUM(spec_lambda,spec_lambda*bands(:,i)) / &
+          TSUM(spec_lambda,bands(:,i)/spec_lambda)
      filter_leff(i) = SQRT(filter_leff(i))
   ENDDO
 
@@ -867,6 +867,8 @@ SUBROUTINE SPS_SETUP(zin)
   !----------------------------------------------------------------!
   !----------------------------------------------------------------!
   !----------------------------------------------------------------!
+
+  whlam5000 = locate(spec_lambda,5000.d0)
 
   !set flag indicating that sps_setup has been run, initializing 
   !important common block vars/arrays
