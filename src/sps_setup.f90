@@ -6,26 +6,36 @@ SUBROUTINE SPS_SETUP(zin)
 
   !If zin=-1 then all metallicities are read in, otherwise only the
   !metallicity corresponding to zin in the look-up table zlegend.dat
-  !is read.
+  !is read.  Specifying only the metallicity of interest results
+  !in a much faster setup.
 
   USE sps_vars; USE sps_utils
   IMPLICIT NONE
   INTEGER, INTENT(in) :: zin
   INTEGER :: stat=1,n,i,j,m,jj,k,i1,i2
-  INTEGER, PARAMETER :: ntlam=1221
+  INTEGER, PARAMETER :: ntlam=1221,nlamagb=3961,nlamwr=1963
   INTEGER :: n_isoc,z,zmin,zmax,nlam
   CHARACTER(1) :: char,sqpah
   CHARACTER(6) :: zstype
-  REAL(SP) :: dumr1,d1,d2,logage,x,a, zero=0.0,d,one=1.0
-  REAL(SP), DIMENSION(nspec) :: tspec
-  REAL(SP), DIMENSION(ntlam) :: tvega_lam,tvega_spec,tsun_lam,tsun_spec
-  REAL(SP), DIMENSION(50000) :: readlamb,readband
-  REAL(SP), DIMENSION(25) :: wglam
-  REAL(SP), DIMENSION(25,18,2,6) :: wgtmp
-  REAL(SP), DIMENSION(10000) :: lambda_dagb, fluxin_dagb
-  REAL(SP), DIMENSION(14) :: lami
+  REAL(SP) :: dumr1,d1,d2,logage,x,a,zero=0.0,d,one=1.0,dz
+  REAL(SP), DIMENSION(nspec) :: tspec=0.
+  REAL(SP), DIMENSION(ntlam) :: tvega_lam=0.,tvega_spec=0.
+  REAL(SP), DIMENSION(ntlam) :: tsun_lam=0.,tsun_spec=0.
+  REAL(SP), DIMENSION(nlamagb) :: tagb_lam=0.
+  REAL(SP), DIMENSION(nlamagb,n_agb_c) :: tagbc_spec=0.
+  REAL(SP), DIMENSION(nlamagb,n_agb_o) :: tagbo_spec=0.
+  REAL(SP), DIMENSION(nlamwr) :: tlamwr=0.,tspecwr=0.
+  REAL(SP), DIMENSION(nlamwr,ndim_wr,5) :: twrc=0.,twrn=0.
+  REAL(SP), DIMENSION(5) :: twrzmet=0.
+  REAL(SP), DIMENSION(50000) :: readlamb=0.,readband=0.
+  REAL(SP), DIMENSION(25) :: wglam=0.
+  REAL(SP), DIMENSION(25,18,2,6) :: wgtmp=0.
+  REAL(SP), DIMENSION(10000) :: lambda_dagb=0.,fluxin_dagb=0.
+  REAL(SP), DIMENSION(14) :: lami=0.
   INTEGER,  DIMENSION(14) :: ind
-  REAL(SP), DIMENSION(20000) :: readlambneb,readcontneb
+  REAL(SP), DIMENSION(20000) :: readlambneb=0.,readcontneb=0.
+  REAL(SP), DIMENSION(22,n_agb_o) :: tagb_logt_o
+  REAL(SP), DIMENSION(22) :: tagb_logz_o
 
   !---------------------------------------------------------------!
   !---------------------------------------------------------------!
@@ -156,8 +166,7 @@ SUBROUTINE SPS_SETUP(zin)
           '.lambda',STATUS='OLD',iostat=stat,ACTION='READ')
   ENDIF
   IF (stat.NE.0) THEN
-     WRITE(*,*) 'SPS_SETUP ERROR: wavelength grid '//&
-          'cannot be opened'
+     WRITE(*,*) 'SPS_SETUP ERROR: wavelength grid cannot be opened'
      STOP 
   ENDIF
   DO i=1,nspec
@@ -165,7 +174,7 @@ SUBROUTINE SPS_SETUP(zin)
   ENDDO
   CLOSE(91)
 
-  !read in basel logg and logt arrays
+  !read in primary logg and logt arrays
   !NB: these are the same for all spectral libraries
   OPEN(91,FILE=TRIM(SPS_HOME)//'/SPECTRA/BaSeL3.1/basel_logt.dat',&
        STATUS='OLD',iostat=stat,ACTION='READ')
@@ -187,8 +196,8 @@ SUBROUTINE SPS_SETUP(zin)
 
      !read in the spectral library
      IF (spec_type.EQ.'basel') THEN
-        OPEN(92,FILE=TRIM(SPS_HOME)//'/SPECTRA/BaSeL3.1/basel_'//basel_str//'_z'&
-             //zstype//'.spectra.bin',FORM='UNFORMATTED',&
+        OPEN(92,FILE=TRIM(SPS_HOME)//'/SPECTRA/BaSeL3.1/basel_'//basel_str//&
+             '_z'//zstype//'.spectra.bin',FORM='UNFORMATTED',&
              STATUS='OLD',iostat=stat,ACTION='READ',access='direct',&
              recl=nspec*ndim_logg*ndim_logt*4)
      ELSE IF (spec_type.EQ.'miles') THEN
@@ -207,8 +216,8 @@ SUBROUTINE SPS_SETUP(zin)
              ' spectral library cannot be opened Z=', zstype
         IF (spec_type(1:5).EQ.'ckc14') THEN
            WRITE(*,*) 'you are attempting to use the CKC14 grid but you'//&
-                ' seem to not have the files.  Download them here XXX, and put them'//&
-                ' in the SPECTRA/CKC14/ directory'
+                ' seem to not have the files.  Download them here XXX, and '//&
+                'put them in the SPECTRA/CKC14/ directory'
         ENDIF
         STOP 
      ENDIF
@@ -218,133 +227,205 @@ SUBROUTINE SPS_SETUP(zin)
 
   ENDDO
 
-  !these stars are only included with BaSeL or MILES libraries
-  IF (spec_type.EQ.'miles'.OR.spec_type.EQ.'basel') THEN
+  !-----------Read in TP-AGB Library from Lancon & Wood------------;
 
-     !read in AGB Teff array for O-rich spectra
-     OPEN(93,FILE=TRIM(SPS_HOME)//'/SPECTRA/AGB_spectra/Orich_teff_allZ_'//&
-       isoc_type//'_'//spec_type//'.dat',STATUS='OLD',iostat=stat,ACTION='READ')
-     IF (stat.NE.0) THEN
-        WRITE(*,*) 'SPS_SETUP ERROR: /SPECTRA/AGB_spectra/Orich_teff_allZ_'&
-             //isoc_type//'_'//spec_type//'.dat cannot be opened'
-        STOP 
-     ENDIF
-     !burn the header
-     READ(93,*) char
-     DO i=1,n_agb_o
-        READ(93,*) dumr1, agb_logt_o(:,i)
-     ENDDO
-     CLOSE(93)
-     agb_logt_o = LOG10(agb_logt_o)
-     
-     !read in AGB Teff array for C-rich spectra
-     OPEN(94,FILE=TRIM(SPS_HOME)//'/SPECTRA/AGB_spectra/Crich_teff_allZ'//&
-          '.dat',STATUS='OLD',iostat=stat,ACTION='READ')
-     IF (stat.NE.0) THEN
-        WRITE(*,*) 'SPS_SETUP ERROR: /SPECTRA/AGB_spectra/'//&
-             'Crich_teff_allZ.dat cannot be opened'
-        STOP 
-     ENDIF
-     !burn the header
-     READ(94,*) char
-     DO i=1,n_agb_c
-        READ(94,*) dumr1, agb_logt_c(i)
-     ENDDO
-     CLOSE(94)
-     agb_logt_c = LOG10(agb_logt_c)
-     
-     !read in TP-AGB O-rich spectra
-     OPEN(95,FILE=TRIM(SPS_HOME)//&
-          '/SPECTRA/AGB_spectra/Orich_spec_all_'//spec_type//'.dat',&
-          STATUS='OLD',iostat=stat,ACTION='READ')
-     IF (stat.NE.0) THEN
-
-        WRITE(*,*) 'SPS_SETUP ERROR: /AGB_spectra/Orich_spec_all_'//&
-             spec_type//'.dat '//'cannot be opened'
-        STOP 
-     ENDIF
-     DO i=1,nspec
-        READ(95,*) d1,agb_spec_o(i,:)
-     ENDDO
-     CLOSE(95)
-     
-     !read in TP-AGB C-rich spectra
-     OPEN(96,FILE=TRIM(SPS_HOME)//&
-          '/SPECTRA/AGB_spectra/Crich_spec_all_'//spec_type//'.dat',&
-          STATUS='OLD',iostat=stat,ACTION='READ')
-     IF (stat.NE.0) THEN
-        WRITE(*,*) 'SPS_SETUP ERROR: /AGB_spectra/SPECTRA/'//&
-             'Crich_spec_all_'//spec_type//'.dat '//'cannot be opened'
-        STOP 
-     ENDIF
-     DO i=1,nspec
-        READ(96,*) d1,agb_spec_c(i,:)
-     ENDDO
-     CLOSE(96)
-     
-     !read in post-AGB Teff array
-     OPEN(94,FILE=TRIM(SPS_HOME)//'/SPECTRA/Hot_spectra/ipagb.teff',&
-          STATUS='OLD',iostat=stat,ACTION='READ')
-     IF (stat.NE.0) THEN
-        WRITE(*,*) 'SPS_SETUP ERROR: Hot_spectra/ipagb.teff cannot be opened'
-        STOP 
-     ENDIF
-     DO i=1,ndim_pagb
-        READ(94,*) pagb_logt(i)
-     ENDDO
-     CLOSE(94)
-     pagb_logt = LOG10(pagb_logt)
-
-     !read in post-AGB spectra from Rauch 2003
-     OPEN(97,FILE=TRIM(SPS_HOME)//'/SPECTRA/Hot_spectra/ipagb_'//&
-          spec_type//'.spec_solar',STATUS='OLD',iostat=stat,ACTION='READ')
-     IF (stat.NE.0) THEN
-        WRITE(*,*) 'SPS_SETUP ERROR: /SPECTRA/Hot_spectra/'//&
-             'ipagb.spec_solar cannot be opened'
-        STOP 
-     ENDIF
-     DO i=1,nspec
-        READ(97,*) d1,pagb_spec(i,:,2)
-     ENDDO
-     CLOSE(97)
-     OPEN(97,FILE=TRIM(SPS_HOME)//'/SPECTRA/Hot_spectra/ipagb_'//&
-          spec_type//'.spec_halo',STATUS='OLD',iostat=stat,ACTION='READ')
-     IF (stat.NE.0) THEN
-        WRITE(*,*) 'SPS_SETUP ERROR: /SPECTRA/Hot_spectra/'//&
-             'ipagb.spec_halo cannot be opened'
-        STOP 
-     ENDIF
-     DO i=1,nspec
-        READ(97,*) d1,pagb_spec(i,:,1)
-     ENDDO
-     CLOSE(97)
-
-     !read in WR Teff array
-     OPEN(94,FILE=TRIM(SPS_HOME)//'/SPECTRA/Hot_spectra/CMFGEN_WN.teff',&
-          STATUS='OLD',iostat=stat,ACTION= 'READ')
-     IF (stat.NE.0) THEN
-        WRITE(*,*) 'SPS_SETUP ERROR: Hot_spectra/iwr.teff cannot be opened'
-        STOP 
-     ENDIF
-     DO i=1,ndim_wr
-        READ(94,*) wr_logt(i)
-     ENDDO
-     CLOSE(94)
-
-     !read in WR spectra from Smith et al. 2002
-     OPEN(97,FILE=TRIM(SPS_HOME)//'/SPECTRA/Hot_spectra/CMFGEN_WN_Z020_'&
-          //spec_type//'.spec',STATUS='OLD',iostat=stat,ACTION='READ')
-     IF (stat.NE.0) THEN
-        WRITE(*,*) 'SPS_SETUP ERROR: Hot_spectra/iwr.spec '//&
-             'cannot be opened'
-        STOP 
-     ENDIF
-     DO i=1,nspec
-        READ(97,*) d1,wr_spec(i,:)
-     ENDDO
-     CLOSE(97)
-
+  !read in AGB Teff array for O-rich spectra
+  OPEN(93,FILE=TRIM(SPS_HOME)//'/SPECTRA/AGB_spectra/Orich_teff_allZ'//&
+       '.dat',STATUS='OLD',iostat=stat,ACTION='READ')
+  IF (stat.NE.0) THEN
+     WRITE(*,*) 'SPS_SETUP ERROR: /SPECTRA/AGB_spectra'//&
+          'Orich_teff_allZ.dat cannot be opened'
+     STOP 
   ENDIF
+  !burn the header
+  READ(93,*) char
+  READ(93,*) dumr1, tagb_logz_o
+  DO i=1,n_agb_o
+     READ(93,*) dumr1, tagb_logt_o(:,i)
+  ENDDO
+  CLOSE(93)
+
+  !now interpolate the master Teff array to the particular Z array
+  DO i=1,nz
+     i1 = MIN(MAX(locate(tagb_logz_o,LOG10(zlegend(i)/zsol)),1),22-1)
+     dz = (LOG10(zlegend(i)/zsol)-tagb_logz_o(i1)) / &
+          (tagb_logz_o(i1+1)-tagb_logz_o(i1))
+     agb_logt_o(i,:) = (1-dz)*tagb_logt_o(i1,:)+dz*tagb_logt_o(i1+1,:)
+  ENDDO
+  agb_logt_o = LOG10(agb_logt_o)
+     
+  !read in AGB Teff array for C-rich spectra
+  OPEN(94,FILE=TRIM(SPS_HOME)//'/SPECTRA/AGB_spectra/Crich_teff_allZ'//&
+       '.dat',STATUS='OLD',iostat=stat,ACTION='READ')
+  IF (stat.NE.0) THEN
+     WRITE(*,*) 'SPS_SETUP ERROR: /SPECTRA/AGB_spectra/'//&
+          'Crich_teff_allZ.dat cannot be opened'
+     STOP 
+  ENDIF
+  !burn the header
+  READ(94,*) char
+  DO i=1,n_agb_c
+     READ(94,*) dumr1, agb_logt_c(i)
+  ENDDO
+  CLOSE(94)
+  agb_logt_c = LOG10(agb_logt_c)
+  
+  !read in TP-AGB O-rich spectra
+  OPEN(95,FILE=TRIM(SPS_HOME)//&
+       '/SPECTRA/AGB_spectra/Orich_spec_all_'//spec_type//'.dat',&
+       STATUS='OLD',iostat=stat,ACTION='READ')
+  IF (stat.NE.0) THEN
+     
+     WRITE(*,*) 'SPS_SETUP ERROR: /AGB_spectra/Orich_spec_all_'//&
+          spec_type//'.dat '//'cannot be opened'
+     STOP 
+  ENDIF
+  DO i=1,nspec
+     READ(95,*) d1,agb_spec_o(i,:)
+  ENDDO
+  CLOSE(95)
+  
+  !read in TP-AGB C-rich spectra
+  OPEN(96,FILE=TRIM(SPS_HOME)//&
+       '/SPECTRA/AGB_spectra/Crich_spec_all_'//spec_type//'.dat',&
+       STATUS='OLD',iostat=stat,ACTION='READ')
+  IF (stat.NE.0) THEN
+     WRITE(*,*) 'SPS_SETUP ERROR: /AGB_spectra/SPECTRA/'//&
+          'Crich_spec_all_'//spec_type//'.dat '//'cannot be opened'
+     STOP 
+  ENDIF
+  DO i=1,nspec
+     READ(96,*) d1,agb_spec_c(i,:)
+  ENDDO
+  CLOSE(96)
+ 
+  
+  !------------read in post-AGB spectra from Rauch 2003------------;
+
+  !read in post-AGB Teff array
+  OPEN(94,FILE=TRIM(SPS_HOME)//'/SPECTRA/Hot_spectra/ipagb.teff',&
+       STATUS='OLD',iostat=stat,ACTION='READ')
+  IF (stat.NE.0) THEN
+     WRITE(*,*) 'SPS_SETUP ERROR: Hot_spectra/ipagb.teff cannot be opened'
+     STOP 
+  ENDIF
+  DO i=1,ndim_pagb
+     READ(94,*) pagb_logt(i)
+  ENDDO
+  CLOSE(94)
+  pagb_logt = LOG10(pagb_logt)
+
+  !read in solar metallicity post-AGB spectra
+  OPEN(97,FILE=TRIM(SPS_HOME)//'/SPECTRA/Hot_spectra/ipagb_'//&
+       spec_type//'.spec_solar',STATUS='OLD',iostat=stat,ACTION='READ')
+  IF (stat.NE.0) THEN
+     WRITE(*,*) 'SPS_SETUP ERROR: /SPECTRA/Hot_spectra/'//&
+          'ipagb.spec_solar cannot be opened'
+     STOP 
+  ENDIF
+  DO i=1,nspec
+     READ(97,*) d1,pagb_spec(i,:,2)
+  ENDDO
+  CLOSE(97)
+
+  !read in halo metallicity post-AGB spectra
+  OPEN(97,FILE=TRIM(SPS_HOME)//'/SPECTRA/Hot_spectra/ipagb_'//&
+       spec_type//'.spec_halo',STATUS='OLD',iostat=stat,ACTION='READ')
+  IF (stat.NE.0) THEN
+     WRITE(*,*) 'SPS_SETUP ERROR: /SPECTRA/Hot_spectra/'//&
+          'ipagb.spec_halo cannot be opened'
+     STOP 
+  ENDIF
+  DO i=1,nspec
+     READ(97,*) d1,pagb_spec(i,:,1)
+  ENDDO
+  CLOSE(97)
+  
+  !--------------read in WR spectra from Smith et al.--------------;
+
+  !read in WR-N Teff array
+  OPEN(94,FILE=TRIM(SPS_HOME)//'/SPECTRA/Hot_spectra/CMFGEN_WN.teff',&
+       STATUS='OLD',iostat=stat,ACTION='READ')
+  IF (stat.NE.0) THEN
+     WRITE(*,*) 'SPS_SETUP ERROR: Hot_spectra/CMFGEN_WN.teff cannot be opened'
+     STOP 
+  ENDIF
+  DO i=1,ndim_wr
+     READ(94,*) wrn_logt(i)
+  ENDDO
+  CLOSE(94)
+
+  !read in WR-C Teff array
+  OPEN(94,FILE=TRIM(SPS_HOME)//'/SPECTRA/Hot_spectra/CMFGEN_WC.teff',&
+       STATUS='OLD',iostat=stat,ACTION='READ')
+  IF (stat.NE.0) THEN
+     WRITE(*,*) 'SPS_SETUP ERROR: Hot_spectra/CMFGEN_WC.teff cannot be opened'
+     STOP 
+  ENDIF
+  DO i=1,ndim_wr
+     READ(94,*) wrc_logt(i)
+  ENDDO
+  CLOSE(94)
+  
+  !read in WR-N spectra
+  OPEN(97,FILE=TRIM(SPS_HOME)//'/SPECTRA/Hot_spectra/CMFGEN_WN_Zall'//&
+       '.spec',STATUS='OLD',iostat=stat,ACTION='READ')
+  IF (stat.NE.0) THEN
+     WRITE(*,*) 'SPS_SETUP ERROR: Hot_spectra/CMFGEN_WN_*.spec '//&
+          'cannot be opened'
+     STOP 
+  ENDIF
+  READ(97,*) tlamwr
+  DO j=1,5
+     DO i=1,ndim_wr
+        READ(97,*) d1,twrzmet(j)
+        READ(97,*) twrn(:,i,j)
+     ENDDO
+  ENDDO
+  CLOSE(97)
+  twrzmet = LOG10(twrzmet/zsol)
+  
+  !interpolate to the main array
+  DO j=1,nz
+     i1 = MIN(MAX(locate(twrzmet,LOG10(zlegend(j)/zsol)),1),SIZE(twrzmet)-1)
+     dz = (LOG10(zlegend(j)/zsol)-twrzmet(i1))/(twrzmet(i1+1)-twrzmet(i1))
+     dz = MIN(MAX(dz,-1.),1.)
+     DO i=1,ndim_wr
+        tspecwr = (1-dz)*twrn(:,i,i1) + dz*twrn(:,i,i1+1)
+        wrn_spec(:,i,j) = 10**linterparr(LOG10(tlamwr),LOG10(tspecwr),&
+             LOG10(spec_lambda))
+     ENDDO
+  ENDDO
+
+  !read in WR-C spectra
+  OPEN(97,FILE=TRIM(SPS_HOME)//'/SPECTRA/Hot_spectra/CMFGEN_WC_Zall'//&
+       '.spec',STATUS='OLD',iostat=stat,ACTION='READ')
+  IF (stat.NE.0) THEN
+     WRITE(*,*) 'SPS_SETUP ERROR: Hot_spectra/CMFGEN_WC_*.spec '//&
+          'cannot be opened'
+     STOP 
+  ENDIF
+  READ(97,*) tlamwr
+  DO j=1,5
+     DO i=1,ndim_wr
+        READ(97,*) d1,twrzmet(j)
+        READ(97,*) twrc(:,i,j)
+     ENDDO
+  ENDDO
+  CLOSE(97)
+  twrzmet = LOG10(twrzmet/zsol)
+
+  !interpolate to the main array
+  DO j=1,nz
+     i1 = MIN(MAX(locate(twrzmet,LOG10(zlegend(j)/zsol)),1),SIZE(twrzmet)-1)
+     dz = (LOG10(zlegend(j)/zsol)-twrzmet(i1))/(twrzmet(i1+1)-twrzmet(i1))
+     dz = MIN(MAX(dz,-1.),1.)
+     DO i=1,ndim_wr
+        tspecwr = (1-dz)*twrc(:,i,i1) + dz*twrc(:,i,i1+1)
+        wrc_spec(:,i,j) = 10**linterparr(LOG10(tlamwr),LOG10(tspecwr),&
+             LOG10(spec_lambda))
+     ENDDO
+  ENDDO
 
   !----------------------------------------------------------------!
   !--------------------Read in isochrones--------------------------!

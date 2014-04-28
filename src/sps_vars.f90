@@ -5,16 +5,17 @@ MODULE SPS_VARS
   IMPLICIT NONE
   SAVE
 
-!set the spectral library
+!-------set the spectral library------!
 #define BASEL 1
 #define MILES 0
 ! "CKC14" currently under development.  do not use!
-#define CKC14 0    
-!set the isochrone library
+#define CKC14 0
+
+!------set the isochrone library------!
 #define PADOVA 1
 #define BASTI 0
 ! "MIST" currently under development.  do not use!
-#define MIST 0     
+#define MIST 0    
 
 
   !--------------------------------------------------------------!
@@ -181,7 +182,7 @@ MODULE SPS_VARS
   INTEGER, PARAMETER :: n_agb_c=5
   !number of post-AGB spectra
   INTEGER, PARAMETER :: ndim_pagb=14
-  !number of WR spectra (WN only)
+  !number of WR spectra
   INTEGER, PARAMETER :: ndim_wr=12
   !wavelength dimension of the Draine & Li 2007 dust model
   INTEGER, PARAMETER :: ndim_dl07=1001
@@ -261,7 +262,7 @@ MODULE SPS_VARS
   REAL(SP) :: imf_mdave = 0.5
   !parameters for user-defined IMF
   INTEGER :: n_user_imf = 0
-  REAL(SP), DIMENSION(3,100) :: imf_user_alpha=0.0
+  REAL(SP), DIMENSION(3,100) :: imf_user_alpha=0.
 
   !environment variable for SPS home directory
   CHARACTER(250) :: SPS_HOME=''
@@ -269,7 +270,7 @@ MODULE SPS_VARS
   CHARACTER(30)  :: alt_filter_file=''
 
   !Age of Universe in Gyr (set in sps_setup.f90)
-  REAL(SP) :: tuniv=0.0
+  REAL(SP) :: tuniv=0.
 
   !index in the wavelength array where lambda=5000A
   INTEGER :: whlam5000
@@ -278,14 +279,14 @@ MODULE SPS_VARS
   INTEGER, PARAMETER :: ntfull = time_res_incr*nt
 
   !array of index definitions
-  REAL(SP), DIMENSION(7,nindx) :: indexdefined=0.0
+  REAL(SP), DIMENSION(7,nindx) :: indexdefined=0.
 
   !array holding MW extinction curve indices
   INTEGER, DIMENSION(6) :: mwdindex=0
 
   !array holding Witt & Gordon dust models
   !wgdust(lam,tau,model,homo/clump)
-  REAL(SP), DIMENSION(nspec,18,6,2) :: wgdust=0.0
+  REAL(SP), DIMENSION(nspec,18,6,2) :: wgdust=0.
 
   !Index for P(Z) distribution.  1=closed box;
   !P(Z) = z^zpow*exp(-z/pmetals)  (see pz_convol.f90)
@@ -293,10 +294,10 @@ MODULE SPS_VARS
   REAL(SP) :: zpow=1.0
 
   !array holding redshift-age relation
-  REAL(SP), DIMENSION(500,2) :: zagespl=0.0
+  REAL(SP), DIMENSION(500,2) :: zagespl=0.
  
   !array holding tabulated SFH 
-  REAL(SP), DIMENSION(3,ntabmax) :: sfh_tab=0.0
+  REAL(SP), DIMENSION(3,ntabmax) :: sfh_tab=0.
   INTEGER :: ntabsfh=0
 
   !array of bandpass filters
@@ -305,14 +306,14 @@ MODULE SPS_VARS
   REAL(SP), DIMENSION(nbands) :: magsun,magvega,filter_leff
   !Vega-like star spectrum for Vega magnitude zero-point
   !spectrum of Sun, for absolute mags of Sun
-  REAL(SP), DIMENSION(nspec)  :: vega_spec=0.,sun_spec=0.0
+  REAL(SP), DIMENSION(nspec)  :: vega_spec=0.,sun_spec=0.
   !common wavelength array
-  REAL(SP), DIMENSION(nspec)  :: spec_lambda=0.0
+  REAL(SP), DIMENSION(nspec)  :: spec_lambda=0.
 
   !arrays for stellar spectral information in HR diagram
-  REAL(SP), DIMENSION(ndim_logt) :: speclib_logt=0.0
-  REAL(SP), DIMENSION(ndim_logg) :: speclib_logg=0.0
-  REAL(KIND(1.0)), DIMENSION(nspec,nz,ndim_logt,ndim_logg) :: speclib=0.0
+  REAL(SP), DIMENSION(ndim_logt) :: speclib_logt=0.
+  REAL(SP), DIMENSION(ndim_logg) :: speclib_logg=0.
+  REAL(KIND(1.0)), DIMENSION(nspec,nz,ndim_logt,ndim_logg) :: speclib=0.
   
   !AGB library (Lancon & Mouhcine 2002)
   REAL(SP), DIMENSION(nspec,n_agb_o) :: agb_spec_o=0.
@@ -321,25 +322,25 @@ MODULE SPS_VARS
   REAL(SP), DIMENSION(n_agb_c)       :: agb_logt_c=0.
   
   !post-AGB library (Rauch 2003)
-  REAL(SP), DIMENSION(nspec,ndim_pagb,2) :: pagb_spec=0.0
-  REAL(SP), DIMENSION(ndim_pagb)         :: pagb_logt=0.0
+  REAL(SP), DIMENSION(nspec,ndim_pagb,2) :: pagb_spec=0.
+  REAL(SP), DIMENSION(ndim_pagb)         :: pagb_logt=0.
 
   !WR library (Smith et al. 2002)
-  REAL(SP), DIMENSION(nspec,ndim_wr) :: wr_spec=0.0
-  REAL(SP), DIMENSION(ndim_wr)       :: wr_logt=0.0
+  REAL(SP), DIMENSION(nspec,ndim_wr,nz) :: wrn_spec=0.,wrc_spec=0.
+  REAL(SP), DIMENSION(ndim_wr)          :: wrn_logt=0.,wrc_logt=0.
 
   !dust emission model (Draine & Li 2007)
-  REAL(SP), DIMENSION(ndim_dl07)              :: lambda_dl07=0.0
-  REAL(SP), DIMENSION(ndim_dl07,numin_dl07*2) :: dustem_dl07=0.0
-  REAL(SP), DIMENSION(nspec,7,numin_dl07*2)   :: dustem2_dl07=0.0
+  REAL(SP), DIMENSION(ndim_dl07)              :: lambda_dl07=0.
+  REAL(SP), DIMENSION(ndim_dl07,numin_dl07*2) :: dustem_dl07=0.
+  REAL(SP), DIMENSION(nspec,7,numin_dl07*2)   :: dustem2_dl07=0.
 
   !circumstellar AGB dust model (Villaume et al. in prep)
-  REAL(SP), DIMENSION(nspec,2,nteff_dagb,ntau_dagb) :: flux_dagb=0.0
-  REAL(SP), DIMENSION(2,ntau_dagb)                  :: tau1_dagb=0.0
-  REAL(SP), DIMENSION(2,nteff_dagb)                 :: teff_dagb=0.0
+  REAL(SP), DIMENSION(nspec,2,nteff_dagb,ntau_dagb) :: flux_dagb=0.
+  REAL(SP), DIMENSION(2,ntau_dagb)                  :: tau1_dagb=0.
+  REAL(SP), DIMENSION(2,nteff_dagb)                 :: teff_dagb=0.
 
   !nebular emission model
-  REAL(SP), DIMENSION(nemline) :: nebem_line_pos=0.0
+  REAL(SP), DIMENSION(nemline) :: nebem_line_pos=0.
   REAL(SP), DIMENSION(nemline,nebnz,nebnage,nebnip) :: nebem_line=0.
   REAL(SP), DIMENSION(nspec,nebnz,nebnage) :: nebem_cont=0.
   REAL(SP), DIMENSION(nebnz)   :: nebem_zgas=0.
@@ -354,7 +355,7 @@ MODULE SPS_VARS
   !arrays holding the number of mass elements for each isochrone,
   !the age of each isochrone, and the metallicity of each isochrone
   INTEGER, DIMENSION(nz,nt)  :: nmass_isoc=0
-  REAL(SP), DIMENSION(nz,nt) :: timestep_isoc=0.0
+  REAL(SP), DIMENSION(nz,nt) :: timestep_isoc=0.
   REAL(SP), DIMENSION(nz)    :: zlegend=-99.
   
   !arrays for the full Z-dep SSP spectra
@@ -367,15 +368,15 @@ MODULE SPS_VARS
   
   !structure for the set of parameters necessary to generate a model
   TYPE PARAMS
-     REAL(SP) :: pagb=1.0,dell=0.0,delt=0.0,fbhb=0.0,sbss=0.0,tau=1.0,&
-          const=0.0,tage=0.0,fburst=0.0,tburst=11.0,dust1=0.0,dust2=0.0,&
-          logzsol=0.0,zred=0.0,pmetals=0.02,imf1=1.3,imf2=2.3,imf3=2.3,&
-          vdmc=0.08,dust_clumps=-99.,frac_nodust=0.0,dust_index=-0.7,&
-          dust_tesc=7.0,frac_obrun=0.0,uvb=1.0,mwr=3.1,redgb=1.0,&
-          dust1_index=-1.0,mdave=0.5,sf_start=0.0,sf_trunc=0.0,sf_theta=0.0,&
+     REAL(SP) :: pagb=1.0,dell=0.,delt=0.,fbhb=0.,sbss=0.,tau=1.0,&
+          const=0.,tage=0.,fburst=0.,tburst=11.0,dust1=0.,dust2=0.,&
+          logzsol=0.,zred=0.,pmetals=0.02,imf1=1.3,imf2=2.3,imf3=2.3,&
+          vdmc=0.08,dust_clumps=-99.,frac_nodust=0.,dust_index=-0.7,&
+          dust_tesc=7.0,frac_obrun=0.,uvb=1.0,mwr=3.1,redgb=1.0,&
+          dust1_index=-1.0,mdave=0.5,sf_start=0.,sf_trunc=0.,sf_theta=0.,&
           duste_gamma=0.01,duste_umin=1.0,duste_qpah=3.5,fcstar=1.0,&
-          masscut=150.0,sigma_smooth=0.0,agb_dust=1.0,min_wave_smooth=1E3,&
-          max_wave_smooth=1E4,gas_logu=-2.0,gas_logzsol=0.0
+          masscut=150.0,sigma_smooth=0.,agb_dust=1.0,min_wave_smooth=1E3,&
+          max_wave_smooth=1E4,gas_logu=-2.0,gas_logzsol=0.
      INTEGER :: zmet=1,sfh=0,wgp1=1,wgp2=1,wgp3=1,evtype=-1
      INTEGER, DIMENSION(nbands) :: mag_compute=1
      CHARACTER(50) :: imf_filename='', sfh_filename=''
@@ -383,7 +384,7 @@ MODULE SPS_VARS
   
   !structure for the output of the compsp routine
   TYPE COMPSPOUT
-     REAL(SP) :: age=0.,mass_csp=0.,lbol_csp=0.,sfr=0.,mdust=0.0
+     REAL(SP) :: age=0.,mass_csp=0.,lbol_csp=0.,sfr=0.,mdust=0.
      REAL(SP), DIMENSION(nbands) :: mags=0.
      REAL(SP), DIMENSION(nspec)  :: spec=0.
      REAL(SP), DIMENSION(nindx)  :: indx=0.
@@ -394,15 +395,15 @@ MODULE SPS_VARS
 
   !structure for observational data
   TYPE OBSDAT
-     REAL(SP)                    :: zred=0.0,logsmass=0.0
-     REAL(SP), DIMENSION(nbands) :: mags=0.0,magerr=0.0
-     REAL(SP), DIMENSION(nspec)  :: spec=0.0,specerr=99.
+     REAL(SP)                    :: zred=0.,logsmass=0.
+     REAL(SP), DIMENSION(nbands) :: mags=0.,magerr=0.
+     REAL(SP), DIMENSION(nspec)  :: spec=0.,specerr=99.
   END TYPE OBSDAT
 
   !structure for using P(z) in chi2
   INTEGER, PARAMETER :: npzphot   = 200
   TYPE TPZPHOT
-     REAL(SP), DIMENSION(npzphot) :: zz=0.0,pz=0.0
+     REAL(SP), DIMENSION(npzphot) :: zz=0.,pz=0.
   END TYPE TPZPHOT
 
   !used for Powell minimization
