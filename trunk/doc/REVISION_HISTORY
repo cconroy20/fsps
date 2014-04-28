@@ -93,3 +93,15 @@
    read_mags.pro routine provided with FSPS to read in the *mags files
    then you will notice no change except the increased number of
    available filters.
+
+XX/XX/14
+
+ - Release of v2.5
+ - Many updates to the internal workings of the code to increase performance
+ - Bug fixed related to post-AGB stars.
+ - A new print option in compsp allows users to print the time-dependent CMD
+   in all the filters.  New IDL routine read_cmd.pro is included.
+ - Smoothing can now be implemented in wavelength or velocity space
+ - Added a few additional filters, including the Stromgren system.
+ - Implementation of Wolf-Rayet stars has changed.  We now include WC stars
+   and metallicity dependence of both WN and WC spectra.
