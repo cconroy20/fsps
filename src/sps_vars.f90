@@ -238,8 +238,8 @@ MODULE SPS_VARS
 
   !define large and small numbers.  numbers whose abs values
   !are less than tiny_number are treated as equal to 0.0
-  REAL(SP), PARAMETER :: huge_number = 1E33
-  REAL(SP), PARAMETER :: tiny_number = 1E-33
+  REAL(SP), PARAMETER :: huge_number = 10**(70.d0)
+  REAL(SP), PARAMETER :: tiny_number = 10**(-70.d0)
   
   !---------------Common Block-------------------!
     
