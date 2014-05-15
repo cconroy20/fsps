@@ -104,14 +104,28 @@ SUBROUTINE SMOOTHSPEC(lambda,spec,sigma,minl,maxl)
            spec(i)=tspec(i)
            CYCLE
         ENDIF
-        gauss = 1/SQRT(2*mypi)/sigma*EXP(-(lambda-lambda(i))**2/2/sigma**2)
-        DO j=1,nspec
-           spec(i) = spec(i) + gauss(j)*tspec(j)
-        ENDDO
+
+        xmax = lambda(i)*(m*sigma+1)
+        ih   = MIN(locate(lambda(1:nspec),xmax),nspec)
+        il   = MAX(2*i-ih,1)
+
+        IF (il.EQ.ih) THEN
+           spec(i) = tspec(i)
+        ELSE
+           func(il:ih) =  1/SQRT(2*mypi)/sigma * &
+                EXP(-(lambda(il:ih)-lambda(i))**2/2./sigma**2)
+           !normalize the weights to integrate to unity
+           func(il:ih) = func(il:ih) / TSUM(lambda(il:ih),func(il:ih))
+           spec(i) = TSUM(lambda(il:ih),func(il:ih)*tspec(il:ih))
+        ENDIF
+
+        !gauss = 1/SQRT(2*mypi)/sigma*EXP(-(lambda-lambda(i))**2/2/sigma**2)
+        !DO j=1,nspec
+        !   spec(i) = spec(i) + gauss(j)*tspec(j)
+        !ENDDO
      ENDDO
      
   ENDIF
-
 
   RETURN
 

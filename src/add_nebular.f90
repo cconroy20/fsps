@@ -16,10 +16,10 @@ SUBROUTINE ADD_NEBULAR(pset,sspi,sspo)
   nti = locate(time_full,nebem_age(nebnage))
 
   !set the velocity dispersion for broadening
-  IF (pset%sigma_smooth.GT.tiny_number) THEN 
+  IF (pset%sigma_smooth.GT.10.0) THEN 
      sigma = pset%sigma_smooth
   ELSE
-     sigma=10.
+     sigma=10.0
   ENDIF
 
   DO t=1,nti

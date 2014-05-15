@@ -41,29 +41,29 @@ MODULE SPS_VARS
   
   !turn on/off convolution of SSP with P(Z) (pz_convol.f90)
   !NB: pz_convol.f90 has not been tested in some time, use with caution
-  INTEGER, PARAMETER :: pzcon=0
+  INTEGER :: pzcon=0
   
   !the factor by which we increase the time array
   INTEGER, PARAMETER :: time_res_incr=2
 
   !turn on/off computation of light-weighted stellar ages
   !NB: This is only partially implemented, and only for tau models
-  INTEGER, PARAMETER :: compute_light_ages=0
+  INTEGER :: compute_light_ages=0
 
   !turn on/off the Draine & Li 2007 dust emission model 
-  INTEGER, PARAMETER :: add_dust_emission=1
+  INTEGER :: add_dust_emission=1
 
   !turn on/off the AGB circumstellar dust model
   !NB: this feature is currently under development, do not use!
-  INTEGER, PARAMETER :: add_agb_dust_model=0
+  INTEGER :: add_agb_dust_model=0
 
   !turn on/off a Cloudy-based nebular emission model 
   !NB: this feature is currently under development, do not use!
-  INTEGER, PARAMETER :: add_neb_emission=0
+  INTEGER :: add_neb_emission=0
 
   !turn on/off the addition of stellar remnants to the 
   !computation of stellar masses
-  INTEGER, PARAMETER :: add_stellar_remnants=1
+  INTEGER :: add_stellar_remnants=1
 
   !if set, use a simpler, algorithm to smooth
   !the spectra.  Accurate to ~0.1% and somewhat faster than the 

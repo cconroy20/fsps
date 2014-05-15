@@ -120,10 +120,10 @@ SUBROUTINE ADD_DUST(pset,csp1,csp2,specdust,mdust)
   IF (dust_type.NE.2) THEN
      
      !compute dust extinction for standard uniform screen
-     IF (pset%dust_clumps.LE.0.0.OR.dust_type.EQ.3) THEN
+     IF (pset%dust_clumps.LE.tiny_number.OR.dust_type.EQ.3) THEN
         
         diffuse_dust = EXP(-tau2)
-        
+
      !compute dust extinction for a lognormal clump distribution   
      ELSE 
         
@@ -158,13 +158,16 @@ SUBROUTINE ADD_DUST(pset,csp1,csp2,specdust,mdust)
      !compute total spectrum, including both dust components
      cspi = csp1 * EXP(-pset%dust1*(spec_lambda/5500.)**(pset%dust1_index))*&
              (1-pset%frac_obrun) + csp1*pset%frac_obrun + csp2
-     IF (pset%frac_nodust.GE.0.0) THEN
+     IF (pset%frac_nodust.GE.tiny_number) THEN
         specdust  = cspi*diffuse_dust*(1-pset%frac_nodust) + &
              cspi*pset%frac_nodust
      ELSE
         specdust  = cspi*diffuse_dust*(1+pset%frac_nodust) - &
              (csp1+csp2)*pset%frac_nodust
      ENDIF
+
+     !write(*,*) diffuse_dust(whlam5000)*cspi(whlam5000)
+
 
   ELSE
 
