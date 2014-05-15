@@ -14,7 +14,7 @@ SUBROUTINE GETSPEC(pset,mact,logt,lbol,logg,phase,ffco,spec)
   TYPE(PARAMS), INTENT(in) :: pset
   REAL(SP), INTENT(inout), DIMENSION(nspec) :: spec  
   REAL(SP), DIMENSION(nspec) :: ispec
-  REAL(SP) :: t,u,r2,tpagbtdiff,test1,test2,test3,test4,loggi
+  REAL(SP) :: t,u,r2,test1,test2,test3,test4,loggi
   INTEGER  :: klo,jlo,flag
 
   !---------------------------------------------------------------!
@@ -75,50 +75,37 @@ SUBROUTINE GETSPEC(pset,mact,logt,lbol,logg,phase,ffco,spec)
   ELSE IF (phase.EQ.5.0.AND.logt.LT.3.6.AND.ffco.LE.1.0) THEN
      
      flag = 1
-     jlo = MAX(MIN(locate(agb_logt_o(pset%zmet,:),logt),n_agb_o-1),1)
-     !never let the TP-AGB spectra be an extrapolation
-     IF (logt.LT.agb_logt_o(pset%zmet,1)) THEN
-        tpagbtdiff = 0.0
-     ELSE IF (logt.GT.agb_logt_o(pset%zmet,n_agb_o)) THEN
-        tpagbtdiff = agb_logt_o(pset%zmet,jlo+1)-agb_logt_o(pset%zmet,jlo)
-     ELSE
-        tpagbtdiff = logt - agb_logt_o(pset%zmet,jlo)
-     ENDIF
+     jlo  = MAX(MIN(locate(agb_logt_o(pset%zmet,:),logt),n_agb_o-1),1)
+     t    = (logt - agb_logt_o(pset%zmet,jlo)) / &
+          (agb_logt_o(pset%zmet,jlo+1)-agb_logt_o(pset%zmet,jlo))
+     t    = MIN(MAX(t,0.0),1.0)
 
      !The spectra are Fdlambda, need to convert to Fdnu and 
      !interpolate in Teff.
      spec = lbol*spec_lambda*spec_lambda/clight * &
-          ( agb_spec_o(:,jlo) + tpagbtdiff * (agb_spec_o(:,jlo+1) - &
-          agb_spec_o(:,jlo))/ &
-          (agb_logt_o(pset%zmet,jlo+1)-agb_logt_o(pset%zmet,jlo)) )
+          ( (1-t)*agb_spec_o(:,jlo) + t*(agb_spec_o(:,jlo+1)) )
 
   !C-rich TP-AGB spectra, from Lancon & Mouhcine 2002
   ELSE IF (phase.EQ.5.0.AND.logt.LT.3.6.AND.ffco.GT.1.0) THEN
      
      flag = 1
-     jlo = MAX(MIN(locate(agb_logt_c,logt),n_agb_c-1),1)
-     !never let the TP-AGB spectra be an extrapolation
-     IF (logt.LT.agb_logt_c(1)) THEN
-        tpagbtdiff = 0.0
-     ELSE IF (logt.GT.agb_logt_c(n_agb_c)) THEN
-        tpagbtdiff = agb_logt_c(jlo+1)-agb_logt_c(jlo)
-     ELSE
-        tpagbtdiff = logt - agb_logt_c(jlo)
-     ENDIF
+     jlo  = MAX(MIN(locate(agb_logt_c,logt),n_agb_c-1),1)
+     t    = (logt - agb_logt_c(jlo)) / &
+          (agb_logt_c(jlo+1)-agb_logt_c(jlo))
+     t    = MIN(MAX(t,0.0),1.0)
 
      !The spectra are Fdlambda, need to convert to Fdnu and 
      !interpolate in Teff.
      spec = lbol*spec_lambda*spec_lambda/clight * &
-          ( agb_spec_c(:,jlo) + tpagbtdiff * (agb_spec_c(:,jlo+1) - &
-          agb_spec_c(:,jlo))/(agb_logt_c(jlo+1)-agb_logt_c(jlo)) )
+           ( (1-t)*agb_spec_c(:,jlo) + t*(agb_spec_c(:,jlo+1)) )
 
   !use the primary library for the rest of the isochrone
   ELSE IF (logt.LT.4.699) THEN
      
      flag = 1
      !find the subgrid containing point i 
-     klo = MIN(MAX(locate(speclib_logg,loggi),1),ndim_logg-1)
      jlo = MIN(MAX(locate(speclib_logt,logt),1),ndim_logt-1)
+     klo = MIN(MAX(locate(speclib_logg,loggi),1),ndim_logg-1)
      t   = (logt-speclib_logt(jlo)) / &
           (speclib_logt(jlo+1)-speclib_logt(jlo))
      u   = (loggi-speclib_logg(klo))   / &
