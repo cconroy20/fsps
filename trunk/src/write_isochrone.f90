@@ -8,7 +8,7 @@ SUBROUTINE WRITE_ISOCHRONE(outfile,pset)
   INTEGER :: i,tt,zz
   TYPE(PARAMS), INTENT(in) :: pset
   CHARACTER(100), INTENT(in)  :: outfile
-  CHARACTER(34)  :: fmt
+  CHARACTER(51)  :: fmt
   REAL(SP) :: dz=0.0
   REAL(SP), DIMENSION(nspec)  :: spec
   REAL(SP), DIMENSION(nm)     :: wght
@@ -19,13 +19,13 @@ SUBROUTINE WRITE_ISOCHRONE(outfile,pset)
 
   zz = pset%zmet
 
-  fmt = '(F7.4,1x,7(F8.4,1x),000(F7.3,1x))'
-  WRITE(fmt(21:23),'(I3,1x,I4)') nbands
+  fmt = '(F7.4,1x,F8.4,1x,F14.9,1x,6(F8.4,1x),000(F7.3,1x))'
+  WRITE(fmt(38:40),'(I3,1x,I4)') nbands
 
   OPEN(40,FILE=TRIM(SPS_HOME)//'/OUTPUTS/'//TRIM(outfile)//'.cmd',&
        STATUS='REPLACE')
   WRITE(40,*) '# age log(Z) mass logl logt logg '//&
-       'phase log(weight) mags'
+       'phase composition log(weight) mags'
        
   DO tt=1,nt
 
@@ -43,8 +43,9 @@ SUBROUTINE WRITE_ISOCHRONE(outfile,pset)
         !write results to file
         WRITE(40,fmt) timestep_isoc(zz,tt),LOG10(zlegend(zz)),&
              mini_isoc(zz,tt,i),logl_isoc(zz,tt,i),logt_isoc(zz,tt,i),&
-             logg_isoc(zz,tt,i),phase_isoc(zz,tt,i),LOG10(wght(i)),mags
-
+             logg_isoc(zz,tt,i),phase_isoc(zz,tt,i), ffco_isoc(zz,tt,i),&
+             LOG10(wght(i)),mags
+        
      ENDDO
         
   ENDDO
