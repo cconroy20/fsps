@@ -20,7 +20,7 @@
 ;-
 ;-----------------------------------------------------------------;
 
-FUNCTION READ_MAGS1, file
+FUNCTION READ_MAGS1, file, allow_old=allow_old
 
   res = (read_ascii(file[0],data_start=8)).(0)
   nn  = n_elements(res[0,*])
@@ -142,20 +142,38 @@ FUNCTION READ_MAGS1, file
          stromgren_y:0.0,$
          m1500:0.0,$
          m2300:0.0,$
-         m2800:0.0}
+         m2800:0.0,$
+         jwst_f070w:0.0,$
+         jwst_f090w:0.0,$
+         jwst_f115w:0.0,$
+         jwst_f150w:0.0,$
+         jwst_f200w:0.0,$
+         jwst_f277w:0.0,$
+         jwst_f356w:0.0,$
+         jwst_f444w:0.0}
+
 
   str = replicate(str,nn)
-
-  IF n_tags(str) NE n_elements(res[*,0]) THEN BEGIN
-     print,'READ_MAGS ERROR: structure and *mags file are incompatable!'
-     RETURN,0
-  ENDIF
-
   str.agegyr = 10^reform(res[0,*])/1E9 ; age in Gyr
 
-  FOR i=1,n_tags(str)-1 DO $
-     str.(i) = reform(res[i,*])
+  IF NOT(keyword_set(allow_old)) THEN BEGIN
+
+     IF n_tags(str) NE n_elements(res[*,0]) THEN BEGIN
+        print,'READ_MAGS ERROR: structure and *mags file are incompatable!'
+        RETURN,0
+     ENDIF
+
+     FOR i=1,n_tags(str)-1 DO str.(i) = reform(res[i,*])
  
+  ENDIF ELSE BEGIN
+
+     ;in this case we are trusting that the *ordering* of the 
+     ;older mag file is the same, just that it is missing the
+     ;latest filter entries
+     FOR i=1,n_elements(res[*,0])-1 DO str.(i) = reform(res[i,*])
+
+  ENDELSE
+
   RETURN,str
 
 END
@@ -163,7 +181,7 @@ END
 ;-----------------------------------------------------------------;
 
 
-FUNCTION READ_MAGS,file
+FUNCTION READ_MAGS,file, allow_old=allow_old
 
   ff = findfile(file[0],count=ct)
   IF ct EQ 0 THEN BEGIN
@@ -177,13 +195,14 @@ FUNCTION READ_MAGS,file
      return,0
   ENDIF
 
-  str = read_mags1(file[0])
+  str = read_mags1(file[0],allow_old=allow_old)
   IF n_tags(str) EQ 0 THEN RETURN,0
 
   IF n_elements(file) GT 1 THEN BEGIN
      all = replicate(str[0],n_elements(str),n_elements(file))
      all[*,0] = str
-     FOR i=1,n_elements(file)-1 DO all[*,i] = read_mags1(file[i])     
+     FOR i=1,n_elements(file)-1 DO all[*,i] = $
+        read_mags1(file[i],allow_old=allow_old)
   ENDIF ELSE all = str
     
   RETURN, all
