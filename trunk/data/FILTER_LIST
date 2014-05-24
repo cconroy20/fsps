@@ -112,3 +112,11 @@
 112	Idealized 1500A bandpass with 15% bandwidth, FWHM = 225A from M. Dickinson
 113	Idealized 2300A bandpass with 15% bandwidth, FWHM = 345A from M. Dickinson
 114	Idealized 2800A bandpass with 15% bandwidth, FWHM = 420A from M. Dickinson
+115	JWST F070W (http://www.stsci.edu/jwst/instruments/nircam/instrumentdesign/filters/)
+116	JWST F090W (http://www.stsci.edu/jwst/instruments/nircam/instrumentdesign/filters/)
+117	JWST F115W (http://www.stsci.edu/jwst/instruments/nircam/instrumentdesign/filters/)
+118	JWST F150W (http://www.stsci.edu/jwst/instruments/nircam/instrumentdesign/filters/)
+119	JWST F200W (http://www.stsci.edu/jwst/instruments/nircam/instrumentdesign/filters/)
+120	JWST F277W (http://www.stsci.edu/jwst/instruments/nircam/instrumentdesign/filters/)
+121	JWST F356W (http://www.stsci.edu/jwst/instruments/nircam/instrumentdesign/filters/)
+122	JWST F444W (http://www.stsci.edu/jwst/instruments/nircam/instrumentdesign/filters/)

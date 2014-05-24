@@ -161,7 +161,7 @@ MODULE SPS_VARS
   !You must change the number of bands here if
   !filters are added to allfilters.dat
   !kr06=61, kr02,kr03,kr04=101, kr01,kr11=102, normal=114
-  INTEGER, PARAMETER :: nbands=114
+  INTEGER, PARAMETER :: nbands=122
   !number of indices defined in allindices.dat
   INTEGER, PARAMETER :: nindx=30
   
