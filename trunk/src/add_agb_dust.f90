@@ -60,10 +60,10 @@ FUNCTION COMPUTE_TAU1(cstar,mact,logt,logl,logg,zz)
 
   !dust-to-gas ratio
   delta = delta_agb * vexp**2 / 225. * (10**logl/1E4)**(-0.6)
-  IF (cstar.EQ.0) THEN
-     !scale d/g by metallicity for O stars
-     delta = delta * (zz/0.019)  
-  ENDIF
+  !IF (cstar.EQ.0) THEN
+  !   !scale d/g by metallicity for O stars
+  !   delta = delta * (zz/0.019)  
+  !ENDIF
 
   !finally, compute tau (convert to cgs)
   compute_tau1 = kappa * delta * (mdot*msun/yr2sc) &
