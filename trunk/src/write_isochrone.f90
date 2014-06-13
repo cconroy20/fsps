@@ -9,7 +9,7 @@ SUBROUTINE WRITE_ISOCHRONE(outfile,pset)
   TYPE(PARAMS), INTENT(in) :: pset
   CHARACTER(100), INTENT(in)  :: outfile
   CHARACTER(51)  :: fmt
-  REAL(SP) :: dz=0.0
+  REAL(SP) :: dz=0.0,loggi
   REAL(SP), DIMENSION(nspec)  :: spec
   REAL(SP), DIMENSION(nm)     :: wght
   REAL(SP), DIMENSION(nbands) :: mags
@@ -40,10 +40,18 @@ SUBROUTINE WRITE_ISOCHRONE(outfile,pset)
              phase_isoc(zz,tt,i),ffco_isoc(zz,tt,i),spec)
         !calculate magnitudes
         CALL GETMAGS(dz,spec,mags)
+
+        IF (isoc_type.EQ.'bsti') THEN
+           loggi = LOG10( gsig4pi*mact_isoc(zz,tt,i)/&
+                logl_isoc(zz,tt,i) ) + 4*logt_isoc(zz,tt,i)
+        ELSE
+           loggi = logg_isoc(zz,tt,i)
+        ENDIF
+
         !write results to file
         WRITE(40,fmt) timestep_isoc(zz,tt),LOG10(zlegend(zz)),&
              mini_isoc(zz,tt,i),logl_isoc(zz,tt,i),logt_isoc(zz,tt,i),&
-             logg_isoc(zz,tt,i),phase_isoc(zz,tt,i), ffco_isoc(zz,tt,i),&
+             loggi,phase_isoc(zz,tt,i), ffco_isoc(zz,tt,i),&
              LOG10(wght(i)),mags
         
      ENDDO

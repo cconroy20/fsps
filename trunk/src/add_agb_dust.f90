@@ -91,7 +91,7 @@ SUBROUTINE ADD_AGB_DUST(weight,tspec,mact,logt,logl,logg,zz,tco)
   REAL(SP), DIMENSION(nspec), INTENT(out) :: tspec
   REAL(SP), INTENT(in)  :: weight,mact,logt,logl,logg,zz,tco
   INTEGER :: cstar,jlo,klo
-  REAL(SP) :: tau1,dj,dk, compute_tau1
+  REAL(SP) :: tau1,dj,dk, compute_tau1, loggi
   REAL(SP), DIMENSION(nspec) :: dusty
   
   !-----------------------------------------------------------!
@@ -103,8 +103,12 @@ SUBROUTINE ADD_AGB_DUST(weight,tspec,mact,logt,logl,logg,zz,tco)
      cstar=0
   ENDIF
 
+  !we need to recompute loggi here because the BaSTI
+  !isochrones do not come with logg pre-tabulated
+  loggi = LOG10( gsig4pi*mact/10**logl ) + 4*logt
+
   !compute tau1 based on input stellar parameters
-  tau1 = compute_tau1(cstar,mact,logt,logl,logg,zz)
+  tau1 = compute_tau1(cstar,mact,logt,logl,loggi,zz)
 
   !allow the user to manually adjust the tau1 value
   !by an overall scale factor
