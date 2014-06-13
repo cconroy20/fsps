@@ -445,12 +445,12 @@ SUBROUTINE SPS_SETUP(zin)
      !open MIST isochrones
      IF (isoc_type.EQ.'mist') &
           OPEN(97,FILE=TRIM(SPS_HOME)//&
-          'ISOCHRONES/MIST/isoc_z'//zstype//'.dat',STATUS='OLD',&
+          '/ISOCHRONES/MIST/isoc_z'//zstype//'.dat',STATUS='OLD',&
           IOSTAT=stat,ACTION='READ')
      !open BaSTI isochrones
      IF (isoc_type.EQ.'bsti') &
           OPEN(97,FILE=TRIM(SPS_HOME)//&
-          'ISOCHRONES/BaSTI/NOVER/isoc_z'//zstype//'.dat',STATUS='OLD',&
+          '/ISOCHRONES/BaSTI/NOVER/isoc_z'//zstype//'.dat',STATUS='OLD',&
           IOSTAT=stat,ACTION='READ')
 
      IF (stat.NE.0) THEN
@@ -605,20 +605,20 @@ SUBROUTINE SPS_SETUP(zin)
   !----------------------------------------------------------------!
 
   !read in grid properties
-  OPEN(99,FILE=TRIM(SPS_HOME)//'nebular/age_grid.dat',&
+  OPEN(99,FILE=TRIM(SPS_HOME)//'/nebular/age_grid.dat',&
        STATUS='OLD',iostat=stat,ACTION='READ')
   DO i=1,nebnage
      READ(99,*) nebem_age(i)
   ENDDO
   CLOSE(99)
   nebem_age = LOG10(nebem_age*1E6) !convert to log(yr)
-  OPEN(99,FILE=TRIM(SPS_HOME)//'nebular/zgas_grid.dat',&
+  OPEN(99,FILE=TRIM(SPS_HOME)//'/nebular/zgas_grid.dat',&
        STATUS='OLD',iostat=stat,ACTION='READ')
   DO i=1,nebnz
      READ(99,*) nebem_zgas(i)
   ENDDO
   CLOSE(99)
-  OPEN(99,FILE=TRIM(SPS_HOME)//'nebular/logu_grid.dat',&
+  OPEN(99,FILE=TRIM(SPS_HOME)//'/nebular/logu_grid.dat',&
        STATUS='OLD',iostat=stat,ACTION='READ')
   DO i=1,nebnip
      READ(99,*) nebem_logu(i)
@@ -626,7 +626,7 @@ SUBROUTINE SPS_SETUP(zin)
   CLOSE(99)
 
   !read in nebular continuum arrays
-  OPEN(99,FILE=TRIM(SPS_HOME)//'nebular/ZAU115.out_cont',&
+  OPEN(99,FILE=TRIM(SPS_HOME)//'/nebular/ZAU115.out_cont',&
        STATUS='OLD',iostat=stat,ACTION='READ')
   IF (stat.NE.0) THEN
      WRITE(*,*) 'SPS_SETUP ERROR: nebular cont. files cannot be opened'
@@ -647,7 +647,7 @@ SUBROUTINE SPS_SETUP(zin)
        LOG10(readcontneb(1:i-1))+tiny_number,spec_lambda(1:nspec))-tiny_number
 
   !read in nebular emission line luminosities
-  OPEN(99,FILE=TRIM(SPS_HOME)//'nebular/ZAU115.out_lines',&
+  OPEN(99,FILE=TRIM(SPS_HOME)//'/nebular/ZAU115.out_lines',&
        STATUS='OLD',iostat=stat,ACTION='READ')
   IF (stat.NE.0) THEN
      WRITE(*,*) 'SPS_SETUP ERROR: nebular cont. files cannot be opened'
