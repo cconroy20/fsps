@@ -105,7 +105,11 @@ SUBROUTINE ADD_AGB_DUST(weight,tspec,mact,logt,logl,logg,zz,tco)
 
   !we need to recompute loggi here because the BaSTI
   !isochrones do not come with logg pre-tabulated
-  loggi = LOG10( gsig4pi*mact/10**logl ) + 4*logt
+  IF (isoc_type.EQ.'bsti') THEN
+     loggi = LOG10( gsig4pi*mact/10**logl ) + 4*logt
+  ELSE
+     loggi = logg
+  ENDIF
 
   !compute tau1 based on input stellar parameters
   tau1 = compute_tau1(cstar,mact,logt,logl,loggi,zz)
