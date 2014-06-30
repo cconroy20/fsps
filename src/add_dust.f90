@@ -12,8 +12,9 @@ SUBROUTINE ADD_DUST(pset,csp1,csp2,specdust,mdust)
   !(has been tested for convergence)
   INTEGER, PARAMETER :: nclump=50
   INTEGER :: w63,i,qlo,ulo
-  REAL(SP), DIMENSION(nspec)  :: diffuse_dust,tau2,katt,cspi,duste
+  REAL(SP), DIMENSION(nspec)  :: diffuse_dust,tau2,katt,cspi
   REAL(SP), DIMENSION(nspec)  :: x,a,b,y,fa,fb,boost,nu,dumin,dumax
+  REAL(SP), DIMENSION(nspec)  :: mduste,duste,oduste,sduste,tduste
   REAL(SP), DIMENSION(nclump) :: nden,wclump
   REAL(SP), DIMENSION(7) :: qpaharr
   REAL(SP) :: clump_ave,lboln,lbold,gamma,norm,dq,qpah,umin,du
@@ -166,13 +167,10 @@ SUBROUTINE ADD_DUST(pset,csp1,csp2,specdust,mdust)
              (csp1+csp2)*pset%frac_nodust
      ENDIF
 
-     !write(*,*) diffuse_dust(whlam5000)*cspi(whlam5000)
-
-
   ELSE
 
      !Calzetti et al. 2000 attenuation is applied to the entire spectrum 
-     w63 = locate(spec_lambda,dd63)
+     w63  = locate(spec_lambda,dd63)
      katt = 0.0
      katt(w63+1:) = 1.17*( -1.857+1.04*(1E4/spec_lambda(w63+1:)) ) + 1.78
      katt(1:w63)  = 1.17*(-2.156+1.509*(1E4/spec_lambda(1:w63))-&
@@ -240,14 +238,35 @@ SUBROUTINE ADD_DUST(pset,csp1,csp2,specdust,mdust)
              (1-dq)*du*dustem2_dl07(:,qlo,2*(ulo+1))
 
         !combine both parts of P(U)dU
-        duste = (1-gamma)*dumin + gamma*dumax
-        duste = MAX(duste,tiny_number)
+        mduste = (1-gamma)*dumin + gamma*dumax
+        mduste = MAX(mduste,tiny_number)
 
         !normalize the dust emission to the luminosity absorbed by 
         !the dust, i.e., demand that Lbol remains the same
-        norm  = TSUM(nu,duste)
-        duste = duste/norm * (lboln-lbold)
-        duste = MAX(duste,tiny_number)
+        norm   = TSUM(nu,mduste)
+        duste  = mduste/norm * (lboln-lbold)
+        duste  = MAX(duste,tiny_number)
+ 
+        !include dust self-absorption
+        !we need to iterate because the dust
+        !will re-emit and be re-absorbed, etc.
+        tduste = 0.0
+        DO WHILE ((lboln-lbold).GT.1E-2)
+
+           oduste = duste
+           IF (dust_type.NE.2) THEN
+              duste = duste * EXP(-tau2)
+           ELSE
+              duste = duste * EXP(-katt)
+           ENDIF
+           tduste = tduste + duste
+
+           lbold = TSUM(nu,duste)  !after  self-abs
+           lboln = TSUM(nu,oduste) !before self-abs
+
+           duste = MAX(mduste/norm*(lboln-lbold),tiny_number)
+           
+        ENDDO
 
         !this factor assumes Md/Mh=0.01 (appropriate for the 
         !MW3.1 models), and includes conversion factors from 
@@ -255,7 +274,7 @@ SUBROUTINE ADD_DUST(pset,csp1,csp2,specdust,mdust)
         mdust = 3.21E-3 / 4/mypi * (lboln-lbold)/norm
 
         !add the dust emission to the stellar spectrum
-        specdust = specdust + duste
+        specdust = specdust + tduste
         
      ELSE
         mdust = tiny_number

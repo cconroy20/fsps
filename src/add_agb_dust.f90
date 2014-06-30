@@ -60,6 +60,8 @@ FUNCTION COMPUTE_TAU1(cstar,mact,logt,logl,logg,zz)
 
   !dust-to-gas ratio
   delta = delta_agb * vexp**2 / 225. * (10**logl/1E4)**(-0.6)
+
+  !NB: we decided not to scale the dust-to-gas ratio by metallicity
   !IF (cstar.EQ.0) THEN
   !   !scale d/g by metallicity for O stars
   !   delta = delta * (zz/0.019)  
