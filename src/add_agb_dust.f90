@@ -44,7 +44,7 @@ FUNCTION COMPUTE_TAU1(cstar,mact,logt,logl,logg,zz)
 
   !mass-loss rate in Msun/yr
   !see Vassiliadis & Wood (1993) for details
-  IF (period.LT.500) THEN
+  IF (period.LT.500.) THEN
      IF (mact.LT.2.5) THEN
         mdot = 10**(-11.4+0.0123*period)
      ELSE
@@ -55,8 +55,13 @@ FUNCTION COMPUTE_TAU1(cstar,mact,logt,logl,logg,zz)
      mdot = 10**logl/vexp*1.93E3*yr2sc/clight
   ENDIF
 
-  !inner radius (assuming Td=1000K) in cm
-  rin = 2.37E12 * (10**logl)**0.5
+  !inner radius (assuming Td=1100K for C-rich and 
+  !Td=700 for O-rich) in cm
+  IF (cstar.EQ.1) THEN
+     rin = 1.92E12 * (10**logl)**0.5
+  ELSE
+     rin = 4.74E12 * (10**logl)**0.5
+  ENDIF
 
   !dust-to-gas ratio
   delta = delta_agb * vexp**2 / 225. * (10**logl/1E4)**(-0.6)
@@ -67,7 +72,7 @@ FUNCTION COMPUTE_TAU1(cstar,mact,logt,logl,logg,zz)
   !   delta = delta * (zz/0.019)  
   !ENDIF
 
-  !finally, compute tau (convert to cgs)
+  !finally, compute tau (and convert to cgs)
   compute_tau1 = kappa * delta * (mdot*msun/yr2sc) &
        / rin / (4*mypi) / (vexp*1E5)
 
