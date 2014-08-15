@@ -92,10 +92,10 @@ SUBROUTINE ADD_AGB_DUST(weight,tspec,mact,logt,logl,logg,zz,tco)
   !then looks up the corresponding DUSTY model given the C/O
   !ratio and Teff.
   
-  USE sps_vars; USE sps_utils, ONLY: locate
+  USE sps_vars; USE sps_utils, ONLY: locate, smoothspec
   IMPLICIT NONE
 
-  REAL(SP), DIMENSION(nspec), INTENT(out) :: tspec
+  REAL(SP), DIMENSION(nspec), INTENT(inout) :: tspec
   REAL(SP), INTENT(in)  :: weight,mact,logt,logl,logg,zz,tco
   INTEGER :: cstar,jlo,klo
   REAL(SP) :: tau1,dj,dk, compute_tau1, loggi
@@ -149,6 +149,7 @@ SUBROUTINE ADD_AGB_DUST(weight,tspec,mact,logt,logl,logg,zz,tco)
 
   !implement the dusty spectra (which are in units of 
   !flux_out/flux_in) into the AGB spectra
+  CALL SMOOTHSPEC(spec_lambda,tspec,10000.d0,3*10**(4.d0),10**(8.d0))
   tspec = tspec * dusty
 
 
