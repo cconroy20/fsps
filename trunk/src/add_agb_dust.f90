@@ -6,12 +6,12 @@ FUNCTION COMPUTE_TAU1(cstar,mact,logt,logl,logg,zz)
   USE sps_vars
   IMPLICIT NONE
   INTEGER, INTENT(in) :: cstar
-  REAL(SP), INTENT(in)  :: mact,logt,logl,logg,zz
+  REAL(SP), INTENT(in)  :: mact,logt,logl,logg, zz
   REAL(SP) :: compute_tau1, radius, period, vexp, vexp_max
   REAL(SP) :: rin, delta, kappa, delta_agb, mdot
 
   !-----------------------------------------------------------!
- 
+  !write(*,*) 'in function: ', cstar
   !dust-to-gas ratio depends on C/O
   IF (cstar.EQ.1) THEN
      delta_agb = 0.0025
@@ -58,25 +58,19 @@ FUNCTION COMPUTE_TAU1(cstar,mact,logt,logl,logg,zz)
   !inner radius (assuming Td=1100K for C-rich and 
   !Td=700 for O-rich) in cm
   IF (cstar.EQ.1) THEN
-     rin = 1.92E12 * (10**logl)**0.5
-  ELSE
-     rin = 4.74E12 * (10**logl)**0.5
+    rin = 1.92E12 * (10**logl)**0.5
+  ELSE 
+    rin = 4.74E12 * (10**logl)**0.5
   ENDIF
 
   !dust-to-gas ratio
   delta = delta_agb * vexp**2 / 225. * (10**logl/1E4)**(-0.6)
 
-  !NB: we decided not to scale the dust-to-gas ratio by metallicity
-  !IF (cstar.EQ.0) THEN
-  !   !scale d/g by metallicity for O stars
-  !   delta = delta * (zz/0.019)  
-  !ENDIF
-
   !finally, compute tau (and convert to cgs)
   compute_tau1 = kappa * delta * (mdot*msun/yr2sc) &
        / rin / (4*mypi) / (vexp*1E5)
-
-  !WRITE(*,'(13ES11.2)') mact,logl,logg,radius,period,mdot,rin,&
+!        write(*, '(13ES11.2)') compute_tau1
+    !WRITE(*,'(13ES11.2)') mact,logl,logg,radius,period,mdot,rin,&
   !     vexp,delta,compute_tau1
 
 END FUNCTION COMPUTE_TAU1
@@ -112,14 +106,13 @@ SUBROUTINE ADD_AGB_DUST(weight,tspec,mact,logt,logl,logg,zz,tco)
 
   !we need to recompute loggi here because the BaSTI
   !isochrones do not come with logg pre-tabulated
-  IF (isoc_type.EQ.'bsti') THEN
-     loggi = LOG10( gsig4pi*mact/10**logl ) + 4*logt
-  ELSE
-     loggi = logg
-  ENDIF
-
-  !compute tau1 based on input stellar parameters
-  tau1 = compute_tau1(cstar,mact,logt,logl,loggi,zz)
+    IF (isoc_type.EQ.'bsti') THEN
+        loggi = LOG10( gsig4pi*mact/10**logl ) + 4*logt
+    ELSE
+        loggi = logg
+    ENDIF
+   !compute tau1 based on input stellar parameters
+   tau1 = compute_tau1(cstar,mact,logt,logl,loggi,zz)
 
   !allow the user to manually adjust the tau1 value
   !by an overall scale factor
@@ -149,8 +142,8 @@ SUBROUTINE ADD_AGB_DUST(weight,tspec,mact,logt,logl,logg,zz,tco)
 
   !implement the dusty spectra (which are in units of 
   !flux_out/flux_in) into the AGB spectra
-  CALL SMOOTHSPEC(spec_lambda,tspec,10000.d0,3*10**(4.d0),10**(8.d0))
-  tspec = tspec * dusty
-
+!  tspec = tspec * dusty
+CALL SMOOTHSPEC(spec_lambda,tspec,10000.d0,30000.d0,100000000.d0)
+ tspec = tspec * dusty
 
 END SUBROUTINE ADD_AGB_DUST
