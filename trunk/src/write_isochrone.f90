@@ -59,8 +59,8 @@ SUBROUTINE WRITE_ISOCHRONE(outfile,pset)
           wght,hb_wght,nmass)
 
      !modify the TP-AGB stars and Post-AGB stars
- !    CALL MOD_GB(zz,tt,timestep_isoc(zz,:),pset%delt,&
- !         pset%dell,pset%pagb,pset%redgb,nmass(tt),logl,logt,phase,wght)
+     CALL MOD_GB(zz,tt,timestep_isoc(zz,:),pset%delt,&
+          pset%dell,pset%pagb,pset%redgb,nmass(tt),logl,logt,phase,wght)
 
 
      DO i=1,nmass_isoc(zz,tt)
