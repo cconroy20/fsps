@@ -44,7 +44,7 @@ FUNCTION READ_SPEC1, file
      STOP
   ENDELSE
 
-  str  = {agegyr:0.0,logmass:0.0,loglbol:0.0,logsfr:0.0,spec:fltarr(nl),$
+  str  = {agegyr:0.0,logmass:0.0,loglbol:0.0,logsfr:0.0,spec:dblarr(nl),$
           lambda:fltarr(nl)}
   str   = replicate(str,nt)
   tspec = fltarr(nl)

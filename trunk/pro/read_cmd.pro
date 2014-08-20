@@ -3,8 +3,8 @@
 ;       READ_CMD 
 ;
 ; PURPOSE:
-;      Function to convert a *.cmd file into an IDL structure.  Input may be an 
-;      array of filenames.
+;      Function to convert a *.cmd file into an IDL structure.  
+;      Input may be an array of filenames.
 ;
 ; CALLING SEQUENCE:
 ;   res = read_cmd(file)
@@ -31,6 +31,7 @@ FUNCTION READ_CMD1, file
          logteff:0.0,$
          logg:0.0,$
          phase:0.0,$
+         composition:0.0,$
          logimfweight:0.0,$
          v:0.0,$
          u:0.0,$
@@ -145,12 +146,21 @@ FUNCTION READ_CMD1, file
          stromgren_y:0.0,$
          m1500:0.0,$
          m2300:0.0,$
-         m2800:0.0}
+         m2800:0.0,$
+         jwst_f070w:0.0,$
+         jwst_f090w:0.0,$
+         jwst_f115w:0.0,$
+         jwst_f150w:0.0,$
+         jwst_f200w:0.0,$
+         jwst_f277w:0.0,$
+         jwst_f356w:0.0,$
+         jwst_f444w:0.0}
 
   str = replicate(str,nn)
 
   IF n_tags(str) NE n_elements(res[*,0]) THEN BEGIN
      print,'READ_CMD ERROR: structure and *cmd file are incompatable!'
+stop
      RETURN,0
   ENDIF
 
