@@ -29,28 +29,22 @@ SUBROUTINE MOD_GB(zz,t,age,delt,dell,pagb,redgb,&
            !Conroy & Gunn (2010) normalization
            IF (tpagb_norm_type.EQ.1) THEN
 
-           IF (age(t).GT.age8.AND.age(t).LT.age91) THEN
-              logl(t,i) = logl(t,i) - 1.0+(age(t)-8.)/1.5
-              IF (LOG10(zlegend(zz)/zsol).LT.-0.25) THEN
-                 logt(t,i) = logt(t,i) + 0.10
+              IF (age(t).GT.age8.AND.age(t).LT.age91) THEN
+                 logl(t,i) = logl(t,i) - 1.0+(age(t)-8.)/1.5
+                 IF (LOG10(zlegend(zz)/zsol).LT.-0.25) THEN
+                    logt(t,i) = logt(t,i) + 0.10
+                 ENDIF
+              ELSE
+                 logl(t,i) = logl(t,i) - &
+                      MAX(MIN(0.4,-log10(zlegend(zz)/zsol)),0.2)
+                 logt(t,i) = logt(t,i) + 0.1 - MIN((age(t)-age91)/1.5,0.2)
               ENDIF
-           ELSE
-              logl(t,i) = logl(t,i) - &
-                   MAX(MIN(0.4,-log10(zlegend(zz)/zsol)),0.2)
-              logt(t,i) = logt(t,i) + 0.1 - MIN((age(t)-age91)/1.5,0.2)
-           ENDIF
 
            !Villaume, Conroy, Johnson (2014) normalization
            ELSE IF (tpagb_norm_type.EQ.2) THEN
 
-              wght(i) = MAX(0.1,0.1+(age(t)-8.0)/3.0) * wght(i)
-
-              IF (age(t).GT.age8.AND.age(t).LT.age91) THEN
-                 IF (LOG10(zlegend(zz)/zsol).LT.-0.25) &
-                      logt(t,i) = logt(t,i) + 0.10
-              ELSE
-          !       logt(t,i) = logt(t,i) + 0.1 - MIN((age(t)-age91)/1.5,0.2)
-              ENDIF
+              !wght(i) = MAX(0.1,0.1+(age(t)-8.0)/4.0) * wght(i)
+              wght(i) = 0.1*wght(i)
 
            ENDIF
 
@@ -68,6 +62,8 @@ SUBROUTINE MOD_GB(zz,t,age,delt,dell,pagb,redgb,&
      ENDIF
 
      !modify RGB + red clump HB + AGB
+     !NB: this currently only works with BaSTI, which
+     !defines these phases
      IF (phase(t,i).EQ.2.OR.phase(t,i).EQ.3 &
           .OR.phase(t,i).EQ.4.OR.phase(t,i).EQ.5) THEN
         wght(i) = wght(i)*redgb
