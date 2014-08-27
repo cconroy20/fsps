@@ -41,7 +41,7 @@ MODULE SPS_VARS
   !0 = default Padova 2007 isochrones
   !1 = Conroy & Gunn 2010 normalization
   !2 = Villaume, Conroy, Johnson 2014 normalization
-  INTEGER :: tpagb_norm_type=2
+  INTEGER :: tpagb_norm_type=1
 
   !turn-on time for BHB and SBS phases, time is in log(yrs)
   REAL(SP), PARAMETER :: bhb_sbs_time=9.3
