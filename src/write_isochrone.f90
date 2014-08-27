@@ -21,7 +21,8 @@ SUBROUTINE WRITE_ISOCHRONE(outfile,pset)
   !---------------------------------------------------------------!
 
   hb_wght = 0.0
-  zz = pset%zmet
+  wght    = 0.0
+  zz      = pset%zmet
 
   fmt = '(F7.4,1x,F8.4,1x,F14.9,1x,6(F8.4,1x),000(F7.3,1x))'
   WRITE(fmt(38:40),'(I3,1x,I4)') nbands
