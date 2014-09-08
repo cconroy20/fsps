@@ -13,7 +13,7 @@ SUBROUTINE MOD_GB(zz,t,age,delt,dell,pagb,redgb,&
   REAL(SP), INTENT(in) :: delt, dell, pagb,redgb
   REAL(SP), INTENT(in), DIMENSION(nt) :: age
   INTEGER  :: i
-  REAL(SP) :: age8=8.0_sp,age91=9.1_sp
+  REAL(SP) :: age8=8.0_sp,age91=9.1_sp,twght
 
   !---------------------------------------------------------------!
   !---------------------------------------------------------------!
@@ -36,15 +36,21 @@ SUBROUTINE MOD_GB(zz,t,age,delt,dell,pagb,redgb,&
                  ENDIF
               ELSE
                  logl(t,i) = logl(t,i) - &
-                      MAX(MIN(0.4,-log10(zlegend(zz)/zsol)),0.2)
+                      MAX(MIN(0.4,-LOG10(zlegend(zz)/zsol)),0.2)
                  logt(t,i) = logt(t,i) + 0.1 - MIN((age(t)-age91)/1.5,0.2)
               ENDIF
 
            !Villaume, Conroy, Johnson (2014) normalization
            ELSE IF (tpagb_norm_type.EQ.2) THEN
 
-              !wght(i) = MAX(0.1,0.1+(age(t)-8.0)/4.0) * wght(i)
-              wght(i) = 0.1*wght(i)
+              !twght = MAX(0.1,0.1+(age(t)-8.0)/4.0)
+              twght = MAX(0.1,10**(-1.+(age(t)-8.0)/2.5))
+
+              IF (LOG10(zlegend(zz)/zsol).LT.-0.5) THEN
+                 twght = MIN(0.5,twght)
+              ENDIF
+
+              wght(i) = twght * wght(i)
 
            ENDIF
 
