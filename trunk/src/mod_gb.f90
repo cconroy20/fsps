@@ -43,13 +43,7 @@ SUBROUTINE MOD_GB(zz,t,age,delt,dell,pagb,redgb,&
            !Villaume, Conroy, Johnson (2014) normalization
            ELSE IF (tpagb_norm_type.EQ.2) THEN
 
-              !twght = MAX(0.1,0.1+(age(t)-8.0)/4.0)
               twght = MAX(0.1,10**(-1.+(age(t)-8.0)/2.5))
-
-              IF (LOG10(zlegend(zz)/zsol).LT.-0.5) THEN
-                 twght = MIN(0.5,twght)
-              ENDIF
-
               wght(i) = twght * wght(i)
 
            ENDIF
