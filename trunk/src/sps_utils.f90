@@ -229,6 +229,14 @@ MODULE SPS_UTILS
   END INTERFACE
 
   INTERFACE
+     SUBROUTINE SBF(pset,outfile)
+       USE sps_vars
+       CHARACTER(100), INTENT(in) :: outfile
+       TYPE(PARAMS), INTENT(in)    :: pset
+     END SUBROUTINE SBF
+  END INTERFACE
+
+  INTERFACE
      FUNCTION TSUM(xin,yin)
        USE sps_vars
        REAL(SP), DIMENSION(:), INTENT(in) :: xin,yin

@@ -1,72 +1,88 @@
-PROGRAM SIMPLE
+ PROGRAM SIMPLE
 
-    !set up modules
-    USE sps_vars; USE sps_utils
+  !set up modules
+  USE sps_vars; USE sps_utils  
+  IMPLICIT NONE
+
+  !NB: the various structure types are defined in sps_vars.f90
+  !    variables not explicitly defined here are defined in sps_vars.f90
+
+  INTEGER :: i
+  !define variable for SSP spectrum
+  REAL(SP), DIMENSION(ntfull,nspec)  :: spec_ssp
+  !define variables for Mass and Lbol info
+  REAL(SP), DIMENSION(ntfull)    :: mass_ssp,lbol_ssp
+  CHARACTER(100) :: file1='', file2=''
+  !structure containing all necessary parameters
+  TYPE(PARAMS) :: pset
+  !define structure for CSP spectrum
+  TYPE(COMPSPOUT), DIMENSION(ntfull) :: ocompsp
+  REAL(SP) :: ssfr6,ssfr7,ssfr8,ave_age
+
+  !---------------------------------------------------------------!
+  !---------------------------------------------------------------!
   
-    IMPLICIT NONE
+  ! Lets compute an SSP, solar metallicity, with a Chabrier IMF
+  ! with no dust, and the 'default' assumptions regarding the 
+  ! locations of the isochrones
 
-    INTEGER :: i
-    !define variable for SSP spectrum
-    REAL(SP), DIMENSION(ntfull,nspec)  :: spec_ssp
-    !define variables for Mass and Lbol info
-    REAL(SP), DIMENSION(ntfull)    :: mass_ssp,lbol_ssp
-    CHARACTER(100) :: file1='', file2=''
-    !structure containing all necessary parameters
-    TYPE(PARAMS) :: pset
-    !define structure for CSP spectrum
-    TYPE(COMPSPOUT), DIMENSION(ntfull) :: ocompsp
-    REAL(SP) :: ssfr6,ssfr7,ssfr8,ave_age
+  imf_type  = 2             !define the IMF (1=Chabrier 2003)
+                            !see sps_vars.f90 for details of this var
+  pset%zmet = 20            !define the metallicity (see the manual)
+                            !20 = solar metallacity
 
-    REAL, DIMENSION(16) :: dust
-    CHARACTER, DIMENSION(10) :: files
-    CHARACTER(15) :: tmp
-    !CHARACTER(12) :: file1
-    !---------------------------------------------------------------!
-    !---------------------------------------------------------------!
-  
-    dust = (/0.000, 0.001, 0.003, 0.004, 0.01, &
-             0.013, 0.023, 0.039, 0.067, 0.116, 0.20, 0.342, 0.6, & 
-             1.014, 1.744, 3.0/)
+  CALL SPS_SETUP(pset%zmet) !read in the isochrones and spectral libraries
 
-    imf_type = 2    ! Salpeter IMF
-    pset%zmet = 20    ! compute SSP
+  !define the parameter set.  These are the default values, specified 
+  !in sps_vars.f90, but are explicitly included here for transparency
+  pset%sfh   = 0     !set SFH to "SSP"
+  pset%zred  = 0.0   !redshift  
+  pset%dust1 = 0.0   !dust parameter 1
+  pset%dust2 = 0.0   !dust parameter 2
 
-    !here we have to read in all the librarries
-    CALL SPS_SETUP(pset%zmet)
-    pset%sfh   = 0     !set SFH to "SSP"
-    pset%zred  = 0.0  !redshift  
-    pset%dust1 = 0.0   !dust parameter 1
-    pset%dust2 = 0.0   !dust parameter 2
+  pset%dell  = 0.0   !shift in log(L) for TP-AGB stars
+  pset%delt  = 0.0   !shift in log(Teff) for TP-AGB stars
+  pset%fbhb  = 0.0   !fraction of blue HB stars
+  pset%sbss  = 0.0   !specific frequency of BS stars
 
-    pset%dell  = 0.0   !shift in log(L) for TP-nod stars
-    pset%delt  = 0.0   !shift in log(Teff) for TP-nod stars
-    pset%fbhb  = 0.0   !fraction of blue HB stars
-    pset%sbss  = 0.0   !specific frequency of BS stars
+  !compute the SSP
+  CALL SSP_GEN(pset,mass_ssp,lbol_ssp,spec_ssp)
+  !compute mags and write out mags and spec for SSP
+  file1 = 'SSP.out'
+  CALL COMPSP(3,1,file1,mass_ssp,lbol_ssp,spec_ssp,pset,ocompsp)
 
-    DO i=1,size(dust, 1)
-        pset%dust2 = dust(i)
-        pset%dust1 = dust(i)*3
-        write(tmp, '(F10.5)'), dust(i)
-        file1 = 'CompareDust/norm2/SSP_'//tmp(4:9)//'_nod.out'
-        write(*,*) file1
-        CALL SSP_GEN(pset, mass_ssp, lbol_ssp, spec_ssp)
-        CALL COMPSP(3, 1, file1, mass_ssp, lbol_ssp, spec_ssp, pset, ocompsp)
-    ENDDO 
-    
-    imf_type = 2    ! Salpeter IMF
-    pset%zmet = 20   ! compute SSP
-    pset%sfh = 1
-    pset%tau = 1.0
-    !compute all SSPs for different values of dust2
-    !in the common block set up in sps_vars.f90
-    DO i=1,size(dust, 1)
-        pset%dust2 = dust(i)
-        pset%dust1 = dust(i)*3
-        write(tmp, '(F10.5)'), dust(i)
-        file2 = 'CompareDust/norm2/CSP_'//tmp(4:9)//'_nod.out'
-        write(*,*) file2
-        CALL SSP_GEN(pset, mass_ssp, lbol_ssp, spec_ssp)
-        CALL COMPSP(1, 1, file2, mass_ssp, lbol_ssp, spec_ssp, pset, ocompsp)
-    ENDDO
+
+
+  ! Now lets compute a 1 Gyr tau model SFH with a Salpeter IMF
+  ! with a simple dust model, at a particular time 
+  ! (rather than outputing all the time info)
+
+  imf_type  = 0                !define the IMF (0=Salpeter)
+                               !see sps_vars.f90 for details of this var
+  pset%zmet = 20               !define the metallicity (see the lookup table)
+                               !20 = solar metallacity
+
+  !NB: you only need to re-run SPS_SETUP if you have changed the metallicity
+  !    or, even better (but slower), you can call SPS_SETUP(-1) and this will
+  !    set up all the metallicities at once.
+  CALL SPS_SETUP(pset%zmet)    !read in the isochrones and spectral libraries
+
+  !define the parameter set. 
+  pset%sfh   = 1     !set SFH to "CSP"; sfh=1 means a normal tau model
+  pset%tau   = 2.0   !tau units are Gyr
+  pset%dust1 = 1.0   !dust parameter 1
+  pset%dust2 = 0.3   !dust parameter 2
+  !pset%tage  = 12.5  !age at which we want the mags
+
+  !compute the CSP
+  CALL SSP_GEN(pset,mass_ssp,lbol_ssp,spec_ssp)
+  !compute mags, and write out mags and spec for CSP
+  file1 = 'CSP.out'
+  CALL COMPSP(3,1,file1,mass_ssp,lbol_ssp,spec_ssp,pset,ocompsp)
+
+  !compute basic SFH statistics for the last entry in the ocompsp array
+  !results are returned in the variables ssfr6,...,ave_age
+  CALL SFHSTAT(pset,ocompsp(1),ssfr6,ssfr7,ssfr8,ave_age)
+
 
 END PROGRAM SIMPLE
