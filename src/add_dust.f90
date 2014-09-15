@@ -13,7 +13,7 @@ SUBROUTINE ADD_DUST(pset,csp1,csp2,specdust,mdust)
   INTEGER, PARAMETER :: nclump=50
   INTEGER :: w63,i,qlo,ulo
   REAL(SP), DIMENSION(nspec)  :: diffuse_dust,tau2,katt,cspi
-  REAL(SP), DIMENSION(nspec)  :: x,a,b,y,fa,fb,boost,nu,dumin,dumax
+  REAL(SP), DIMENSION(nspec)  :: x,a,b,y,fa,fb,hack,nu,dumin,dumax
   REAL(SP), DIMENSION(nspec)  :: mduste,duste,oduste,sduste,tduste
   REAL(SP), DIMENSION(nclump) :: nden,wclump
   REAL(SP), DIMENSION(7) :: qpaharr
@@ -81,28 +81,32 @@ SUBROUTINE ADD_DUST(pset,csp1,csp2,specdust,mdust)
      !near-UV
      a = 1.752-0.316*x-0.104/((x-4.67)**2+0.341)*pset%uvb
      b = -3.09+1.825*x+1.206/((x-4.62)**2+0.263)*pset%uvb
-     boost = (x(mwdindex(3))/x)**6.*(tau2(mwdindex(3))-&
+     !this hack parameter is not in the original CCM89 
+     !parameterization.  It is a hack designed to result in 
+     !a smooth profile in the presence of a variable UVB strength
+     hack = (x(mwdindex(3))/x)**6.*(tau2(mwdindex(3))-&
           (a(mwdindex(3))+b(mwdindex(3))/pset%mwr))
      tau2(mwdindex(4):mwdindex(3)) = &
           a(mwdindex(4):mwdindex(3)) + &
           b(mwdindex(4):mwdindex(3))/pset%mwr + &
-          boost(mwdindex(4):mwdindex(3))
+          hack(mwdindex(4):mwdindex(3))
 
      !mid-UV
      fa = -0.04473*(x-5.9)**2-0.009779*(x-5.9)**3
      fb =  0.2130*(x-5.9)**2+0.1207*(x-5.9)**3
-        a  = 1.752-0.316*x-0.104/((x-4.67)**2+0.341)*pset%uvb+fa
-        b  = -3.09+1.825*x+1.206/((x-4.62)**2+0.263)*pset%uvb+fb
+     a  = 1.752-0.316*x-0.104/((x-4.67)**2+0.341)*pset%uvb+fa
+     b  = -3.09+1.825*x+1.206/((x-4.62)**2+0.263)*pset%uvb+fb
      tau2(mwdindex(5):mwdindex(4)) = &
           a(mwdindex(5):mwdindex(4)) + b(mwdindex(5):mwdindex(4))/pset%mwr
 
      !far-UV
-     a = -1.073-0.628*(x-8.)+0.137*(x-8.)**2
+     a = -1.073-0.628*(x-8.)+0.137*(x-8.)**2-0.070*(x-8.)**3
      b = 13.67+4.257*(x-8.)-0.42*(x-8.)**2+0.374*(x-8.)**3
      tau2(mwdindex(6):mwdindex(5)) = &
           a(mwdindex(6):mwdindex(5)) + b(mwdindex(6):mwdindex(5))/pset%mwr
 
-     a = -1.073-0.628*(12.-8.)+0.137*(12.-8.)**2
+     !set to a constant at lambda < 12 um^-1
+     a = -1.073-0.628*(12.-8.)+0.137*(12.-8.)**2-0.070*(12.-8.)**3
      b = 13.67+4.257*(12.-8.)-0.42*(12.-8.)**2+0.374*(12.-8.)**3
      tau2(:mwdindex(6)) = &
           a(:mwdindex(6)) + b(:mwdindex(6))/pset%mwr
