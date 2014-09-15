@@ -70,8 +70,8 @@ FUNCTION COMPUTE_TAU1(cstar,mact,logt,logl,logg,zz)
   compute_tau1 = kappa * delta * (mdot*msun/yr2sc) &
        / rin / (4*mypi) / (vexp*1E5)
 !        write(*, '(13ES11.2)') compute_tau1
-!    WRITE(*,'(13ES11.2)') mact,logl,logg,radius,period,mdot,rin,&
-!       vexp,delta,compute_tau1
+    !WRITE(*,'(13ES11.2)') mact,logl,logg,radius,period,mdot,rin,&
+  !     vexp,delta,compute_tau1
 
 END FUNCTION COMPUTE_TAU1
 
@@ -101,7 +101,7 @@ SUBROUTINE ADD_AGB_DUST(weight,tspec,mact,logt,logl,logg,zz,tco)
   IF (tco.GT.1) THEN
      cstar=1 
   ELSE 
-      cstar=0
+     cstar=0
   ENDIF
 
   !we need to recompute loggi here because the BaSTI
@@ -142,7 +142,8 @@ SUBROUTINE ADD_AGB_DUST(weight,tspec,mact,logt,logl,logg,zz,tco)
 
   !implement the dusty spectra (which are in units of 
   !flux_out/flux_in) into the AGB spectra
-   CALL SMOOTHSPEC(spec_lambda,tspec,10000.d0,30000.d0,100000000.d0)
-    tspec = tspec * dusty
+!  tspec = tspec * dusty
+CALL SMOOTHSPEC(spec_lambda,tspec,10000.d0,30000.d0,100000000.d0)
+ tspec = tspec * dusty
 
 END SUBROUTINE ADD_AGB_DUST

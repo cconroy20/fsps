@@ -13,7 +13,7 @@ SUBROUTINE MOD_GB(zz,t,age,delt,dell,pagb,redgb,&
   REAL(SP), INTENT(in) :: delt, dell, pagb,redgb
   REAL(SP), INTENT(in), DIMENSION(nt) :: age
   INTEGER  :: i
-  REAL(SP) :: age8=8.0_sp,age91=9.1_sp
+  REAL(SP) :: age8=8.0_sp,age91=9.1_sp,twght
 
   !---------------------------------------------------------------!
   !---------------------------------------------------------------!
@@ -22,22 +22,38 @@ SUBROUTINE MOD_GB(zz,t,age,delt,dell,pagb,redgb,&
 
      !modify TP-AGB stars
      IF (phase(t,i).EQ.5.0) THEN
+
         !renormalize the Padova isochrones
-        !based on Conroy & Gunn (2010)
-        IF (isoc_type.EQ.'pdva') THEN
-           IF (age(t).GT.age8.AND.age(t).LT.age91) THEN
-              logl(t,i) = logl(t,i) - 1.0+(age(t)-8.)/1.5
-              IF (LOG10(zlegend(zz)/zsol).LT.-0.25) THEN
-                 logt(t,i) = logt(t,i) + 0.10
+        IF (isoc_type.EQ.'pdva'.AND.tpagb_norm_type.NE.0) THEN
+
+           !Conroy & Gunn (2010) normalization
+           IF (tpagb_norm_type.EQ.1) THEN
+
+              IF (age(t).GT.age8.AND.age(t).LT.age91) THEN
+                 logl(t,i) = logl(t,i) - 1.0+(age(t)-8.)/1.5
+                 IF (LOG10(zlegend(zz)/zsol).LT.-0.25) THEN
+                    logt(t,i) = logt(t,i) + 0.10
+                 ENDIF
+              ELSE
+                 logl(t,i) = logl(t,i) - &
+                      MAX(MIN(0.4,-LOG10(zlegend(zz)/zsol)),0.2)
+                 logt(t,i) = logt(t,i) + 0.1 - MIN((age(t)-age91)/1.5,0.2)
               ENDIF
-           ELSE
-              logl(t,i) = logl(t,i) - &
-                   MAX(MIN(0.4,-log10(zlegend(zz)/zsol)),0.2)
-              logt(t,i) = logt(t,i) + 0.1 - MIN((age(t)-age91)/1.5,0.2)
+
+           !Villaume, Conroy, Johnson (2014) normalization
+           ELSE IF (tpagb_norm_type.EQ.2) THEN
+
+              twght = MAX(0.1,10**(-1.+(age(t)-8.0)/2.5))
+              wght(i) = twght * wght(i)
+
            ENDIF
+
         ENDIF
+
+        !add extra fudge factors to the default normalization
         logl(t,i) = logl(t,i) + dell
         logt(t,i) = logt(t,i) + delt
+
      ENDIF
 
      !modify post-AGB stars
@@ -46,6 +62,8 @@ SUBROUTINE MOD_GB(zz,t,age,delt,dell,pagb,redgb,&
      ENDIF
 
      !modify RGB + red clump HB + AGB
+     !NB: this currently only works with BaSTI, which
+     !defines these phases
      IF (phase(t,i).EQ.2.OR.phase(t,i).EQ.3 &
           .OR.phase(t,i).EQ.4.OR.phase(t,i).EQ.5) THEN
         wght(i) = wght(i)*redgb
