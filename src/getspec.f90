@@ -116,14 +116,10 @@ SUBROUTINE GETSPEC(pset,mact,logt,lbol,logg,phase,ffco,spec)
      test3 = speclib(whlam5000,pset%zmet,jlo,klo+1)
      test4 = speclib(whlam5000,pset%zmet,jlo+1,klo+1)
      
-     !if all four components are zero, set the flag to zero
-     IF ((test1.LE.tiny30.AND.test2.LE.tiny30.AND.&
-          test3.LE.tiny30.AND.test4.LE.tiny30)) flag=0
-
      !catch stars that fall off part of the grid
      !the flux at 5000A should never be zero unless a spec is missing
-     IF ((test1.LE.tiny30.OR.test2.LE.tiny30.OR.&
-          test3.LE.tiny30.OR.test4.LE.tiny30).AND.flag.EQ.1) THEN
+     IF ((test1.LE.tiny_number.OR.test2.LE.tiny_number.OR.&
+          test3.LE.tiny_number.OR.test4.LE.tiny_number)) THEN
 
         IF (verbose.EQ.1) & 
              WRITE(*,'(" GETSPEC WARNING: Part of the '//&
@@ -136,6 +132,9 @@ SUBROUTINE GETSPEC(pset,mact,logt,lbol,logg,phase,ffco,spec)
         IF (test2.GT.tiny_number) ispec = speclib(:,pset%zmet,jlo+1,klo)
         IF (test3.GT.tiny_number) ispec = speclib(:,pset%zmet,jlo,klo+1)
         IF (test4.GT.tiny_number) ispec = speclib(:,pset%zmet,jlo+1,klo+1)
+
+        !if all four components are zero, set the flag to zero
+        IF (ispec(whlam5000).LE.tiny_number) flag=0
 
      ELSE
         
@@ -161,7 +160,6 @@ SUBROUTINE GETSPEC(pset,mact,logt,lbol,logg,phase,ffco,spec)
           phase.NE.6.AND.phase.NE.9) THEN
         WRITE(*,'(" GETSPEC WARNING: point entirely off the grid: ",2F6.3,1x,I1)') ,&
              logt,loggi,INT(phase)
-
      ELSE IF (flag.GT.1) THEN
         WRITE(*,'(" GETSPEC WARNING: isochrone point assigned *two* spectra!")') 
      ENDIF
