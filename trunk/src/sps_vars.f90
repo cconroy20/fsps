@@ -29,19 +29,12 @@ MODULE SPS_VARS
   
   !setup cosmology (WMAP7).  Used only for z(t) relation.
   REAL(SP) :: om0=0.27, ol0=0.73, H0=72.
-  !define solar metallicity
-  REAL(SP), PARAMETER :: zsol=0.0190 
+  REAL(SP), PARAMETER :: zsol=0.0190 !solar metallicity
   
   !controls the level of output
   !0 = minimal output to screen.
   !1 = lots of output to screen.  useful for debugging.
   INTEGER, PARAMETER :: verbose=0
-
-  !flag specifying TP-AGB normalization scheme
-  !0 = default Padova 2007 isochrones
-  !1 = Conroy & Gunn 2010 normalization
-  !2 = Villaume, Conroy, Johnson 2014 normalization
-  INTEGER :: tpagb_norm_type=1
 
   !turn-on time for BHB and SBS phases, time is in log(yrs)
   REAL(SP), PARAMETER :: bhb_sbs_time=9.3
@@ -104,7 +97,7 @@ MODULE SPS_VARS
   !flag specifying zero-point of magnitudes
   !0 = AB system
   !1 = Vega system
-  INTEGER  :: compute_vega_mags=0
+  INTEGER  :: compute_vega_mags=1
 
   !flag indicating whether or not the output colors
   !will be redshifted to the age of the Universe corresponding
@@ -200,7 +193,7 @@ MODULE SPS_VARS
   !number of emission lines and continuum emission points
   INTEGER, PARAMETER :: nemline=108, nlam_nebcont=8548
   !number of metallicity, age, and ionization parameter points
-  INTEGER, PARAMETER :: nebnz=7, nebnage=7, nebnip=5
+  INTEGER, PARAMETER :: nebnz=5, nebnage=5, nebnip=5
 
   !------------IMF-related Constants--------------!
   
@@ -247,7 +240,6 @@ MODULE SPS_VARS
   !are less than tiny_number are treated as equal to 0.0
   REAL(SP), PARAMETER :: huge_number = 10**(70.d0)
   REAL(SP), PARAMETER :: tiny_number = 10**(-70.d0)
-  REAL(SP), PARAMETER :: tiny30      = 10**(-30.0)
   
   !---------------Common Block-------------------!
     

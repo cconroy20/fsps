@@ -4,11 +4,12 @@ SUBROUTINE WRITE_ISOCHRONE(outfile,pset)
 
   USE sps_vars; USE sps_utils, ONLY : getmags,getspec,imf_weight
   IMPLICIT NONE
-
-  INTEGER :: i,tt,zz
+  REAL(SP) :: tau_agb
+  REAL(SP) :: compute_tau1
+  INTEGER :: i,tt,zz, cstari
   TYPE(PARAMS), INTENT(in) :: pset
   CHARACTER(100), INTENT(in)  :: outfile
-  CHARACTER(51)  :: fmt
+  CHARACTER(70)  :: fmt
   REAL(SP) :: dz=0.0,loggi,hb_wght
   REAL(SP), DIMENSION(nspec)  :: spec
   REAL(SP), DIMENSION(nm)     :: wght
@@ -21,17 +22,23 @@ SUBROUTINE WRITE_ISOCHRONE(outfile,pset)
   !---------------------------------------------------------------!
 
   hb_wght = 0.0
-  wght    = 0.0
-  zz      = pset%zmet
+  zz = pset%zmet
 
-  fmt = '(F7.4,1x,F8.4,1x,F14.9,1x,6(F8.4,1x),000(F7.3,1x))'
-  WRITE(fmt(38:40),'(I3,1x,I4)') nbands
+!  fmt = '(F7.4,1x,F8.4,1x,F14.9,1x,6(F8.4,1x),000(F7.3,1x))'
+!  WRITE(fmt(38:40),'(I3,1x,I4)') nbands
+!
+!  OPEN(40,FILE=TRIM(SPS_HOME)//'/OUTPUTS/'//TRIM(outfile)//'.cmd',&
+!       STATUS='REPLACE')
+!  WRITE(40,*) '# age log(Z) mass logl logt logg '//&
+!       'phase composition log(weight) mags'
+ 
+    fmt = '(F7.4,1x,F8.4,1x,F14.9,1x,6(F8.4,1x),(13ES11.2E3),000(F8.3,1x))'
+    WRITE(fmt(52:54),'(I3,1x,I4)') nbands
+    OPEN(40,FILE=TRIM(SPS_HOME)//'/OUTPUTS/'//TRIM(outfile)//'.cmd',&
+        STATUS='REPLACE')
+    WRITE(40,*) '# age log(Z) mass logl logt logg '//&
+            'phase composition log(weight) tau mags'
 
-  OPEN(40,FILE=TRIM(SPS_HOME)//'/OUTPUTS/'//TRIM(outfile)//'.cmd',&
-       STATUS='REPLACE')
-  WRITE(40,*) '# age log(Z) mass logl logt logg '//&
-       'phase composition log(weight) mags'
-       
   !transfer isochrones into temporary arrays
   mini  = mini_isoc(zz,:,:)  !initial mass
   mact  = mact_isoc(zz,:,:)  !actual (present) mass
@@ -60,8 +67,8 @@ SUBROUTINE WRITE_ISOCHRONE(outfile,pset)
           wght,hb_wght,nmass)
 
      !modify the TP-AGB stars and Post-AGB stars
-     CALL MOD_GB(zz,tt,timestep_isoc(zz,:),pset%delt,&
-          pset%dell,pset%pagb,pset%redgb,nmass(tt),logl,logt,phase,wght)
+ !    CALL MOD_GB(zz,tt,timestep_isoc(zz,:),pset%delt,&
+ !         pset%dell,pset%pagb,pset%redgb,nmass(tt),logl,logt,phase,wght)
 
 
      DO i=1,nmass_isoc(zz,tt)
@@ -79,10 +86,19 @@ SUBROUTINE WRITE_ISOCHRONE(outfile,pset)
            loggi = logg(tt,i)
         ENDIF
 
+        IF (ffco_isoc(zz,tt,i).GT.1) THEN
+            cstari=1
+        ELSE
+            cstari=0
+        ENDIF
+
+        tau_agb = COMPUTE_TAU1(cstari, mact_isoc(zz,tt,i), logt_isoc(zz,tt,i), &
+                        logl_isoc(zz,tt,i), loggi, zz)
+
         !write results to file
         WRITE(40,fmt) timestep_isoc(zz,tt),LOG10(zlegend(zz)),&
              mini(tt,i),logl(tt,i),logt(tt,i),loggi,phase(tt,i),&
-             ffco(tt,i),LOG10(wght(i)),mags
+             ffco(tt,i),LOG10(wght(i)), tau_agb, mags
         
      ENDDO
         

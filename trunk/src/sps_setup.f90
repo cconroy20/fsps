@@ -33,7 +33,7 @@ SUBROUTINE SPS_SETUP(zin)
   REAL(SP), DIMENSION(10000) :: lambda_dagb=0.,fluxin_dagb=0.
   REAL(SP), DIMENSION(14) :: lami=0.
   INTEGER,  DIMENSION(14) :: ind
-  REAL(SP), DIMENSION(1963) :: readlambneb=0.,readcontneb=0.
+  REAL(SP), DIMENSION(20000) :: readlambneb=0.,readcontneb=0.
   REAL(SP), DIMENSION(22,n_agb_o) :: tagb_logt_o
   REAL(SP), DIMENSION(22) :: tagb_logz_o
 
@@ -450,7 +450,7 @@ SUBROUTINE SPS_SETUP(zin)
      !open BaSTI isochrones
      IF (isoc_type.EQ.'bsti') &
           OPEN(97,FILE=TRIM(SPS_HOME)//&
-          '/ISOCHRONES/BaSTI/NOVER/isoc_z'//zstype//'.dat',STATUS='OLD',&
+          '/ISOCHRONES/BaSTI/isoc_z'//zstype//'.dat',STATUS='OLD',&
           IOSTAT=stat,ACTION='READ')
 
      IF (stat.NE.0) THEN
@@ -604,59 +604,69 @@ SUBROUTINE SPS_SETUP(zin)
   !----------------Set up nebular emission arrays------------------!
   !----------------------------------------------------------------!
 
-  !WRITE(*,*) 'SPS_SETUP: Not reading in nebular em arrays'
-  IF (1.EQ.0) THEN
+  !read in grid properties
+  OPEN(99,FILE=TRIM(SPS_HOME)//'/nebular/age_grid.dat',&
+       STATUS='OLD',iostat=stat,ACTION='READ')
+  DO i=1,nebnage
+     READ(99,*) nebem_age(i)
+  ENDDO
+  CLOSE(99)
+  nebem_age = LOG10(nebem_age*1E6) !convert to log(yr)
+  OPEN(99,FILE=TRIM(SPS_HOME)//'/nebular/zgas_grid.dat',&
+       STATUS='OLD',iostat=stat,ACTION='READ')
+  DO i=1,nebnz
+     READ(99,*) nebem_zgas(i)
+  ENDDO
+  CLOSE(99)
+  OPEN(99,FILE=TRIM(SPS_HOME)//'/nebular/logu_grid.dat',&
+       STATUS='OLD',iostat=stat,ACTION='READ')
+  DO i=1,nebnip
+     READ(99,*) nebem_logu(i)
+  ENDDO
+  CLOSE(99)
 
   !read in nebular continuum arrays
-  OPEN(99,FILE=TRIM(SPS_HOME)//'/nebular/ZAU.cont',&
+  OPEN(99,FILE=TRIM(SPS_HOME)//'/nebular/ZAU115.out_cont',&
        STATUS='OLD',iostat=stat,ACTION='READ')
   IF (stat.NE.0) THEN
-     WRITE(*,*) 'SPS_SETUP ERROR: nebular cont. file cannot be opened'
+     WRITE(*,*) 'SPS_SETUP ERROR: nebular cont. files cannot be opened'
      STOP
   ENDIF
   !burn the header
   READ(99,*)
-  !read the wavelength array
-  READ(99,*) readlambneb
-  DO i=1,nebnz
-     DO j=1,nebnage
-        DO k=1,nebnip
-           READ(99,*,iostat=stat) nebem_zgas(i),nebem_age(j),nebem_logu(k)
-           READ(99,*,iostat=stat) readcontneb
-           READ(99,*,iostat=stat) readcontneb
-           READ(99,*,iostat=stat) readcontneb
-           !interpolate onto the main wavelength grid
-           nebem_cont(:,i,j) = 10**linterparr(readlambneb,&
-                LOG10(readcontneb+tiny_number),spec_lambda)-tiny_number
-        ENDDO
-     ENDDO
+  READ(99,*)
+  DO i=1,20000
+     READ(99,*,iostat=stat) readlambneb(i),d1,d2,readcontneb(i)
+     IF (stat.NE.0) GOTO 509
   ENDDO
+509 CONTINUE
   CLOSE(99)
 
+  !interpolate onto the main wavelength grid
+  nebem_cont(1:nspec,1,1) = 10**linterparr(readlambneb(1:i-1),&
+       LOG10(readcontneb(1:i-1))+tiny_number,spec_lambda(1:nspec))-tiny_number
 
   !read in nebular emission line luminosities
-  OPEN(99,FILE=TRIM(SPS_HOME)//'/nebular/ZAU.lines',&
+  OPEN(99,FILE=TRIM(SPS_HOME)//'/nebular/ZAU115.out_lines',&
        STATUS='OLD',iostat=stat,ACTION='READ')
   IF (stat.NE.0) THEN
-     WRITE(*,*) 'SPS_SETUP ERROR: nebular line file cannot be opened'
+     WRITE(*,*) 'SPS_SETUP ERROR: nebular cont. files cannot be opened'
      STOP
   ENDIF
   !burn the header
-  READ(99,*) 
-  READ(99,*) 
+  READ(99,*)
+  READ(99,*)
   DO i=1,nemline
      READ(99,*) nebem_line_pos(i),nebem_line(i,1,1,1)
   ENDDO
   CLOSE(99)
 
   !renormalize to Lsun/Hz
-  !DO i=1,nebnz
-  !   DO j=1,nebnage
-  !      nebem_cont(:,i,j) = nebem_cont(:,i,j)/Lsun * spec_lambda**2/clight
-  !   ENDDO
-  !ENDDO
-
-  ENDIF
+  DO i=1,nebnz
+     DO j=1,nebnage
+        nebem_cont(:,i,j) = nebem_cont(:,i,j)/Lsun * spec_lambda**2/clight
+     ENDDO
+  ENDDO
 
 
   !----------------------------------------------------------------!
