@@ -11,7 +11,7 @@ SUBROUTINE ADD_DUST(pset,csp1,csp2,specdust,mdust)
   !number of points to use for dust clump integration
   !(has been tested for convergence)
   INTEGER, PARAMETER :: nclump=50
-  INTEGER :: w63,i,qlo,ulo
+  INTEGER :: w63,i,qlo,ulo,iself=0
   REAL(SP), DIMENSION(nspec)  :: diffuse_dust,tau2,katt,cspi
   REAL(SP), DIMENSION(nspec)  :: x,a,b,y,fa,fb,hack,nu,dumin,dumax
   REAL(SP), DIMENSION(nspec)  :: mduste,duste,oduste,sduste,tduste
@@ -207,6 +207,7 @@ SUBROUTINE ADD_DUST(pset,csp1,csp2,specdust,mdust)
      !only add dust emission if there is absorption
      IF (pset%dust2.GT.tiny_number.OR.pset%dust1.GT.tiny_number) THEN
 
+        iself=0
         !compute Lbol both before and after dust attenuation
         !this will determine the normalization of the dust emission
         nu    = clight/spec_lambda
@@ -255,7 +256,7 @@ SUBROUTINE ADD_DUST(pset,csp1,csp2,specdust,mdust)
         !we need to iterate because the dust
         !will re-emit and be re-absorbed, etc.
         tduste = 0.0
-        DO WHILE ((lboln-lbold).GT.1E-2)
+        DO WHILE (((lboln-lbold).GT.1E-2).OR.iself.EQ.0)
 
            oduste = duste
            IF (dust_type.NE.2) THEN
@@ -264,12 +265,14 @@ SUBROUTINE ADD_DUST(pset,csp1,csp2,specdust,mdust)
               duste = duste * EXP(-katt)
            ENDIF
            tduste = tduste + duste
-
+           
            lbold = TSUM(nu,duste)  !after  self-abs
            lboln = TSUM(nu,oduste) !before self-abs
 
            duste = MAX(mduste/norm*(lboln-lbold),tiny_number)
            
+           iself=1
+
         ENDDO
 
         !this factor assumes Md/Mh=0.01 (appropriate for the 
