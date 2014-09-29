@@ -162,8 +162,8 @@ SUBROUTINE SPS_SETUP(zin)
      OPEN(91,FILE=TRIM(SPS_HOME)//'/SPECTRA/MILES/miles.lambda',&
           STATUS='OLD',iostat=stat,ACTION='READ')
   ELSE IF (spec_type(1:5).EQ.'ckc14') THEN
-     OPEN(91,FILE=TRIM(SPS_HOME)//'/SPECTRA/CKC14/'//spec_type(1:5)//&
-          '.lambda',STATUS='OLD',iostat=stat,ACTION='READ')
+     OPEN(91,FILE=TRIM(SPS_HOME)//'/SPECTRA/CKC14/'//spec_type//'.lambda',&
+          STATUS='OLD',iostat=stat,ACTION='READ')
   ENDIF
   IF (stat.NE.0) THEN
      WRITE(*,*) 'SPS_SETUP ERROR: wavelength grid cannot be opened'
@@ -217,7 +217,7 @@ SUBROUTINE SPS_SETUP(zin)
         IF (spec_type(1:5).EQ.'ckc14') THEN
            WRITE(*,*) 'you are attempting to use the CKC14 grid but you'//&
                 ' seem to not have the files.  Download them here XXX, and '//&
-                'put them in the SPECTRA/CKC14/ directory'
+                'put them in the SPECTRA/CKC14/ directory (not available yet!)'
         ENDIF
         STOP 
      ENDIF
@@ -275,7 +275,6 @@ SUBROUTINE SPS_SETUP(zin)
        '/SPECTRA/AGB_spectra/Orich_spec_all_'//spec_type//'.dat',&
        STATUS='OLD',iostat=stat,ACTION='READ')
   IF (stat.NE.0) THEN
-     
      WRITE(*,*) 'SPS_SETUP ERROR: /AGB_spectra/Orich_spec_all_'//&
           spec_type//'.dat '//'cannot be opened'
      STOP 
@@ -450,7 +449,7 @@ SUBROUTINE SPS_SETUP(zin)
      !open BaSTI isochrones
      IF (isoc_type.EQ.'bsti') &
           OPEN(97,FILE=TRIM(SPS_HOME)//&
-          '/ISOCHRONES/BaSTI/NOVER/isoc_z'//zstype//'.dat',STATUS='OLD',&
+          '/ISOCHRONES/BaSTI/isoc_z'//zstype//'.dat',STATUS='OLD',&
           IOSTAT=stat,ACTION='READ')
 
      IF (stat.NE.0) THEN
@@ -831,6 +830,7 @@ SUBROUTINE SPS_SETUP(zin)
   !---------------Set up extinction curve indices------------------!
   !----------------------------------------------------------------!
 
+  !these are the breakpoints for the CCM89 MW parameterization
   DO j=1,nspec
      x = 1E4/spec_lambda(j)
      IF (x.GT.12.) mwdindex(6)=j
