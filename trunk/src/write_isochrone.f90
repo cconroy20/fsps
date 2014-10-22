@@ -63,7 +63,6 @@ SUBROUTINE WRITE_ISOCHRONE(outfile,pset)
      CALL MOD_GB(zz,tt,timestep_isoc(zz,:),pset%delt,&
           pset%dell,pset%pagb,pset%redgb,nmass(tt),logl,logt,phase,wght)
 
-
      DO i=1,nmass_isoc(zz,tt)
         
         !get the spectrum
@@ -85,7 +84,7 @@ SUBROUTINE WRITE_ISOCHRONE(outfile,pset)
              ffco(tt,i),LOG10(wght(i)),mags
         
      ENDDO
-        
+
   ENDDO
 
   CLOSE(40)

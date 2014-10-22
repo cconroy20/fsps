@@ -143,7 +143,7 @@ SUBROUTINE ADD_AGB_DUST(weight,tspec,mact,logt,logl,logg,zz,tco)
   !implement the dusty spectra (which are in units of 
   !flux_out/flux_in) into the AGB spectra
 !  tspec = tspec * dusty
-CALL SMOOTHSPEC(spec_lambda,tspec,10000.d0,30000.d0,100000000.d0)
- tspec = tspec * dusty
+  CALL SMOOTHSPEC(spec_lambda,tspec,10000.d0,30000.d0,100000000.d0)
+  tspec = tspec * dusty
 
 END SUBROUTINE ADD_AGB_DUST

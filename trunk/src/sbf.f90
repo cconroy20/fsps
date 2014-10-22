@@ -31,7 +31,8 @@ SUBROUTINE SBF(pset,outfile)
   hb_wght  = 0.
   wght     = 0.
  
-  OPEN(56,FILE=TRIM(SPS_HOME)//'/OUTPUTS/'//TRIM(outfile)//'.mags',STATUS='REPLACE')
+  OPEN(56,FILE=TRIM(SPS_HOME)//'/OUTPUTS/'//TRIM(outfile)//&
+       '.mags',STATUS='REPLACE')
   DO i=1,8 !write a dummy header
      WRITE(56,*) '#'
   ENDDO

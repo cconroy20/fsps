@@ -15,7 +15,8 @@ MODULE SPS_VARS
 #define PADOVA 1
 #define BASTI 0
 ! "MIST" currently under development.  do not use!
-#define MIST 0    
+! (remember that imf_weight has been modified)
+#define MIST 0
 
 
   !--------------------------------------------------------------!
@@ -62,7 +63,7 @@ MODULE SPS_VARS
 
   !turn on/off the AGB circumstellar dust model
   !NB: this feature is currently under development, do not use!
-  INTEGER :: add_agb_dust_model=1
+  INTEGER :: add_agb_dust_model=0
 
   !turn on/off a Cloudy-based nebular emission model 
   !NB: this feature is currently under development, do not use!
@@ -133,7 +134,8 @@ MODULE SPS_VARS
 #if (MILES)
   CHARACTER(5), PARAMETER :: spec_type = 'miles'
 #elif (CKC14)
-  CHARACTER(5), PARAMETER :: spec_type = 'ckc14'
+  !CHARACTER(5), PARAMETER :: spec_type = 'ckc14'
+  CHARACTER(6), PARAMETER :: spec_type = 'ckc14z'
 #else
   CHARACTER(5), PARAMETER :: spec_type = 'basel'
 #endif
@@ -144,8 +146,8 @@ MODULE SPS_VARS
   INTEGER, PARAMETER :: nz=5
   INTEGER, PARAMETER :: nspec=5994
 #elif (CKC14)
-  INTEGER, PARAMETER :: nz=8
-  INTEGER, PARAMETER :: nspec=26500
+  INTEGER, PARAMETER :: nz=1
+  INTEGER, PARAMETER :: nspec=47378   ! 47378, 26500
 #else
   INTEGER, PARAMETER :: nspec=1963
 #if (BASTI)
@@ -198,9 +200,9 @@ MODULE SPS_VARS
   !parameters for circumstellar dust models
   INTEGER, PARAMETER :: ntau_dagb=50, nteff_dagb=6
   !number of emission lines and continuum emission points
-  INTEGER, PARAMETER :: nemline=108, nlam_nebcont=8548
+  INTEGER, PARAMETER :: nemline=108, nlam_nebcont=1963
   !number of metallicity, age, and ionization parameter points
-  INTEGER, PARAMETER :: nebnz=7, nebnage=7, nebnip=5
+  INTEGER, PARAMETER :: nebnz=6, nebnage=6, nebnip=6
 
   !------------IMF-related Constants--------------!
   
@@ -242,6 +244,8 @@ MODULE SPS_VARS
   REAL(SP), PARAMETER :: pc2cm   = 3.08568E18
   !seconds per year
   REAL(SP), PARAMETER :: yr2sc   = 3.15569E7
+  !Planck's constant
+  REAL(SP), PARAMETER :: hplank  = 6.6261E-27
 
   !define large and small numbers.  numbers whose abs values
   !are less than tiny_number are treated as equal to 0.0
@@ -350,8 +354,8 @@ MODULE SPS_VARS
   !nebular emission model
   REAL(SP), DIMENSION(nemline) :: nebem_line_pos=0.
   REAL(SP), DIMENSION(nemline,nebnz,nebnage,nebnip) :: nebem_line=0.
-  REAL(SP), DIMENSION(nspec,nebnz,nebnage) :: nebem_cont=0.
-  REAL(SP), DIMENSION(nebnz)   :: nebem_zgas=0.
+  REAL(SP), DIMENSION(nspec,nebnz,nebnage,nebnip) :: nebem_cont=0.
+  REAL(SP), DIMENSION(nebnz)   :: nebem_logz=0.
   REAL(SP), DIMENSION(nebnage) :: nebem_age=0.
   REAL(SP), DIMENSION(nebnip)  :: nebem_logu=0.
 
@@ -384,7 +388,7 @@ MODULE SPS_VARS
           dust1_index=-1.0,mdave=0.5,sf_start=0.,sf_trunc=0.,sf_theta=0.,&
           duste_gamma=0.01,duste_umin=1.0,duste_qpah=3.5,fcstar=1.0,&
           masscut=150.0,sigma_smooth=0.,agb_dust=1.0,min_wave_smooth=1E3,&
-          max_wave_smooth=1E4,gas_logu=-2.0,gas_logzsol=0.
+          max_wave_smooth=1E4,gas_logu=-2.0,gas_logz=0.
      INTEGER :: zmet=1,sfh=0,wgp1=1,wgp2=1,wgp3=1,evtype=-1
      INTEGER, DIMENSION(nbands) :: mag_compute=1
      CHARACTER(50) :: imf_filename='', sfh_filename=''
