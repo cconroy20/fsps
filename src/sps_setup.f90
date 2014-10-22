@@ -33,7 +33,7 @@ SUBROUTINE SPS_SETUP(zin)
   REAL(SP), DIMENSION(10000) :: lambda_dagb=0.,fluxin_dagb=0.
   REAL(SP), DIMENSION(14) :: lami=0.
   INTEGER,  DIMENSION(14) :: ind
-  REAL(SP), DIMENSION(1963) :: readlambneb=0.,readcontneb=0.
+  REAL(SP), DIMENSION(nlam_nebcont) :: readlambneb=0.,readcontneb=0.
   REAL(SP), DIMENSION(22,n_agb_o) :: tagb_logt_o
   REAL(SP), DIMENSION(22) :: tagb_logz_o
 
@@ -140,6 +140,10 @@ SUBROUTINE SPS_SETUP(zin)
      READ(90,'(F6.4)') zlegend(z)
   ENDDO
   CLOSE(90)
+
+  !IF (spec_type(1:5).EQ.'ckc14'.AND.isoc_type.NE.'mist') THEN
+  !   zlegend = (/0.0190,0.0300/)
+  !ENDIF
 
   IF (zin.LE.0) THEN
      zmin = 1
@@ -603,10 +607,7 @@ SUBROUTINE SPS_SETUP(zin)
   !----------------Set up nebular emission arrays------------------!
   !----------------------------------------------------------------!
 
-  !WRITE(*,*) 'SPS_SETUP: Not reading in nebular em arrays'
-  IF (1.EQ.0) THEN
-
-  !read in nebular continuum arrays
+  !read in nebular continuum arrays.  Units are Lsun/Hz/Q
   OPEN(99,FILE=TRIM(SPS_HOME)//'/nebular/ZAU.cont',&
        STATUS='OLD',iostat=stat,ACTION='READ')
   IF (stat.NE.0) THEN
@@ -620,20 +621,18 @@ SUBROUTINE SPS_SETUP(zin)
   DO i=1,nebnz
      DO j=1,nebnage
         DO k=1,nebnip
-           READ(99,*,iostat=stat) nebem_zgas(i),nebem_age(j),nebem_logu(k)
-           READ(99,*,iostat=stat) readcontneb
-           READ(99,*,iostat=stat) readcontneb
+           READ(99,*,iostat=stat) nebem_logz(i),nebem_age(j),nebem_logu(k)
            READ(99,*,iostat=stat) readcontneb
            !interpolate onto the main wavelength grid
-           nebem_cont(:,i,j) = 10**linterparr(readlambneb,&
-                LOG10(readcontneb+tiny_number),spec_lambda)-tiny_number
+           !some values in the table are 0.0, set a floor of 1E-95
+           nebem_cont(:,i,j,k) = linterparr(readlambneb,&
+                LOG10(readcontneb+10**(-95.d0)),spec_lambda)
         ENDDO
      ENDDO
   ENDDO
   CLOSE(99)
 
-
-  !read in nebular emission line luminosities
+  !read in nebular emission line luminosities.  Units are Lsun/Q
   OPEN(99,FILE=TRIM(SPS_HOME)//'/nebular/ZAU.lines',&
        STATUS='OLD',iostat=stat,ACTION='READ')
   IF (stat.NE.0) THEN
@@ -642,21 +641,21 @@ SUBROUTINE SPS_SETUP(zin)
   ENDIF
   !burn the header
   READ(99,*) 
-  READ(99,*) 
-  DO i=1,nemline
-     READ(99,*) nebem_line_pos(i),nebem_line(i,1,1,1)
+  !read the wavelength array
+  READ(99,*) nebem_line_pos
+  DO i=1,nebnz
+     DO j=1,nebnage
+        DO k=1,nebnip
+           READ(99,*,iostat=stat) nebem_logz(i),nebem_age(j),nebem_logu(k)
+           READ(99,*,iostat=stat) nebem_line(:,i,j,k)
+        ENDDO
+     ENDDO
   ENDDO
   CLOSE(99)
 
-  !renormalize to Lsun/Hz
-  !DO i=1,nebnz
-  !   DO j=1,nebnage
-  !      nebem_cont(:,i,j) = nebem_cont(:,i,j)/Lsun * spec_lambda**2/clight
-  !   ENDDO
-  !ENDDO
-
-  ENDIF
-
+  !convert the nebem_age array to log(age), and log the emission arrays
+  nebem_age  = LOG10(nebem_age)
+  nebem_line = LOG10(nebem_line)
 
   !----------------------------------------------------------------!
   !-------------------Set up magnitude info------------------------!

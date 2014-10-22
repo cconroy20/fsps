@@ -50,5 +50,6 @@ SUBROUTINE IMF_WEIGHT(mini,wght,nmass)
   imf_type = imf_type - 10
 
   RETURN
+
 END SUBROUTINE IMF_WEIGHT
 

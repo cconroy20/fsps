@@ -54,8 +54,6 @@ SUBROUTINE SSP_GEN(pset,mass_ssp,lbol_ssp,spec_ssp)
   ENDIF
 
   !reset arrays
-  hb_wght  = 0.
-  wght     = 0.
   spec_ssp = 0.
   mass_ssp = 0.
   lbol_ssp = 0.
@@ -140,6 +138,10 @@ SUBROUTINE SSP_GEN(pset,mass_ssp,lbol_ssp,spec_ssp)
   !loop over each isochrone
   DO i=1,nt
 
+     !reset arrays
+     hb_wght  = 0.
+     wght     = 0.
+ 
      IF (verbose.EQ.1) &
           WRITE(*,'("age=",F5.2)') time(i)
 
