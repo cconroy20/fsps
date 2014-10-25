@@ -69,8 +69,8 @@ FUNCTION COMPUTE_TAU1(cstar,mact,logt,logl,logg,zz)
   !finally, compute tau (and convert to cgs)
   compute_tau1 = kappa * delta * (mdot*msun/yr2sc) &
        / rin / (4*mypi) / (vexp*1E5)
-!        write(*, '(13ES11.2)') compute_tau1
-    !WRITE(*,'(13ES11.2)') mact,logl,logg,radius,period,mdot,rin,&
+
+  !WRITE(*,'(13ES11.2)') mact,logl,logg,radius,period,mdot,rin,&
   !     vexp,delta,compute_tau1
 
 END FUNCTION COMPUTE_TAU1

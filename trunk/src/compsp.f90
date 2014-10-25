@@ -492,8 +492,8 @@ SUBROUTINE COMPSP(write_compsp,nzin,outfile,mass_ssp,&
      IF (write_compsp.EQ.2.OR.write_compsp.EQ.3) THEN
         WRITE(20,'("#")') 
         WRITE(20,31) 
-        IF (imax-imin.EQ.1) WRITE(20,'(I3,1x,I4)') 1,nspec
-        IF (imax-imin.GT.1) WRITE(20,'(I3,1x,I4)') ntfull,nspec
+        IF (imax-imin.EQ.1) WRITE(20,'(I3,1x,I6)') 1,nspec
+        IF (imax-imin.GT.1) WRITE(20,'(I3,1x,I6)') ntfull,nspec
         WRITE(20,*) spec_lambda
        ENDIF
        IF (write_compsp.EQ.4) THEN
