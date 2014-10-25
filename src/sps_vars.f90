@@ -202,7 +202,7 @@ MODULE SPS_VARS
   !number of emission lines and continuum emission points
   INTEGER, PARAMETER :: nemline=108, nlam_nebcont=1963
   !number of metallicity, age, and ionization parameter points
-  INTEGER, PARAMETER :: nebnz=6, nebnage=6, nebnip=6
+  INTEGER, PARAMETER :: nebnz=7, nebnage=7, nebnip=7
 
   !------------IMF-related Constants--------------!
   
