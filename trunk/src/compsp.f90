@@ -219,7 +219,7 @@ SUBROUTINE COMPSP(write_compsp,nzin,outfile,mass_ssp,&
 
   USE sps_vars
   USE sps_utils, ONLY : getmags,add_dust,linterp,intspec,&
-       smoothspec,locate,getindx,write_isochrone
+       smoothspec,locate,getindx,write_isochrone,vactoair,igm_absorb
   IMPLICIT NONE
  
   !write_compsp = 1->write mags, 2->write spectra
@@ -454,7 +454,11 @@ SUBROUTINE COMPSP(write_compsp,nzin,outfile,mass_ssp,&
         WRITE(20,31) 
         IF (imax-imin.EQ.1) WRITE(20,'(I3,1x,I6)') 1,nspec
         IF (imax-imin.GT.1) WRITE(20,'(I3,1x,I6)') ntfull,nspec
-        WRITE(20,'(50000(F15.4))') spec_lambda
+        IF (vactoair_flag.EQ.0) THEN
+           WRITE(20,'(50000(F15.4))') spec_lambda
+        ELSE
+           WRITE(20,'(50000(F15.4))') vactoair(spec_lambda)
+        ENDIF
      ENDIF
      IF (write_compsp.EQ.4) THEN
         WRITE(30,'("#   Processing SSP")')
@@ -462,7 +466,7 @@ SUBROUTINE COMPSP(write_compsp,nzin,outfile,mass_ssp,&
         WRITE(30,34) 
      ENDIF
   ELSE
-    IF (pset%sfh.EQ.2.OR.pset%sfh.EQ.3) THEN
+     IF (pset%sfh.EQ.2.OR.pset%sfh.EQ.3) THEN
         IF (verbose.EQ.1) &
              WRITE(*,30) pset%dust1,pset%dust2
         IF (write_compsp.EQ.1.OR.write_compsp.EQ.3) &
@@ -494,7 +498,11 @@ SUBROUTINE COMPSP(write_compsp,nzin,outfile,mass_ssp,&
         WRITE(20,31) 
         IF (imax-imin.EQ.1) WRITE(20,'(I3,1x,I6)') 1,nspec
         IF (imax-imin.GT.1) WRITE(20,'(I3,1x,I6)') ntfull,nspec
-        WRITE(20,*) spec_lambda
+        IF (vactoair_flag.EQ.0) THEN
+           WRITE(20,'(50000(F15.4))') spec_lambda
+        ELSE
+           WRITE(20,'(50000(F15.4))') vactoair(spec_lambda)
+        ENDIF
        ENDIF
        IF (write_compsp.EQ.4) THEN
           WRITE(20,'("#")') 
@@ -595,6 +603,12 @@ SUBROUTINE COMPSP(write_compsp,nzin,outfile,mass_ssp,&
       IF (pset%sigma_smooth.GT.0.0) THEN
          CALL SMOOTHSPEC(spec_lambda,spec_csp,pset%sigma_smooth,&
               pset%min_wave_smooth,pset%max_wave_smooth)
+      ENDIF
+
+      !add IGM absorption
+      IF (add_igm_absorption.EQ.1.AND.pset%zred.GT.0.0) THEN
+         spec_csp = igm_absorb(spec_lambda,spec_csp,pset%zred,&
+              pset%igm_factor)
       ENDIF
 
       !compute spectral indices

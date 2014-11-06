@@ -9,7 +9,7 @@ FUNCTION COMPUTE_Q(lam,spec,ilym)
   REAL(SP), DIMENSION(nspec) :: nu
   REAL(SP) :: compute_q
 
- !-----------------------------------------------------------!
+  !-----------------------------------------------------------!
  
   nu   = clight / lam
   compute_q = tsum(nu(:ilym),spec(:ilym)/nu(:ilym))/hplank*lsun
@@ -46,11 +46,12 @@ SUBROUTINE ADD_NEBULAR(pset,sspi,sspo)
 
   !set limits on the velocity dispersion for broadening
   IF (smooth_velocity.EQ.1) THEN
-     sigma = MAX(pset%sigma_smooth,10.0)
+     sigma = MAX(pset%sigma_smooth,neb_res_min)
   ELSE
      dlam = MAX(pset%sigma_smooth,1.0)
   ENDIF
 
+  !set up the interpolation variables for logZ and logU
   z1 = MAX(MIN(locate(nebem_logz,pset%gas_logz),nebnz-1),1)
   dz = (pset%gas_logz-nebem_logz(z1))/(nebem_logz(z1+1)-nebem_logz(z1))
   dz = MAX(MIN(dz,1.0),0.0) !no extrapolations
@@ -77,37 +78,35 @@ SUBROUTINE ADD_NEBULAR(pset,sspi,sspo)
 
      !interpolate in Zgas, logU, age
      tmpnebline = &
-          (1-dz)*(1-da)*(1-du)*nebem_line(:,z1,a1,u1)+&
-          (1-dz)*(1-da)*(du)*  nebem_line(:,z1,a1,u1+1)+&
-          (1-dz)*(da)*(1-du)*  nebem_line(:,z1,a1+1,u1)+&
-          (1-dz)*(da)*(du)*    nebem_line(:,z1,a1+1,u1+1)+&
-          (dz)*(1-da)*(1-du)*  nebem_line(:,z1+1,a1,u1)+&
-          (dz)*(1-da)*(du)*    nebem_line(:,z1+1,a1,u1+1)+&
-          (dz)*(da)*(1-du)*    nebem_line(:,z1+1,a1+1,u1)+&
-          (dz)*(da)*(du)*      nebem_line(:,z1+1,a1+1,u1+1)
+          (1-dz)*(1-da)*(1-du)* nebem_line(:,z1,a1,u1)+&
+          (1-dz)*(1-da)*(du)*   nebem_line(:,z1,a1,u1+1)+&
+          (1-dz)*(da)*(1-du)*   nebem_line(:,z1,a1+1,u1)+&
+          (1-dz)*(da)*(du)*     nebem_line(:,z1,a1+1,u1+1)+&
+          (dz)*(1-da)*(1-du)*   nebem_line(:,z1+1,a1,u1)+&
+          (dz)*(1-da)*(du)*     nebem_line(:,z1+1,a1,u1+1)+&
+          (dz)*(da)*(1-du)*     nebem_line(:,z1+1,a1+1,u1)+&
+          (dz)*(da)*(du)*       nebem_line(:,z1+1,a1+1,u1+1)
 
      tmpnebcont = &
-          (1-dz)*(1-da)*(1-du)*nebem_cont(:,z1,a1,u1)+&
-          (1-dz)*(1-da)*(du)*  nebem_cont(:,z1,a1,u1+1)+&
-          (1-dz)*(da)*(1-du)*  nebem_cont(:,z1,a1+1,u1)+&
-          (1-dz)*(da)*(du)*    nebem_cont(:,z1,a1+1,u1+1)+&
-          (dz)*(1-da)*(1-du)*  nebem_cont(:,z1+1,a1,u1)+&
-          (dz)*(1-da)*(du)*    nebem_cont(:,z1+1,a1,u1+1)+&
-          (dz)*(da)*(1-du)*    nebem_cont(:,z1+1,a1+1,u1)+&
-          (dz)*(da)*(du)*      nebem_cont(:,z1+1,a1+1,u1+1)
+          (1-dz)*(1-da)*(1-du)* nebem_cont(:,z1,a1,u1)+&
+          (1-dz)*(1-da)*(du)*   nebem_cont(:,z1,a1,u1+1)+&
+          (1-dz)*(da)*(1-du)*   nebem_cont(:,z1,a1+1,u1)+&
+          (1-dz)*(da)*(du)*     nebem_cont(:,z1,a1+1,u1+1)+&
+          (dz)*(1-da)*(1-du)*   nebem_cont(:,z1+1,a1,u1)+&
+          (dz)*(1-da)*(du)*     nebem_cont(:,z1+1,a1,u1+1)+&
+          (dz)*(da)*(1-du)*     nebem_cont(:,z1+1,a1+1,u1)+&
+          (dz)*(da)*(du)*       nebem_cont(:,z1+1,a1+1,u1+1)
      
      !add nebular continuum emission
-     sspo(:,t) = sspo(:,t) + 10**tmpnebcont * qq
+     IF (add_neb_continuum.EQ.1) THEN
+        sspo(:,t) = sspo(:,t) + 10**tmpnebcont * qq
+     ENDIF
 
      !add line emission
      DO i=1,nemline
         IF (smooth_velocity.EQ.1) THEN
            dlam = nebem_line_pos(i) * sigma/clight*1E13
         ENDIF
-        !I'm not entirely sure that this is correct.  The line emission
-        !is in units of Lsun/Q.  I multiply by Q and then divide by dlam
-        !(basically), which leaves things in units of Flam.  Then I multiply
-        !by lambda^2/c to conver to Fnu.  Seems plausible...
         sspo(:,t) = sspo(:,t) + 10**tmpnebline(i)/SQRT(2*mypi)/dlam*&
              EXP(-(spec_lambda-nebem_line_pos(i))**2/2/dlam**2) * qq / &
              clight*nebem_line_pos(i)**2

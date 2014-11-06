@@ -98,7 +98,8 @@ XX/XX/14
 
  - Release of v2.5
  - Many updates to the internal workings of the code to increase performance
- - Bug fixed related to post-AGB stars.
+ - Bugs fixed related to post-AGB stars and to the flux normalization at
+   the very youngest ages.
  - A new print option in compsp allows users to print the time-dependent CMD
    in all the filters.  New IDL routine read_cmd.pro is included.
  - Smoothing can now be implemented in wavelength or velocity space
@@ -107,3 +108,11 @@ XX/XX/14
    and metallicity dependence of both WN and WC spectra.
  - allow dust emission to be self-consistently re-absorbed (previously there 
    was an artificial discontinuity at 1um for very large dust optical depths)
+ - Nebular emission (both continuum and line) has been implemented, based on
+   lookup tables from Cloudy (courtesy of Nell Byler)
+ - Circumstellar dust around AGB stars is now included, as described in detail
+   in Villaume et al. (2014)
+ - Bug fixed related to the wavelengths in the allindices.dat file (an air-vac
+   conversion was missing).  New option to output wavelengths in air, rather
+   the default, which is vacuum.
+ - Added IGM absorption option a la Madau (1995) prescription

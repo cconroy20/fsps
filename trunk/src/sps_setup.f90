@@ -608,7 +608,7 @@ SUBROUTINE SPS_SETUP(zin)
   !----------------------------------------------------------------!
 
   !read in nebular continuum arrays.  Units are Lsun/Hz/Q
-  OPEN(99,FILE=TRIM(SPS_HOME)//'/nebular/ZAU.cont',&
+  OPEN(99,FILE=TRIM(SPS_HOME)//'/nebular/ZAU_WD.cont',&
        STATUS='OLD',iostat=stat,ACTION='READ')
   IF (stat.NE.0) THEN
      WRITE(*,*) 'SPS_SETUP ERROR: nebular cont. file cannot be opened'
@@ -633,7 +633,7 @@ SUBROUTINE SPS_SETUP(zin)
   CLOSE(99)
 
   !read in nebular emission line luminosities.  Units are Lsun/Q
-  OPEN(99,FILE=TRIM(SPS_HOME)//'/nebular/ZAU.lines',&
+  OPEN(99,FILE=TRIM(SPS_HOME)//'/nebular/ZAU_WD.lines',&
        STATUS='OLD',iostat=stat,ACTION='READ')
   IF (stat.NE.0) THEN
      WRITE(*,*) 'SPS_SETUP ERROR: nebular line file cannot be opened'
@@ -656,6 +656,18 @@ SUBROUTINE SPS_SETUP(zin)
   !convert the nebem_age array to log(age), and log the emission arrays
   nebem_age  = LOG10(nebem_age)
   nebem_line = LOG10(nebem_line)
+
+  !define the minimum resolution of the emission lines
+  !based on the resolution of the spectral library
+  !note that the numbers below are only approximate
+  IF (spec_type(1:5).EQ.'ckc14') THEN
+     neb_res_min = 10.0
+  ELSE IF (spec_type(1:5).EQ.'miles') THEN
+     neb_res_min = 100.0
+  ELSE IF (spec_type(1:5).EQ.'basel') THEN
+     neb_res_min = 1000.0
+  ENDIF
+
 
   !----------------------------------------------------------------!
   !-------------------Set up magnitude info------------------------!
@@ -913,6 +925,10 @@ SUBROUTINE SPS_SETUP(zin)
      IF (stat.NE.0) THEN 
         WRITE(*,*) 'SPS_SETUP ERROR: error during index defintion read'
         STOP
+     ENDIF
+     !convert the Lick indices from air to vacuum wavelengths
+     IF (i.LE.25) THEN 
+        indexdefined(1:6,i) = airtovac(indexdefined(1:6,i))
      ENDIF
   ENDDO
   CLOSE(99)

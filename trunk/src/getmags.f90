@@ -36,6 +36,7 @@ SUBROUTINE GETMAGS(zred,spec,mags,mag_compute)
         tspec(i) = MAX(linterp(spec_lambda*(1+zred),spec,&
         spec_lambda(i)),0.0)
      ENDDO
+     !note that this means the *redshifted* spectrum is returned
      spec = tspec
   ELSE
      tspec = spec  
@@ -43,7 +44,7 @@ SUBROUTINE GETMAGS(zred,spec,mags,mag_compute)
 
   !the units of the spectra are Lsun/Hz; convert to
   !erg/s/cm^2/Hz, at 10pc for absolute mags
-  tspec = tspec*lsun/4.0/mypi/(pc2cm*pc2cm)/100.0
+  !tspec = tspec*lsun/4.0/mypi/(pc2cm*pc2cm)/100.0
 
   !integrate over each filter
   DO i=1,nbands
