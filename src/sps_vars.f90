@@ -15,7 +15,6 @@ MODULE SPS_VARS
 #define PADOVA 1
 #define BASTI 0
 ! "MIST" currently under development.  do not use!
-! (remember that imf_weight has been modified)
 #define MIST 0
 
 
@@ -23,8 +22,8 @@ MODULE SPS_VARS
   !--------------------------------------------------------------!
 
   !note that "SP" actually means double precision; this is a hack
-  !for the nr routines
-  INTEGER, PARAMETER :: SP  = KIND(1.d0)
+  !to turn the nr routines into DP
+  INTEGER, PARAMETER :: SP = KIND(1.d0)
 
   !------Common parameters that may be altered by the user-------!
   
@@ -65,9 +64,17 @@ MODULE SPS_VARS
   !NB: this feature is currently under development, do not use!
   INTEGER :: add_agb_dust_model=0
 
-  !turn on/off a Cloudy-based nebular emission model 
-  !NB: this feature is currently under development, do not use!
+  !turn on/off a Cloudy-based nebular emission model (cont+lines)
   INTEGER :: add_neb_emission=0
+  !turn on/off the nebular continuum component (automatically 
+  !turned off if the above is set to 0)
+  INTEGER  :: add_neb_continuum=1
+  !minimum resolution (in velocity) for nebular lines, based 
+  !on the resolution of the spectral libraries.
+  REAL(SP) :: neb_res_min=1.0
+
+  !turn on/off IGM absorption a la Madau (1995)
+  INTEGER :: add_igm_absorption=0
 
   !turn on/off the addition of stellar remnants to the 
   !computation of stellar masses
@@ -106,6 +113,9 @@ MODULE SPS_VARS
   !0 = AB system
   !1 = Vega system
   INTEGER  :: compute_vega_mags=0
+
+  !output wavelengths in air (rather than vac) if set to 1
+  INTEGER :: vactoair_flag=0
 
   !flag indicating whether or not the output colors
   !will be redshifted to the age of the Universe corresponding
@@ -202,7 +212,7 @@ MODULE SPS_VARS
   !number of emission lines and continuum emission points
   INTEGER, PARAMETER :: nemline=108, nlam_nebcont=1963
   !number of metallicity, age, and ionization parameter points
-  INTEGER, PARAMETER :: nebnz=7, nebnage=7, nebnip=7
+  INTEGER, PARAMETER :: nebnz=7, nebnage=12, nebnip=7
 
   !------------IMF-related Constants--------------!
   
@@ -388,7 +398,7 @@ MODULE SPS_VARS
           dust1_index=-1.0,mdave=0.5,sf_start=0.,sf_trunc=0.,sf_theta=0.,&
           duste_gamma=0.01,duste_umin=1.0,duste_qpah=3.5,fcstar=1.0,&
           masscut=150.0,sigma_smooth=0.,agb_dust=1.0,min_wave_smooth=1E3,&
-          max_wave_smooth=1E4,gas_logu=-2.0,gas_logz=0.
+          max_wave_smooth=1E4,gas_logu=-2.0,gas_logz=0.,igm_factor=1.0
      INTEGER :: zmet=1,sfh=0,wgp1=1,wgp2=1,wgp3=1,evtype=-1
      INTEGER, DIMENSION(nbands) :: mag_compute=1
      CHARACTER(50) :: imf_filename='', sfh_filename=''

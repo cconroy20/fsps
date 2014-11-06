@@ -49,6 +49,14 @@ MODULE SPS_UTILS
   END INTERFACE
 
   INTERFACE
+     FUNCTION AIRTOVAC(lam)
+       USE sps_vars
+       REAL(SP), DIMENSION(:), INTENT(in) :: lam
+       REAL(SP), DIMENSION(SIZE(lam)) :: airtovac
+     END FUNCTION AIRTOVAC
+  END INTERFACE
+
+  INTERFACE
      SUBROUTINE COMPSP(write_compsp,nzin,outfile,mass_ssp,&
           lbol_ssp,spec_ssp,pset,ocompsp)
        USE sps_vars
@@ -135,6 +143,15 @@ MODULE SPS_UTILS
        TYPE(PARAMS), INTENT(in) :: pset
        REAL(SP), INTENT(inout), DIMENSION(nspec) :: spec 
      END SUBROUTINE GETSPEC
+  END INTERFACE
+
+  INTERFACE
+     FUNCTION IGM_ABSORB(lam,spec,zz,factor)
+       USE sps_vars
+       REAL(SP), DIMENSION(nspec), INTENT(in) :: lam,spec
+       REAL(SP), INTENT(in) :: zz,factor
+       REAL(SP), DIMENSION(nspec) :: igm_absorb
+     END FUNCTION IGM_ABSORB
   END INTERFACE
 
   INTERFACE
@@ -251,6 +268,14 @@ MODULE SPS_UTILS
        REAL(SP), INTENT(in), DIMENSION(nspec) :: lambda
        REAL(SP), INTENT(in) :: sigma,minl,maxl
      END SUBROUTINE SMOOTHSPEC
+  END INTERFACE
+
+  INTERFACE
+     FUNCTION VACTOAIR(lam)
+       USE sps_vars
+       REAL(SP), DIMENSION(:), INTENT(in) :: lam
+       REAL(SP), DIMENSION(SIZE(lam)) :: vactoair
+     END FUNCTION VACTOAIR
   END INTERFACE
 
   INTERFACE
