@@ -256,6 +256,8 @@ MODULE SPS_VARS
   REAL(SP), PARAMETER :: yr2sc   = 3.15569E7
   !Planck's constant
   REAL(SP), PARAMETER :: hplank  = 6.6261E-27
+  !constant to convert mags into propert units (see getmags.f90)
+  REAL(SP), PARAMETER :: mag2cgs = lsun/4.0/mypi/(pc2cm*pc2cm)/100.0
 
   !define large and small numbers.  numbers whose abs values
   !are less than tiny_number are treated as equal to 0.0
