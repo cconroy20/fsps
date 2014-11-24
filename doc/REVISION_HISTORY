@@ -103,16 +103,17 @@ XX/XX/14
  - A new print option in compsp allows users to print the time-dependent CMD
    in all the filters.  New IDL routine read_cmd.pro is included.
  - Smoothing can now be implemented in wavelength or velocity space
- - Added a few additional filters, including the Stromgren system.
+ - Added additional filters, including the Stromgren system.
  - Implementation of Wolf-Rayet stars has changed.  We now include WC stars
    and metallicity dependence of both WN and WC spectra.
  - allow dust emission to be self-consistently re-absorbed (previously there 
    was an artificial discontinuity at 1um for very large dust optical depths)
  - Nebular emission (both continuum and line) has been implemented, based on
-   lookup tables from Cloudy (courtesy of Nell Byler)
+   lookup tables from Cloudy (courtesy of Nell Byler).  This is off by default
  - Circumstellar dust around AGB stars is now included, as described in detail
-   in Villaume et al. (2014)
+   in Villaume et al. (2014).  This is turned on by default
  - Bug fixed related to the wavelengths in the allindices.dat file (an air-vac
    conversion was missing).  New option to output wavelengths in air, rather
    the default, which is vacuum.
  - Added IGM absorption option a la Madau (1995) prescription
+ - Added the sf_trunc variable to work for all parameterized SFHs

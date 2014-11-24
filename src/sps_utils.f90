@@ -164,10 +164,10 @@ MODULE SPS_UTILS
   END INTERFACE
 
   INTERFACE
-     FUNCTION INTSFR(sfh,tau,const,maxtime,sfstart,t1,t2,tweight)
+     FUNCTION INTSFR(sfh,tau,const,maxtime,sfstart,sftheta,t1,t2,tweight)
        USE sps_vars
        INTEGER, INTENT(in)  :: sfh
-       REAL(SP), INTENT(in) :: t1,t2,tau,const,maxtime,sfstart
+       REAL(SP), INTENT(in) :: t1,t2,tau,const,maxtime,sfstart,sftheta
        REAL(SP) :: intsfr
        INTEGER, intent(in), optional :: tweight
      END FUNCTION INTSFR
