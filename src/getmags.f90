@@ -38,18 +38,12 @@ SUBROUTINE GETMAGS(zred,spec,mags,mag_compute)
      ENDDO
      !note that this means the *redshifted* spectrum is returned
      spec = tspec
-  ELSE
-     tspec = spec  
   ENDIF
-
-  !the units of the spectra are Lsun/Hz; convert to
-  !erg/s/cm^2/Hz, at 10pc for absolute mags
-  tspec = tspec*lsun/4.0/mypi/(pc2cm*pc2cm)/100.0
 
   !integrate over each filter
   DO i=1,nbands
      IF (magflag(i).EQ.0) CYCLE
-     mags(i) = TSUM(spec_lambda,tspec*bands(:,i)/spec_lambda)
+     mags(i) = TSUM(spec_lambda,spec*bands(:,i)/spec_lambda)
      mags(i) = MAX(mags(i),tiny_number)
   ENDDO
 
@@ -59,7 +53,8 @@ SUBROUTINE GETMAGS(zred,spec,mags,mag_compute)
      IF (mags(i).LE.tiny_number) THEN
         mags(i) = 99.0 
      ELSE
-        mags(i) = -2.5*LOG10(mags(i))-48.60
+        !the mag2cgs var converts from Lsun/Hz to cgs at 10pc
+        mags(i) = -2.5*LOG10(mags(i))-48.60 - 2.5*mag2cgs
      ENDIF
   ENDDO
 
