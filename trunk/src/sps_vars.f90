@@ -41,7 +41,7 @@ MODULE SPS_VARS
   !0 = default Padova 2007 isochrones
   !1 = Conroy & Gunn 2010 normalization
   !2 = Villaume, Conroy, Johnson 2014 normalization
-  INTEGER :: tpagb_norm_type=1
+  INTEGER :: tpagb_norm_type=2
 
   !turn-on time for BHB and SBS phases, time is in log(yrs)
   REAL(SP), PARAMETER :: bhb_sbs_time=9.3
@@ -61,8 +61,8 @@ MODULE SPS_VARS
   INTEGER :: add_dust_emission=1
 
   !turn on/off the AGB circumstellar dust model
-  !NB: this feature is currently under development, do not use!
-  INTEGER :: add_agb_dust_model=0
+  !see Villaume et al. (2014) for details
+  INTEGER :: add_agb_dust_model=1
 
   !turn on/off a Cloudy-based nebular emission model (cont+lines)
   INTEGER :: add_neb_emission=0
@@ -179,7 +179,7 @@ MODULE SPS_VARS
 
   !You must change the number of bands here if
   !filters are added to allfilters.dat
-  !kr06=61, kr02,kr03,kr04=101, kr01,kr11=102, normal=114
+  !kr06=61, kr02,kr03,kr04=101, kr01,kr11=102, normal=122
   INTEGER, PARAMETER :: nbands=122
   !number of indices defined in allindices.dat
   INTEGER, PARAMETER :: nindx=30
@@ -257,7 +257,7 @@ MODULE SPS_VARS
   !Planck's constant
   REAL(SP), PARAMETER :: hplank  = 6.6261E-27
   !constant to convert mags into propert units (see getmags.f90)
-  REAL(SP), PARAMETER :: mag2cgs = lsun/4.0/mypi/(pc2cm*pc2cm)/100.0
+  REAL(SP), PARAMETER :: mag2cgs = LOG10(lsun/4.0/mypi/(pc2cm*pc2cm)/100.0)
 
   !define large and small numbers.  numbers whose abs values
   !are less than tiny_number are treated as equal to 0.0

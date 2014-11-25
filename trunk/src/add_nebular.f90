@@ -1,30 +1,9 @@
-FUNCTION COMPUTE_Q(lam,spec,ilym)
-
-  !compute Q, the ionizing photon flux in units of 1/s
-  
-  USE sps_vars; USE sps_utils, ONLY : locate, tsum
-  IMPLICIT NONE
-  REAL(SP), INTENT(in), DIMENSION(nspec)  :: lam,spec
-  INTEGER, INTENT(in) :: ilym
-  REAL(SP), DIMENSION(nspec) :: nu
-  REAL(SP) :: compute_q
-
-  !-----------------------------------------------------------!
- 
-  nu   = clight / lam
-  compute_q = tsum(nu(:ilym),spec(:ilym)/nu(:ilym))/hplank*lsun
-
-END FUNCTION COMPUTE_Q
-
-!-------------------------------------------------------------!
-!-------------------------------------------------------------!
-
 SUBROUTINE ADD_NEBULAR(pset,sspi,sspo)
 
   !routine to add nebular emission (both line and continuum)
   !to input SSPs (sspi).  Returns SSPs as output (sspo).
 
-  USE sps_vars; USE sps_utils, ONLY : locate
+  USE sps_vars; USE sps_utils, ONLY : locate,tsum
   IMPLICIT NONE
 
   INTEGER :: t,i,nti,a1,z1,u1,ilym
@@ -33,22 +12,25 @@ SUBROUTINE ADD_NEBULAR(pset,sspi,sspo)
   REAL(SP), INTENT(in), DIMENSION(nspec,ntfull)    :: sspi
   REAL(SP), INTENT(inout), DIMENSION(nspec,ntfull) :: sspo
   REAL(SP), DIMENSION(nemline) :: tmpnebline
-  REAL(SP), DIMENSION(nspec)   :: tmpnebcont
+  REAL(SP), DIMENSION(nspec)   :: tmpnebcont,nu
+  REAL(SP), DIMENSION(nspec,nemline) :: tmparr
 
   !-----------------------------------------------------------!
   !-----------------------------------------------------------!
 
   !locate the Lyman limit
   ilym = locate(spec_lambda,912.d0)
+  nu   = clight / spec_lambda
 
   !locate the maximum nebular age point in the full time array
-  nti = locate(time_full,nebem_age(nebnage))
+  !nti = locate(time_full,nebem_age(nebnage))
+  nti = locate(time_full,7.d0)
 
   !set limits on the velocity dispersion for broadening
   IF (smooth_velocity.EQ.1) THEN
      sigma = MAX(pset%sigma_smooth,neb_res_min)
   ELSE
-     dlam = MAX(pset%sigma_smooth,1.0)
+     dlam  = MAX(pset%sigma_smooth,1.0)
   ENDIF
 
   !set up the interpolation variables for logZ and logU
@@ -58,6 +40,15 @@ SUBROUTINE ADD_NEBULAR(pset,sspi,sspo)
   u1 = MAX(MIN(locate(nebem_logu,pset%gas_logu),nebnip-1),1)
   du = (pset%gas_logu-nebem_logu(u1))/(nebem_logu(u1+1)-nebem_logu(u1))
   du = MAX(MIN(du,1.0),0.0) !no extrapolations
+
+  DO i=1,nemline
+     IF (smooth_velocity.EQ.1) THEN
+        dlam = nebem_line_pos(i) * sigma/clight*1E13
+     ENDIF
+     tmparr(:,i) = 1/SQRT(2*mypi)/dlam*&
+          EXP(-(spec_lambda-nebem_line_pos(i))**2/2/dlam**2)  / &
+          clight*nebem_line_pos(i)**2
+  ENDDO
 
   sspo = sspi
 
@@ -69,15 +60,30 @@ SUBROUTINE ADD_NEBULAR(pset,sspi,sspo)
      !the number of ionizing photons is computed here
      !some fraction of the stars are "runaways" which means
      !that they are not embedded in the HII region
-     qq = compute_q(spec_lambda,sspi(:,t),ilym) * (1-pset%frac_obrun)
+     qq = tsum(nu(:ilym),sspi(:ilym,t)/nu(:ilym))/hplank*lsun 
+     qq = qq * (1-pset%frac_obrun)
 
      !set up age interpolant
      a1 = MAX(MIN(locate(nebem_age,time_full(t)),nebnage-1),1)
      da = (time_full(t)-nebem_age(a1))/(nebem_age(a1+1)-nebem_age(a1))
      da = MAX(MIN(da,1.0),0.0) !no extrapolations
+    
+     !add nebular continuum emission
+     IF (add_neb_continuum.EQ.1) THEN
+        tmpnebcont = &   !interpolate in Zgas, logU, age
+             (1-dz)*(1-da)*(1-du)* nebem_cont(:,z1,a1,u1)+&
+             (1-dz)*(1-da)*(du)*   nebem_cont(:,z1,a1,u1+1)+&
+             (1-dz)*(da)*(1-du)*   nebem_cont(:,z1,a1+1,u1)+&
+             (1-dz)*(da)*(du)*     nebem_cont(:,z1,a1+1,u1+1)+&
+             (dz)*(1-da)*(1-du)*   nebem_cont(:,z1+1,a1,u1)+&
+             (dz)*(1-da)*(du)*     nebem_cont(:,z1+1,a1,u1+1)+&
+             (dz)*(da)*(1-du)*     nebem_cont(:,z1+1,a1+1,u1)+&
+             (dz)*(da)*(du)*       nebem_cont(:,z1+1,a1+1,u1+1)
+        sspo(:,t) = sspo(:,t) + 10**tmpnebcont * qq
+     ENDIF
 
-     !interpolate in Zgas, logU, age
-     tmpnebline = &
+     !add line emission
+     tmpnebline = &    !interpolate in Zgas, logU, age
           (1-dz)*(1-da)*(1-du)* nebem_line(:,z1,a1,u1)+&
           (1-dz)*(1-da)*(du)*   nebem_line(:,z1,a1,u1+1)+&
           (1-dz)*(da)*(1-du)*   nebem_line(:,z1,a1+1,u1)+&
@@ -87,31 +93,9 @@ SUBROUTINE ADD_NEBULAR(pset,sspi,sspo)
           (dz)*(da)*(1-du)*     nebem_line(:,z1+1,a1+1,u1)+&
           (dz)*(da)*(du)*       nebem_line(:,z1+1,a1+1,u1+1)
 
-     tmpnebcont = &
-          (1-dz)*(1-da)*(1-du)* nebem_cont(:,z1,a1,u1)+&
-          (1-dz)*(1-da)*(du)*   nebem_cont(:,z1,a1,u1+1)+&
-          (1-dz)*(da)*(1-du)*   nebem_cont(:,z1,a1+1,u1)+&
-          (1-dz)*(da)*(du)*     nebem_cont(:,z1,a1+1,u1+1)+&
-          (dz)*(1-da)*(1-du)*   nebem_cont(:,z1+1,a1,u1)+&
-          (dz)*(1-da)*(du)*     nebem_cont(:,z1+1,a1,u1+1)+&
-          (dz)*(da)*(1-du)*     nebem_cont(:,z1+1,a1+1,u1)+&
-          (dz)*(da)*(du)*       nebem_cont(:,z1+1,a1+1,u1+1)
-     
-     !add nebular continuum emission
-     IF (add_neb_continuum.EQ.1) THEN
-        sspo(:,t) = sspo(:,t) + 10**tmpnebcont * qq
-     ENDIF
-
-     !add line emission
      DO i=1,nemline
-        IF (smooth_velocity.EQ.1) THEN
-           dlam = nebem_line_pos(i) * sigma/clight*1E13
-        ENDIF
-        sspo(:,t) = sspo(:,t) + 10**tmpnebline(i)/SQRT(2*mypi)/dlam*&
-             EXP(-(spec_lambda-nebem_line_pos(i))**2/2/dlam**2) * qq / &
-             clight*nebem_line_pos(i)**2
+        sspo(:,t) = sspo(:,t) + 10**tmpnebline(i)*qq*tmparr(:,i)
      ENDDO
-
 
   ENDDO
 

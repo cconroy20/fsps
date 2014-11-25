@@ -611,7 +611,7 @@ SUBROUTINE SPS_SETUP(zin)
   OPEN(99,FILE=TRIM(SPS_HOME)//'/nebular/ZAU_WD.cont',&
        STATUS='OLD',iostat=stat,ACTION='READ')
   IF (stat.NE.0) THEN
-     WRITE(*,*) 'SPS_SETUP ERROR: nebular cont. file cannot be opened'
+     WRITE(*,*) 'SPS_SETUP ERROR: nebular cont file cannot be opened'
      STOP
   ENDIF
   !burn the header

@@ -25,7 +25,8 @@ SUBROUTINE GETMAGS(zred,spec,mags,mag_compute)
   !set up the flags determining which mags are computed
   IF (PRESENT(mag_compute)) THEN
      magflag = mag_compute
-     magflag(1) = 1  !always compute V band mag
+     IF (compute_vega_mags.EQ.1) & 
+          magflag(1) = 1  !force V band to be computed
   ELSE
      magflag = 1
   ENDIF
@@ -44,17 +45,11 @@ SUBROUTINE GETMAGS(zred,spec,mags,mag_compute)
   DO i=1,nbands
      IF (magflag(i).EQ.0) CYCLE
      mags(i) = TSUM(spec_lambda,spec*bands(:,i)/spec_lambda)
-     mags(i) = MAX(mags(i),tiny_number)
-  ENDDO
-
-  !convert to magnitudes in AB system
-  DO i=1,nbands
-     IF (magflag(i).EQ.0) CYCLE
      IF (mags(i).LE.tiny_number) THEN
         mags(i) = 99.0 
      ELSE
         !the mag2cgs var converts from Lsun/Hz to cgs at 10pc
-        mags(i) = -2.5*LOG10(mags(i))-48.60 - 2.5*mag2cgs
+        mags(i) = -2.5*LOG10(mags(i)) - 48.60 - 2.5*mag2cgs
      ENDIF
   ENDDO
 
