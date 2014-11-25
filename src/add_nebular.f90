@@ -6,7 +6,7 @@ SUBROUTINE ADD_NEBULAR(pset,sspi,sspo)
   USE sps_vars; USE sps_utils, ONLY : locate,tsum
   IMPLICIT NONE
 
-  INTEGER :: t,i,nti,a1,z1,u1,ilym
+  INTEGER :: t,i,nti,a1,z1,u1
   REAL(SP) :: da,dz,du,sigma,dlam,qq,compute_q
   TYPE(PARAMS), INTENT(in) :: pset
   REAL(SP), INTENT(in), DIMENSION(nspec,ntfull)    :: sspi
@@ -17,10 +17,6 @@ SUBROUTINE ADD_NEBULAR(pset,sspi,sspo)
 
   !-----------------------------------------------------------!
   !-----------------------------------------------------------!
-
-  !locate the Lyman limit
-  ilym = locate(spec_lambda,912.d0)
-  nu   = clight / spec_lambda
 
   !locate the maximum nebular age point in the full time array
   !nti = locate(time_full,nebem_age(nebnage))
@@ -41,6 +37,8 @@ SUBROUTINE ADD_NEBULAR(pset,sspi,sspo)
   du = (pset%gas_logu-nebem_logu(u1))/(nebem_logu(u1+1)-nebem_logu(u1))
   du = MAX(MIN(du,1.0),0.0) !no extrapolations
 
+  !set up a "master" array of normalized Gaussians
+  !this makes the code run *much* faster
   DO i=1,nemline
      IF (smooth_velocity.EQ.1) THEN
         dlam = nebem_line_pos(i) * sigma/clight*1E13
@@ -55,12 +53,13 @@ SUBROUTINE ADD_NEBULAR(pset,sspi,sspo)
   DO t=1,nti
 
      !remove ionizing photons from the stellar source
-     sspo(1:ilym,t) = sspi(1:ilym,t) * pset%frac_obrun
+     sspo(1:whlylim,t) = sspi(1:whlylim,t) * pset%frac_obrun
 
      !the number of ionizing photons is computed here
      !some fraction of the stars are "runaways" which means
      !that they are not embedded in the HII region
-     qq = tsum(nu(:ilym),sspi(:ilym,t)/nu(:ilym))/hplank*lsun 
+     qq = tsum(spec_nu(:whlylim),sspi(:whlylim,t)/spec_nu(:whlylim))/&
+          hplank*lsun 
      qq = qq * (1-pset%frac_obrun)
 
      !set up age interpolant

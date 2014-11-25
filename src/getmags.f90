@@ -48,14 +48,16 @@ SUBROUTINE GETMAGS(zred,spec,mags,mag_compute)
      IF (mags(i).LE.tiny_number) THEN
         mags(i) = 99.0 
      ELSE
-        !the mag2cgs var converts from Lsun/Hz to cgs at 10pc
-        mags(i) = -2.5*LOG10(mags(i)) - 48.60 - 2.5*mag2cgs
+        IF (compute_light_ages.EQ.0) THEN
+           !the mag2cgs var converts from Lsun/Hz to cgs at 10pc
+           mags(i) = -2.5*LOG10(mags(i)) - 48.60 - 2.5*mag2cgs
+        ENDIF
      ENDIF
   ENDDO
 
   !put magnitudes in the Vega system if keyword is set
   !(V-band is the first element in the array)
-  IF (compute_vega_mags.EQ.1) &
+  IF (compute_vega_mags.EQ.1.AND.compute_light_ages.EQ.0) &
        mags(2:nbands) = (mags(2:nbands)-mags(1)) - &
        (magvega(2:nbands)-magvega(1)) + mags(1)
 

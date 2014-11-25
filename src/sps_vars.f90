@@ -54,7 +54,7 @@ MODULE SPS_VARS
   INTEGER, PARAMETER :: time_res_incr=2
 
   !turn on/off computation of light-weighted stellar ages
-  !NB: This is only partially implemented, and only for tau models
+  !NB: currently only works with sfh=1,4 options
   INTEGER :: compute_light_ages=0
 
   !turn on/off the Draine & Li 2007 dust emission model 
@@ -296,8 +296,8 @@ MODULE SPS_VARS
   !Age of Universe in Gyr (set in sps_setup.f90)
   REAL(SP) :: tuniv=0.
 
-  !index in the wavelength array where lambda=5000A
-  INTEGER :: whlam5000
+  !index in the wavelength array where lambda=5000A, Ly_lim
+  INTEGER :: whlam5000,whlylim
   
   !this specifies the size of the full time grid
   INTEGER, PARAMETER :: ntfull = time_res_incr*nt
@@ -331,8 +331,8 @@ MODULE SPS_VARS
   !Vega-like star spectrum for Vega magnitude zero-point
   !spectrum of Sun, for absolute mags of Sun
   REAL(SP), DIMENSION(nspec)  :: vega_spec=0.,sun_spec=0.
-  !common wavelength array
-  REAL(SP), DIMENSION(nspec)  :: spec_lambda=0.
+  !common wavelength and frequench arrays
+  REAL(SP), DIMENSION(nspec)  :: spec_lambda=0.,spec_nu=0.0
 
   !arrays for stellar spectral information in HR diagram
   REAL(SP), DIMENSION(ndim_logt) :: speclib_logt=0.

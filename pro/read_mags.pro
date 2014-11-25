@@ -183,6 +183,15 @@ END
 
 FUNCTION READ_MAGS,file, allow_old=allow_old
 
+  spsdir = getenv('SPS_HOME')
+  IF spsdir EQ '' THEN BEGIN
+     print,'READ_SPEC ERROR: spsdir environment '+$
+           'variable not set, returning...'
+     return,0
+  ENDIF
+
+  file = spsdir+'/OUTPUTS/'+file
+
   ff = findfile(file[0],count=ct)
   IF ct EQ 0 THEN BEGIN
      print,'READ_MAGS ERROR: file not found: ',file
