@@ -10,10 +10,6 @@
 ;   res = read_spec(file)
 ;
 ; KEYWORD PARAMETERS:
-;   miles - set this keyword when reading in spectra based on Miles 
-;   pickles - set this keyword when reading in spectra based on Pickles
-;   NB: you should not need to set these keywords if you are running
-;       the latest version of fsps
 ;
 ; MODIFICATION HISTORY: 
 ;   ? - created by CFC
@@ -94,9 +90,9 @@ FUNCTION READ_SPEC, file
            'variable not set, returning...'
      return,0
   ENDIF
-  spsdir = spsdir+'/SPECTRA/'
 
-     
+  file = spsdir+'/OUTPUTS/'+file
+
   ff = findfile(file[0],count=ctf)
   IF ctf EQ 0 THEN BEGIN
      print,'READ_SPEC ERROR: file not found: ',file

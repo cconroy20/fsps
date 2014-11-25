@@ -76,6 +76,15 @@ END
 
 FUNCTION READ_INDX,file
 
+  spsdir = getenv('SPS_HOME')
+  IF spsdir EQ '' THEN BEGIN
+     print,'READ_SPEC ERROR: spsdir environment '+$
+           'variable not set, returning...'
+     return,0
+  ENDIF
+
+  file = spsdir+'/OUTPUTS/'+file
+
   ff = findfile(file[0],count=ct)
   IF ct EQ 0 THEN BEGIN
      print,'READ_INDX ERROR: file not found: ',file

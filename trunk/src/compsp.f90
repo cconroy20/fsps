@@ -7,7 +7,7 @@
 
 FUNCTION INTSFR(sfh,tau,const,sftrunc,sfstart,sftheta,t1,t2,tweight)
 
-  !routine to integrate an analytic SFH from t1 to t2
+  !simple routine to integrate the SFH from t1 to t2
 
   USE sps_vars; USE sps_utils, ONLY : tsum, locate
   IMPLICIT NONE
@@ -190,7 +190,7 @@ SUBROUTINE INTSPEC(pset,nti,spec_ssp,csp,mass_ssp,lbol_ssp,&
      !compute weighted mass and lbol
      IF (indsf.EQ.1) THEN
         mass = isfr(1)*mass_ssp(1)
-        lbol = LOG10( isfr(1)*10**lbol_ssp(1) )
+        lbol = LOG10( isfr(1)*10**lbol_ssp(1)+tiny_number )
      ELSE
         mass = SUM(isfr(1:indsf-1)/2.*&
              (mass_ssp(1:indsf-1)+mass_ssp(2:indsf)))
@@ -198,7 +198,7 @@ SUBROUTINE INTSPEC(pset,nti,spec_ssp,csp,mass_ssp,lbol_ssp,&
              (10**lbol_ssp(1:indsf-1)+10**lbol_ssp(2:indsf)))
         mass = mass + isfr(indsf)*mass_ssp(indsf)
         lbol = lbol + isfr(indsf)*10**lbol_ssp(indsf) 
-        lbol = LOG10(lbol)
+        lbol = LOG10(lbol+tiny_number)
      ENDIF
   
      !add in an instantaneous burst
@@ -295,15 +295,12 @@ SUBROUTINE COMPSP(write_compsp,nzin,outfile,mass_ssp,&
   !-------------------------------------------------------------!
 
   IF (add_neb_emission.EQ.1) THEN
-
      IF (nzin.GT.1) THEN
         WRITE(*,*) 'COMPSP ERROR: cannot handle both nebular '//&
              'emission and mult-metallicity SSPs in compsp'
         STOP
      ENDIF
-     
      CALL ADD_NEBULAR(pset,tspec_ssp(:,:,1),spec_ssp(:,:,1))
-
   ENDIF
 
 
@@ -331,7 +328,6 @@ SUBROUTINE COMPSP(write_compsp,nzin,outfile,mass_ssp,&
         OPEN(3,FILE=TRIM(SPS_HOME)//'/data/'//TRIM(pset%sfh_filename),&
              ACTION='READ',STATUS='OLD')
      ENDIF
-     
      DO n=1,ntabmax
         IF (nzin.EQ.nz) THEN
            READ(3,*,IOSTAT=stat) sfh_tab(1,n),sfh_tab(2,n),sfh_tab(3,n)
@@ -410,7 +406,8 @@ SUBROUTINE COMPSP(write_compsp,nzin,outfile,mass_ssp,&
 
      !linearly interpolate the tabulated SFH to the internal time grid
      DO j=1,ntfull
-        IF (time_full(j).GT.LOG10(sfh_tab(1,ntabsfh))) THEN
+        IF (powtime(j).GT.sfh_tab(1,ntabsfh).OR.&
+             powtime(j).LT.sfh_tab(1,1)) THEN
            tsfr(j)   = 0.0
         ELSE
            jlo    = MAX(MIN(locate(LOG10(sfh_tab(1,1:ntabsfh)),&
@@ -728,6 +725,13 @@ SUBROUTINE COMPSP_WARNING(maxtime,pset,nzin,write_compsp)
           write_compsp
      STOP
   ENDIF
+
+  IF ((pset%sfh.NE.1.AND.pset%sfh.NE.4).AND.&
+       compute_light_ages.EQ.1) THEN
+     WRITE(*,*) 'COMPSP ERROR: compute_light_ages only works with SFH=1 or 4'
+     STOP
+  ENDIF
+     
 
 END SUBROUTINE COMPSP_WARNING
 

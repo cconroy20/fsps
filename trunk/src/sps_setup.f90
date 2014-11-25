@@ -955,6 +955,9 @@ SUBROUTINE SPS_SETUP(zin)
   !----------------------------------------------------------------!
 
   whlam5000 = locate(spec_lambda,5000.d0)
+  whlylim   = locate(spec_lambda,912.d0)
+  !define the frequency array
+  spec_nu   = clight / spec_lambda
 
   !set flag indicating that sps_setup has been run, initializing 
   !important common block vars/arrays

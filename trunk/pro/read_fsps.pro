@@ -24,5 +24,6 @@ FUNCTION READ_FSPS, file
      RETURN,str
   ENDIF
 
+  print,'READ_FSPS ERROR: unrecognizable input file'
 
 END

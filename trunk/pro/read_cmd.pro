@@ -26,7 +26,7 @@ FUNCTION READ_CMD1, file
 
   str = {logage:0.0,$
          logZ:0.0,$
-         mass:0.0,$
+         mass:0.d0,$
          loglbol:0.0,$
          logteff:0.0,$
          logg:0.0,$
@@ -160,12 +160,13 @@ FUNCTION READ_CMD1, file
 
   IF n_tags(str) NE n_elements(res[*,0]) THEN BEGIN
      print,'READ_CMD ERROR: structure and *cmd file are incompatable!'
-stop
      RETURN,0
   ENDIF
 
   FOR i=0,n_tags(str)-1 DO str.(i) = reform(res[i,*])
  
+  ;readcol,file[0],tage,tlogz,tmass,format='(F,F,D)',/sil
+
   RETURN,str
 
 END
@@ -174,6 +175,15 @@ END
 ;-----------------------------------------------------------------;
 
 FUNCTION READ_CMD,file
+
+  spsdir = getenv('SPS_HOME')
+  IF spsdir EQ '' THEN BEGIN
+     print,'READ_SPEC ERROR: spsdir environment '+$
+           'variable not set, returning...'
+     return,0
+  ENDIF
+
+  file = spsdir+'/OUTPUTS/'+file
 
   ff = findfile(file[0],count=ct)
   IF ct EQ 0 THEN BEGIN
