@@ -223,9 +223,9 @@ SUBROUTINE INTSPEC(pset,nti,spec_ssp,csp,mass_ssp,lbol_ssp,&
 
 END SUBROUTINE INTSPEC
 
-!------------------------------------------------------------!
-!---------------------Main Routine---------------------------!
-!------------------------------------------------------------!
+!-------------------------------------------------------------------!
+!-------------------------Main Routine------------------------------!
+!-------------------------------------------------------------------!
 
 SUBROUTINE COMPSP(write_compsp,nzin,outfile,mass_ssp,&
      lbol_ssp,tspec_ssp,pset,ocompsp)
@@ -255,7 +255,7 @@ SUBROUTINE COMPSP(write_compsp,nzin,outfile,mass_ssp,&
   CHARACTER(100), INTENT(in) :: outfile
 
   INTEGER  :: i,j,n,k,stat,klo,jlo,ilo,imin,imax,indsf,indsft
-  REAL(SP) :: tau,const,maxtime,writeage,psfr,sfstart,zhist,sftrunc
+  REAL(SP) :: tau,const,maxtime,psfr,sfstart,zhist,sftrunc
   REAL(SP) :: mass_csp,lbol_csp,dtb,dt,dz,zred=0.,t1,t2,mdust
   REAL(SP) :: mass_burst=0.0,lbol_burst=0.0,delt_burst=0.0,zero=0.0
   REAL(SP), DIMENSION(nbands)  :: mags
@@ -400,6 +400,10 @@ SUBROUTINE COMPSP(write_compsp,nzin,outfile,mass_ssp,&
   !make sure various variables are set correctly
   CALL COMPSP_WARNING(maxtime,pset,nzin,write_compsp)
 
+  !setup output files
+  IF (write_compsp.GT.0) &
+       CALL COMPSP_SETUP_OUTPUT(write_compsp,pset,outfile,imin,imax)
+
   !tsfr is a function of the age of Universe
   !these are only used for writing the SFH to file
   IF (pset%sfh.EQ.2.OR.pset%sfh.EQ.3) THEN
@@ -441,99 +445,6 @@ SUBROUTINE COMPSP(write_compsp,nzin,outfile,mass_ssp,&
      tsfr = 0.0
   ENDIF
 
-  !-------------------------------------------------------------!
-  !-------------------Setup output files------------------------!
-  !-------------------------------------------------------------!
-
-  !open output file for magnitudes
-  IF (write_compsp.EQ.1.OR.write_compsp.EQ.3) THEN
-     OPEN(10,FILE=TRIM(SPS_HOME)//'/OUTPUTS/'//TRIM(outfile)//'.mags',&
-          STATUS='REPLACE')
-     CALL COMPSP_HEADER(10,pset)
-  ENDIF
-  
-  !open output file for spectra
-  IF (write_compsp.EQ.2.OR.write_compsp.EQ.3) THEN
-     OPEN(20,FILE=TRIM(SPS_HOME)//'/OUTPUTS/'//TRIM(outfile)//'.spec',&
-          STATUS='REPLACE')
-     CALL COMPSP_HEADER(20,pset)
-  ENDIF
-
-  !open output file for indices
-  IF (write_compsp.EQ.4) THEN
-     OPEN(30,FILE=TRIM(SPS_HOME)//'/OUTPUTS/'//TRIM(outfile)//'.indx',&
-          STATUS='REPLACE')
-     CALL COMPSP_HEADER(30,pset)
-  ENDIF
-
-  IF (pset%sfh.EQ.0) THEN
-     IF (verbose.NE.0) WRITE(*,*) '  Processing SSP'
-     IF (write_compsp.EQ.1.OR.write_compsp.EQ.3) THEN
-        WRITE(10,'("#   Processing SSP")')
-        WRITE(10,'("#")') 
-        WRITE(10,32) 
-     ENDIF
-     IF (write_compsp.EQ.2.OR.write_compsp.EQ.3) THEN
-        WRITE(20,'("#   Processing SSP")')
-        WRITE(20,'("#")') 
-        WRITE(20,31) 
-        IF (imax-imin.EQ.1) WRITE(20,'(I3,1x,I6)') 1,nspec
-        IF (imax-imin.GT.1) WRITE(20,'(I3,1x,I6)') ntfull,nspec
-        IF (vactoair_flag.EQ.0) THEN
-           WRITE(20,'(50000(F15.4))') spec_lambda
-        ELSE
-           WRITE(20,'(50000(F15.4))') vactoair(spec_lambda)
-        ENDIF
-     ENDIF
-     IF (write_compsp.EQ.4) THEN
-        WRITE(30,'("#   Processing SSP")')
-        WRITE(30,'("#")') 
-        WRITE(30,34) 
-     ENDIF
-  ELSE
-     IF (pset%sfh.EQ.2.OR.pset%sfh.EQ.3) THEN
-        IF (verbose.EQ.1) &
-             WRITE(*,30) pset%dust1,pset%dust2
-        IF (write_compsp.EQ.1.OR.write_compsp.EQ.3) &
-             WRITE(10,30) pset%dust1,pset%dust2
-        IF (write_compsp.EQ.2.OR.write_compsp.EQ.3) &
-             WRITE(20,30) pset%dust1,pset%dust2
-     ELSE
-        IF (pset%tage.GT.tiny_number) writeage = pset%tage
-        IF (pset%tage.LE.tiny_number) writeage = 10**time_full(ntfull)/1E9
-        IF (verbose.EQ.1) &
-             WRITE(*,33) writeage,LOG10(tau),const,pset%fburst,&
-             pset%tburst,pset%sf_start,pset%dust1,pset%dust2
-        IF (write_compsp.EQ.1.OR.write_compsp.EQ.3) &
-             WRITE(10,33) writeage,LOG10(tau),const,pset%fburst,&
-             pset%tburst,pset%sf_start,pset%dust1,pset%dust2
-        IF (write_compsp.EQ.2.OR.write_compsp.EQ.3) &
-             WRITE(20,33) writeage,LOG10(tau),const,pset%fburst,&
-             pset%tburst,pset%sf_start,pset%dust1,pset%dust2
-        IF (write_compsp.EQ.4) &
-             WRITE(30,33) writeage,LOG10(tau),const,pset%fburst,&
-             pset%tburst,pset%sf_start,pset%dust1,pset%dust2
-     ENDIF
-     IF (write_compsp.EQ.1.OR.write_compsp.EQ.3) THEN 
-        WRITE(10,'("#")') 
-        WRITE(10,32) 
-     ENDIF
-     IF (write_compsp.EQ.2.OR.write_compsp.EQ.3) THEN
-        WRITE(20,'("#")') 
-        WRITE(20,31) 
-        IF (imax-imin.EQ.1) WRITE(20,'(I3,1x,I6)') 1,nspec
-        IF (imax-imin.GT.1) WRITE(20,'(I3,1x,I6)') ntfull,nspec
-        IF (vactoair_flag.EQ.0) THEN
-           WRITE(20,'(50000(F15.4))') spec_lambda
-        ELSE
-           WRITE(20,'(50000(F15.4))') vactoair(spec_lambda)
-        ENDIF
-       ENDIF
-       IF (write_compsp.EQ.4) THEN
-          WRITE(20,'("#")') 
-          WRITE(20,34) 
-       ENDIF
-   ENDIF
 
   !-------------------------------------------------------------!
   !-------------Generate composite spectra and mags-------------!
@@ -577,8 +488,10 @@ SUBROUTINE COMPSP(write_compsp,nzin,outfile,mass_ssp,&
             imass = mass_ssp(:,1)
          ENDIF
 
+      ENDIF
+
       !set up an instantaneous burst
-      ELSE IF ((pset%sfh.EQ.1.OR.pset%sfh.EQ.4).AND.&
+      IF ((pset%sfh.EQ.1.OR.pset%sfh.EQ.4).AND.&
            pset%fburst.GT.tiny_number) THEN
 
          IF ((powtime(i)-pset%tburst*1E9).GT.tiny_number) THEN
@@ -595,6 +508,7 @@ SUBROUTINE COMPSP(write_compsp,nzin,outfile,mass_ssp,&
 
       !compute composite spectra, mass, lbol
       IF (pset%sfh.EQ.0) THEN
+
          csp1 = 0.0
          csp2 = 0.0
          IF (time_full(i).LT.pset%dust_tesc) THEN
@@ -606,7 +520,9 @@ SUBROUTINE COMPSP(write_compsp,nzin,outfile,mass_ssp,&
          CALL ADD_DUST(pset,csp1,csp2,spec_csp,mdust)
          mass_csp = mass_ssp(i,1)
          lbol_csp = lbol_ssp(i,1)
+
       ELSE IF (pset%sfh.EQ.1.OR.pset%sfh.EQ.4.OR.pset%sfh.EQ.5) THEN
+
          CALL INTSPEC(pset,i,spec_ssp,csp1,mass_ssp,lbol_ssp,&
               mass_csp,lbol_csp,spec_burst,mass_burst,&
               lbol_burst,delt_burst,sfstart,tau,const,sftrunc,mdust)
@@ -618,11 +534,15 @@ SUBROUTINE COMPSP(write_compsp,nzin,outfile,mass_ssp,&
          ELSE
             spec_csp = csp1
          ENDIF
+
       ELSE IF (pset%sfh.EQ.2.OR.pset%sfh.EQ.3) THEN
+
          CALL INTSPEC(pset,i,ispec,spec_csp,imass,ilbol,mass_csp,&
               lbol_csp,spec_burst,mass_burst,lbol_burst,&
               delt_burst,sfstart,tau,const,sftrunc,mdust)
+
       ENDIF
+
       
       !smooth the spectrum
       IF (pset%sigma_smooth.GT.0.0) THEN
@@ -695,20 +615,11 @@ SUBROUTINE COMPSP(write_compsp,nzin,outfile,mass_ssp,&
    IF (write_compsp.EQ.2.OR.write_compsp.EQ.3) CLOSE(20)
    
 
-   !formats
-30 FORMAT('#   SFH: tabulated input, dust=(',F6.2,','F6.2,')')
-31 FORMAT('#   log(age) log(mass) Log(lbol) log(SFR) spectra')
-32 FORMAT('#   log(age) log(mass) Log(lbol) log(SFR) mags (see FILTER_LIST)')
-33 FORMAT('#   SFH: Tage=',F6.2,' Gyr, log(tau/Gyr)= ',F6.3,&
-        ', const= ',F6.3,', fb= ',F6.3,', tb= ',F6.2,&
-        ' Gyr, sf_start= 'F6.3,', dust=(',F6.2,','F6.2,')')
-34 FORMAT('#   log(age) indices (see allindices.dat)')
-
 END SUBROUTINE COMPSP
 
-!------------------------------------------------------------!
-!------------------------------------------------------------!
-!------------------------------------------------------------!
+!-------------------------------------------------------------------!
+!-------------------------------------------------------------------!
+!-------------------------------------------------------------------!
  
 SUBROUTINE COMPSP_WARNING(maxtime,pset,nzin,write_compsp)
 
@@ -819,6 +730,123 @@ SUBROUTINE COMPSP_WARNING(maxtime,pset,nzin,write_compsp)
   ENDIF
 
 END SUBROUTINE COMPSP_WARNING
+
+!------------------------------------------------------------!
+!------------------------------------------------------------!
+
+SUBROUTINE COMPSP_SETUP_OUTPUT(write_compsp,pset,outfile,imin,imax)
+
+  USE sps_vars
+  USE sps_utils, ONLY : vactoair
+  IMPLICIT NONE
+  INTEGER, INTENT(in) :: imin,imax,write_compsp
+  REAL(SP) :: writeage
+  TYPE(PARAMS), INTENT(in) :: pset
+  CHARACTER(100), INTENT(in) :: outfile
+
+  !-----------------------------------------------------!
+
+  !open output file for magnitudes
+  IF (write_compsp.EQ.1.OR.write_compsp.EQ.3) THEN
+     OPEN(10,FILE=TRIM(SPS_HOME)//'/OUTPUTS/'//TRIM(outfile)//'.mags',&
+          STATUS='REPLACE')
+     CALL COMPSP_HEADER(10,pset)
+  ENDIF
+  
+  !open output file for spectra
+  IF (write_compsp.EQ.2.OR.write_compsp.EQ.3) THEN
+     OPEN(20,FILE=TRIM(SPS_HOME)//'/OUTPUTS/'//TRIM(outfile)//'.spec',&
+          STATUS='REPLACE')
+     CALL COMPSP_HEADER(20,pset)
+  ENDIF
+
+  !open output file for indices
+  IF (write_compsp.EQ.4) THEN
+     OPEN(30,FILE=TRIM(SPS_HOME)//'/OUTPUTS/'//TRIM(outfile)//'.indx',&
+          STATUS='REPLACE')
+     CALL COMPSP_HEADER(30,pset)
+  ENDIF
+
+  IF (pset%sfh.EQ.0) THEN
+     IF (verbose.NE.0) WRITE(*,*) '  Processing SSP'
+     IF (write_compsp.EQ.1.OR.write_compsp.EQ.3) THEN
+        WRITE(10,'("#   Processing SSP")')
+        WRITE(10,'("#")') 
+        WRITE(10,32) 
+     ENDIF
+     IF (write_compsp.EQ.2.OR.write_compsp.EQ.3) THEN
+        WRITE(20,'("#   Processing SSP")')
+        WRITE(20,'("#")') 
+        WRITE(20,31) 
+        IF (imax-imin.EQ.1) WRITE(20,'(I3,1x,I6)') 1,nspec
+        IF (imax-imin.GT.1) WRITE(20,'(I3,1x,I6)') ntfull,nspec
+        IF (vactoair_flag.EQ.0) THEN
+           WRITE(20,'(50000(F15.4))') spec_lambda
+        ELSE
+           WRITE(20,'(50000(F15.4))') vactoair(spec_lambda)
+        ENDIF
+     ENDIF
+     IF (write_compsp.EQ.4) THEN
+        WRITE(30,'("#   Processing SSP")')
+        WRITE(30,'("#")') 
+        WRITE(30,34) 
+     ENDIF
+  ELSE
+     IF (pset%sfh.EQ.2.OR.pset%sfh.EQ.3) THEN
+        IF (verbose.EQ.1) &
+             WRITE(*,30) pset%dust1,pset%dust2
+        IF (write_compsp.EQ.1.OR.write_compsp.EQ.3) &
+             WRITE(10,30) pset%dust1,pset%dust2
+        IF (write_compsp.EQ.2.OR.write_compsp.EQ.3) &
+             WRITE(20,30) pset%dust1,pset%dust2
+     ELSE
+        IF (pset%tage.GT.tiny_number) writeage = pset%tage
+        IF (pset%tage.LE.tiny_number) writeage = 10**time_full(ntfull)/1E9
+        IF (verbose.EQ.1) &
+             WRITE(*,33) writeage,LOG10(pset%tau),pset%const,pset%fburst,&
+             pset%tburst,pset%sf_start,pset%dust1,pset%dust2
+        IF (write_compsp.EQ.1.OR.write_compsp.EQ.3) &
+             WRITE(10,33) writeage,LOG10(pset%tau),pset%const,pset%fburst,&
+             pset%tburst,pset%sf_start,pset%dust1,pset%dust2
+        IF (write_compsp.EQ.2.OR.write_compsp.EQ.3) &
+             WRITE(20,33) writeage,LOG10(pset%tau),pset%const,pset%fburst,&
+             pset%tburst,pset%sf_start,pset%dust1,pset%dust2
+        IF (write_compsp.EQ.4) &
+             WRITE(30,33) writeage,LOG10(pset%tau),pset%const,pset%fburst,&
+             pset%tburst,pset%sf_start,pset%dust1,pset%dust2
+     ENDIF
+     IF (write_compsp.EQ.1.OR.write_compsp.EQ.3) THEN 
+        WRITE(10,'("#")') 
+        WRITE(10,32) 
+     ENDIF
+     IF (write_compsp.EQ.2.OR.write_compsp.EQ.3) THEN
+        WRITE(20,'("#")') 
+        WRITE(20,31) 
+        IF (imax-imin.EQ.1) WRITE(20,'(I3,1x,I6)') 1,nspec
+        IF (imax-imin.GT.1) WRITE(20,'(I3,1x,I6)') ntfull,nspec
+        IF (vactoair_flag.EQ.0) THEN
+           WRITE(20,'(50000(F15.4))') spec_lambda
+        ELSE
+           WRITE(20,'(50000(F15.4))') vactoair(spec_lambda)
+        ENDIF
+       ENDIF
+       IF (write_compsp.EQ.4) THEN
+          WRITE(20,'("#")') 
+          WRITE(20,34) 
+       ENDIF
+   ENDIF
+
+   !formats
+30 FORMAT('#   SFH: tabulated input, dust=(',F6.2,','F6.2,')')
+31 FORMAT('#   log(age) log(mass) Log(lbol) log(SFR) spectra')
+32 FORMAT('#   log(age) log(mass) Log(lbol) log(SFR) mags (see FILTER_LIST)')
+33 FORMAT('#   SFH: Tage=',F6.2,' Gyr, log(tau/Gyr)= ',F6.3,&
+        ', const= ',F6.3,', fb= ',F6.3,', tb= ',F6.2,&
+        ' Gyr, sf_start= 'F6.3,', dust=(',F6.2,','F6.2,')')
+34 FORMAT('#   log(age) indices (see allindices.dat)')
+
+
+END SUBROUTINE COMPSP_SETUP_OUTPUT
 
 !------------------------------------------------------------!
 !------------------------------------------------------------!
