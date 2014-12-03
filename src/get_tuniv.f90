@@ -15,6 +15,8 @@ FUNCTION GET_TUNIV(z)
   !---------------------------------------------------------------!
   !---------------------------------------------------------------!
 
+  get_tuniv = 0.0
+
   !Hubble time in Gyr
   thub = 0.978E3 / H0
 
@@ -22,11 +24,12 @@ FUNCTION GET_TUNIV(z)
      lnstig(i) = REAL(i)/ii*(LOG(1E4)-LOG(1+z))+LOG(1+z)
   ENDDO
   
-  hub       = SQRT( om0*EXP(lnstig)**3 + ol0 )
-  get_tuniv = 0.0
+  hub = SQRT( om0*EXP(lnstig)**3 + ol0 )
+
   DO i=1,ii-1
      get_tuniv = get_tuniv + 0.5*(1/hub(i)+1/hub(i+1))
   ENDDO
   get_tuniv = get_tuniv * thub * (lnstig(2)-lnstig(1))
+
 
 END FUNCTION GET_TUNIV

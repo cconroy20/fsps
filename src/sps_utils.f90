@@ -107,25 +107,15 @@ MODULE SPS_UTILS
        REAL(SP) :: get_tuniv
      END FUNCTION GET_TUNIV
   END INTERFACE
+ 
+  INTERFACE
+     FUNCTION GET_LUMDIST(z)
+       USE sps_vars
+       REAL(SP), INTENT(in) :: z
+       REAL(SP) :: get_lumdist
+     END FUNCTION GET_LUMDIST
+  END INTERFACE
   
-  INTERFACE
-     FUNCTION LINTERP(xin,yin,xout)
-       USE sps_vars
-       REAL(SP), DIMENSION(:), INTENT(in) :: xin,yin
-       REAL(SP), INTENT(in)  :: xout
-       REAL(SP) :: linterp
-     END FUNCTION LINTERP
-  END INTERFACE
-
-  INTERFACE
-     FUNCTION LINTERPARR(xin,yin,xout)
-       USE sps_vars
-       REAL(SP), DIMENSION(:), INTENT(in) :: xin,yin
-       REAL(SP), INTENT(in), DIMENSION(:) :: xout
-       REAL(SP), DIMENSION(SIZE(xout)) :: linterparr
-     END FUNCTION LINTERPARR
-  END INTERFACE
-
   INTERFACE
      SUBROUTINE GETMAGS(zred,spec,mags,mag_compute)
        USE sps_vars
@@ -207,6 +197,24 @@ MODULE SPS_UTILS
        INTEGER, INTENT(in) :: nmass
      END SUBROUTINE IMF_WEIGHT
   END INTERFACE 
+
+  INTERFACE
+     FUNCTION LINTERP(xin,yin,xout)
+       USE sps_vars
+       REAL(SP), DIMENSION(:), INTENT(in) :: xin,yin
+       REAL(SP), INTENT(in)  :: xout
+       REAL(SP) :: linterp
+     END FUNCTION LINTERP
+  END INTERFACE
+
+  INTERFACE
+     FUNCTION LINTERPARR(xin,yin,xout)
+       USE sps_vars
+       REAL(SP), DIMENSION(:), INTENT(in) :: xin,yin
+       REAL(SP), INTENT(in), DIMENSION(:) :: xout
+       REAL(SP), DIMENSION(SIZE(xout)) :: linterparr
+     END FUNCTION LINTERPARR
+  END INTERFACE
 
   INTERFACE
      FUNCTION LOCATE(xx,x)

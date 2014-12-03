@@ -302,7 +302,6 @@ SUBROUTINE SPS_SETUP(zin)
   ENDDO
   CLOSE(96)
  
-  
   !------------read in post-AGB spectra from Rauch 2003------------;
 
   !read in post-AGB Teff array
@@ -394,9 +393,10 @@ SUBROUTINE SPS_SETUP(zin)
      dz = (LOG10(zlegend(j)/zsol)-twrzmet(i1))/(twrzmet(i1+1)-twrzmet(i1))
      dz = MIN(MAX(dz,-1.),1.)
      DO i=1,ndim_wr
-        tspecwr = (1-dz)*twrn(:,i,i1) + dz*twrn(:,i,i1+1)
-        wrn_spec(:,i,j) = 10**linterparr(LOG10(tlamwr),LOG10(tspecwr),&
-             LOG10(spec_lambda))
+        tspecwr = (1-dz)*LOG10(twrn(:,i,i1)+tiny_number) + &
+             dz*LOG10(twrn(:,i,i1+1)+tiny_number)
+        wrn_spec(:,i,j) = 10**linterparr(LOG10(tlamwr),tspecwr,&
+             LOG10(spec_lambda))-tiny_number
      ENDDO
   ENDDO
 
@@ -424,9 +424,10 @@ SUBROUTINE SPS_SETUP(zin)
      dz = (LOG10(zlegend(j)/zsol)-twrzmet(i1))/(twrzmet(i1+1)-twrzmet(i1))
      dz = MIN(MAX(dz,-1.),1.)
      DO i=1,ndim_wr
-        tspecwr = (1-dz)*twrc(:,i,i1) + dz*twrc(:,i,i1+1)
-        wrc_spec(:,i,j) = 10**linterparr(LOG10(tlamwr),LOG10(tspecwr),&
-             LOG10(spec_lambda))
+        tspecwr = (1-dz)*LOG10(twrc(:,i,i1)+tiny_number) + &
+             dz*LOG10(twrc(:,i,i1+1)+tiny_number)
+        wrc_spec(:,i,j) = 10**linterparr(LOG10(tlamwr),tspecwr,&
+             LOG10(spec_lambda))-tiny_number
      ENDDO
   ENDDO
 
@@ -899,13 +900,14 @@ SUBROUTINE SPS_SETUP(zin)
   ENDDO
 
   !----------------------------------------------------------------!
-  !---------set up the redshift-age relation (age in Gyr)----------!
+  !--------------set up the redshift-age-DL relations--------------!
   !----------------------------------------------------------------!
 
   DO i=1,500
      a = (i-1)/499.*(1-1/1001.)+1/1001.
-     zagespl(i,1) = 1/a-1  !redshift
-     zagespl(i,2) = get_tuniv(zagespl(i,1))  !Tuniv(z)
+     cosmospl(i,1) = 1/a-1  !redshift
+     cosmospl(i,2) = get_tuniv(cosmospl(i,1))   ! Tuniv in Gyr
+     cosmospl(i,3) = get_lumdist(cosmospl(i,1)) ! Lum Dist in pc
   ENDDO
 
   !set Tuniv

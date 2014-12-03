@@ -29,6 +29,7 @@ MODULE SPS_VARS
   
   !setup cosmology (WMAP7).  Used only for z(t) relation.
   REAL(SP) :: om0=0.27, ol0=0.73, H0=72.
+
   !define solar metallicity
   REAL(SP), PARAMETER :: zsol=0.0190 
   
@@ -317,8 +318,8 @@ MODULE SPS_VARS
   !pmetals set in PARAMS structure
   REAL(SP) :: zpow=1.0
 
-  !array holding redshift-age relation
-  REAL(SP), DIMENSION(500,2) :: zagespl=0.
+  !array holding redshift-age-DL relations
+  REAL(SP), DIMENSION(500,3) :: cosmospl=0.
  
   !array holding tabulated SFH 
   REAL(SP), DIMENSION(3,ntabmax) :: sfh_tab=0.
