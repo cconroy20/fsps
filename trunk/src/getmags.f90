@@ -16,12 +16,14 @@ SUBROUTINE GETMAGS(zred,spec,mags,mag_compute)
   INTEGER, DIMENSION(nbands), INTENT(in), OPTIONAL  :: mag_compute
   INTEGER, DIMENSION(nbands) :: magflag
   REAL(SP), DIMENSION(nspec)  :: tspec
+  REAL(SP) :: const, dm
 
   !-----------------------------------------------------------!
   !-----------------------------------------------------------!
 
   mags = 99.
-  
+  const= 0.0
+
   !set up the flags determining which mags are computed
   IF (PRESENT(mag_compute)) THEN
      magflag = mag_compute
@@ -33,12 +35,18 @@ SUBROUTINE GETMAGS(zred,spec,mags,mag_compute)
 
   !redshift the spectrum
   IF (ABS(zred).GT.tiny_number) THEN
+
      DO i=1,nspec
         tspec(i) = MAX(linterp(spec_lambda*(1+zred),spec,&
         spec_lambda(i)),0.0)
      ENDDO
      !note that this means the *redshifted* spectrum is returned
      spec = tspec
+
+     !compute additional terms for cosmological mags
+     dm    = 5*LOG10(linterp(cosmospl(:,1),cosmospl(:,3),zred)/10.)
+     const = dm - 2.5*LOG10(1+zred)
+
   ENDIF
 
   !integrate over each filter
@@ -50,7 +58,7 @@ SUBROUTINE GETMAGS(zred,spec,mags,mag_compute)
      ELSE
         IF (compute_light_ages.EQ.0) THEN
            !the mag2cgs var converts from Lsun/Hz to cgs at 10pc
-           mags(i) = -2.5*LOG10(mags(i)) - 48.60 - 2.5*mag2cgs
+           mags(i) = -2.5*LOG10(mags(i)) - 48.60 - 2.5*mag2cgs + const
         ENDIF
      ENDIF
   ENDDO

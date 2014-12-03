@@ -101,7 +101,7 @@ SUBROUTINE GETSPEC(pset,mact,logt,lbol,logg,phase,ffco,spec)
 
   !use the primary library for the rest of the isochrone
   ELSE IF (logt.LT.4.699) THEN
-     
+
      flag = 1
      !find the subgrid containing point i 
      jlo = MIN(MAX(locate(speclib_logt,logt),1),ndim_logt-1)
@@ -138,7 +138,7 @@ SUBROUTINE GETSPEC(pset,mact,logt,lbol,logg,phase,ffco,spec)
         IF (test4.GT.tiny_number) ispec = speclib(:,pset%zmet,jlo+1,klo+1)
 
      ELSE
-        
+
         !bilinear interpolation
         ispec = (1-t)*(1-u)*speclib(:,pset%zmet,jlo,klo) + &
              t*(1-u)*speclib(:,pset%zmet,jlo+1,klo) + &
@@ -169,7 +169,7 @@ SUBROUTINE GETSPEC(pset,mact,logt,lbol,logg,phase,ffco,spec)
 
   !add circumstellar dust around AGB stars
   IF ((phase.EQ.4.OR.phase.EQ.5) &
-       .AND.add_agb_dust_model.EQ.1.AND.pset%agb_dust.GT.0.0) THEN
+       .AND.add_agb_dust_model.EQ.1.AND.pset%agb_dust.GT.tiny_number) THEN
      CALL ADD_AGB_DUST(pset%agb_dust,spec,mact,&
           logt,LOG10(lbol),logg,zlegend(pset%zmet),ffco)
   ENDIF
