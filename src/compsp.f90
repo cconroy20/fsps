@@ -548,7 +548,7 @@ SUBROUTINE COMPSP(write_compsp,nzin,outfile,mass_ssp,&
       ENDIF
 
       !add IGM absorption
-      IF (add_igm_absorption.EQ.1.AND.pset%zred.GT.0.0) THEN
+      IF (add_igm_absorption.EQ.1.AND.pset%zred.GT.tiny_number) THEN
          spec_csp = igm_absorb(spec_lambda,spec_csp,pset%zred,&
               pset%igm_factor)
       ENDIF

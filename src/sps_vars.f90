@@ -316,7 +316,7 @@ MODULE SPS_VARS
   !Index for P(Z) distribution.  1=closed box;
   !P(Z) = z^zpow*exp(-z/pmetals)  (see pz_convol.f90)
   !pmetals set in PARAMS structure
-  REAL(SP) :: zpow=1.0
+  REAL(SP) :: zpow2=1.0
 
   !array holding redshift-age-DL relations
   REAL(SP), DIMENSION(500,3) :: cosmospl=0.

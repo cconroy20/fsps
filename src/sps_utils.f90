@@ -295,10 +295,10 @@ MODULE SPS_UTILS
   END INTERFACE
 
   INTERFACE
-     SUBROUTINE ZTINTERP(zpos,spec,lbol,mass,tpos)
+     SUBROUTINE ZTINTERP(zpos,spec,lbol,mass,tpos,zpow)
        USE sps_vars
        REAL(SP),INTENT(in) :: zpos
-       REAL(SP),INTENT(in), OPTIONAL :: tpos
+       REAL(SP),INTENT(in), OPTIONAL :: tpos,zpow
        REAL(SP),INTENT(inout),DIMENSION(:) :: mass, lbol
        REAL(SP),INTENT(inout),DIMENSION(:,:) :: spec
      END SUBROUTINE ZTINTERP

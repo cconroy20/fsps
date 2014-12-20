@@ -730,6 +730,7 @@ SUBROUTINE SPS_SETUP(zin)
 
   !loop over all the transmission filters
   DO i=1,nbands
+
      jj=0
      readlamb = 0.0
      readband = 0.0
@@ -774,6 +775,7 @@ SUBROUTINE SPS_SETUP(zin)
      !in this case the band is entirely outside the wavelength array
      IF (dumr1.LE.tiny_number) dumr1=1.0 
      bands(:,i) = bands(:,i) / dumr1
+     bands(:,i) = MAX(bands(:,i),0.0)  !force no negative values
 
      !compute absolute magnitude of the Sun
      magsun(i) = TSUM(spec_lambda,sun_spec*bands(:,i)/spec_lambda)
@@ -802,6 +804,8 @@ SUBROUTINE SPS_SETUP(zin)
   !only execute this loop for the standard filter list
   IF (TRIM(alt_filter_file).EQ.'') THEN
      !normalize the IRAC, PACS, SPIRE, and IRAS photometry to nu*fnu=const
+     !Note: this turns out to be irrelevant and is the result of rather
+     !confusing documentation on the IRAC website
      lami = (/3.550,4.493,5.731,7.872,70.0,100.0,160.0,250.0,350.0,500.0,&
           12.0,25.0,60.0,100.0/)*1E4
      ind=(/53,54,55,56,95,96,97,98,99,100,101,102,103,104/)
@@ -816,8 +820,9 @@ SUBROUTINE SPS_SETUP(zin)
      ENDDO
      
      !normalize the MIPS photometry to a BB (beta=2)
+     !this part is *not* irrelevant.
      lami(1:3) = (/23.68,71.42,155.9/)*1E4
-     ind(1:3) = (/90,91,92/)
+     ind(1:3)  = (/90,91,92/)
      DO j=1,3
         IF (ind(j).GT.nbands) THEN
            WRITE(*,*) 'SPS_SETUP ERROR: trying to index a filter that does not exist!'
