@@ -31,7 +31,7 @@ SUBROUTINE PZ_CONVOL(yield,zave,spec_pz,lbol_pz,mass_pz)
   IF (nz.EQ.22) THEN
 
      !define P(Z)
-     pzz1 = zlegend**zpow * EXP(-zlegend/yield)
+     pzz1 = zlegend**zpow2 * EXP(-zlegend/yield)
      
      !integrate over P(Z)
      DO z=1,nz-1
@@ -55,7 +55,7 @@ SUBROUTINE PZ_CONVOL(yield,zave,spec_pz,lbol_pz,mass_pz)
      ENDDO
 
      !define P(Z)
-     pzz2 = zz2**zpow * EXP(-zz2/yield)
+     pzz2 = zz2**zpow2 * EXP(-zz2/yield)
      !pzz2 = zz2/ (1/zz2 + 1E4*zz2**zpow)
 
      DO t=nt,nt
