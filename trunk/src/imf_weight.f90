@@ -40,6 +40,13 @@ SUBROUTINE IMF_WEIGHT(mini,wght,nmass)
         m2 = mini(i) + 0.5*(mini(i+1)-mini(i))
      ENDIF
 
+     IF (m2.LT.m1) THEN
+        WRITE(*,*) 'IMF_WEIGHT WARNING: non-monotonic mass!',m1,m2,m2-m1
+        CYCLE
+     ENDIF
+
+     IF (m2.EQ.m1) CYCLE
+
      wght(i) = funcint(imf,m1,m2)
 
   ENDDO

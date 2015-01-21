@@ -17,7 +17,6 @@ MODULE SPS_VARS
 ! "MIST" currently under development.  do not use!
 #define MIST 0
 
-
   !--------------------------------------------------------------!
   !--------------------------------------------------------------!
 
@@ -144,11 +143,14 @@ MODULE SPS_VARS
   !flag indicating type of spectral library to use
 #if (MILES)
   CHARACTER(5), PARAMETER :: spec_type = 'miles'
+  INTEGER, PARAMETER :: nzinit=5
 #elif (CKC14)
   !CHARACTER(5), PARAMETER :: spec_type = 'ckc14'
   CHARACTER(6), PARAMETER :: spec_type = 'ckc14z'
+  INTEGER, PARAMETER :: nzinit=1
 #else
   CHARACTER(5), PARAMETER :: spec_type = 'basel'
+  INTEGER, PARAMETER :: nzinit=6
 #endif
 
   !number of metallicities in the isochrones
@@ -339,6 +341,7 @@ MODULE SPS_VARS
   REAL(SP), DIMENSION(ndim_logt) :: speclib_logt=0.
   REAL(SP), DIMENSION(ndim_logg) :: speclib_logg=0.
   REAL(KIND(1.0)), DIMENSION(nspec,nz,ndim_logt,ndim_logg) :: speclib=0.
+  REAL(KIND(1.0)), DIMENSION(nspec,nzinit,ndim_logt,ndim_logg) :: speclibinit=0.
   
   !AGB library (Lancon & Mouhcine 2002)
   REAL(SP), DIMENSION(nspec,n_agb_o) :: agb_spec_o=0.
@@ -382,6 +385,7 @@ MODULE SPS_VARS
   INTEGER, DIMENSION(nz,nt)  :: nmass_isoc=0
   REAL(SP), DIMENSION(nz,nt) :: timestep_isoc=0.
   REAL(SP), DIMENSION(nz)    :: zlegend=-99.
+  REAL(SP), DIMENSION(nzinit):: zlegendinit=-99.
   
   !arrays for the full Z-dep SSP spectra
   REAL(SP), DIMENSION(nspec,ntfull,nz) :: spec_ssp_zz=0.

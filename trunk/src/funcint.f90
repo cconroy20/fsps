@@ -152,7 +152,7 @@ FUNCTION FUNCINT(func,a,b)
      h(j+1)=0.25*h(j)
   ENDDO
 
-  WRITE(*,*) 'FUNCINT ERROR'
+  WRITE(*,*) 'FUNCINT ERROR:',a,b
 
 END FUNCTION FUNCINT
 
