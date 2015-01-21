@@ -19,7 +19,7 @@ SUBROUTINE SSP_GEN(pset,mass_ssp,lbol_ssp,spec_ssp)
   USE sps_vars; USE sps_utils
   IMPLICIT NONE
   
-  INTEGER :: i=1, j=1, stat,ii,klo,khi
+  INTEGER :: i=1, j=1, stat,ii,klo,khi,tlo,thi
   !weight given to the entire horizontal branch
   REAL(SP) :: hb_wght,dt,tco
   !array of IMF weights
@@ -137,6 +137,9 @@ SUBROUTINE SSP_GEN(pset,mass_ssp,lbol_ssp,spec_ssp)
 
   !loop over each isochrone
   DO i=1,nt
+
+     !flag that allows us to compute only a subset of models
+     IF (pset%ssp_gen_age(i).EQ.0) CONTINUE
 
      !reset arrays
      hb_wght  = 0.
