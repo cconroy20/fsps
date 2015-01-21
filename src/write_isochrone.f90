@@ -42,7 +42,6 @@ SUBROUTINE WRITE_ISOCHRONE(outfile,pset)
   phase = phase_isoc(zz,:,:) !flag indicating phase of evolution
   nmass = nmass_isoc(zz,:)   !number of elements per isochrone
 
-
   DO tt=1,nt
 
      !compute IMF-based weights

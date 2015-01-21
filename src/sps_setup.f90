@@ -158,15 +158,21 @@ SUBROUTINE SPS_SETUP(zin)
   !-----------------Read in spectral libraries---------------------!
   !----------------------------------------------------------------!
 
-  !read in wavelength array
+  !read in wavelength array and master zlegend
   IF (spec_type.EQ.'basel') THEN
      OPEN(91,FILE=TRIM(SPS_HOME)//'/SPECTRA/BaSeL3.1/basel.lambda',&
+          STATUS='OLD',iostat=stat,ACTION='READ')
+     OPEN(93,FILE=TRIM(SPS_HOME)//'/SPECTRA/BaSeL3.1/zlegend.dat',&
           STATUS='OLD',iostat=stat,ACTION='READ')
   ELSE IF (spec_type.EQ.'miles') THEN
      OPEN(91,FILE=TRIM(SPS_HOME)//'/SPECTRA/MILES/miles.lambda',&
           STATUS='OLD',iostat=stat,ACTION='READ')
+     OPEN(93,FILE=TRIM(SPS_HOME)//'/SPECTRA/MILES/zlegend.dat',&
+          STATUS='OLD',iostat=stat,ACTION='READ')
   ELSE IF (spec_type(1:5).EQ.'ckc14') THEN
      OPEN(91,FILE=TRIM(SPS_HOME)//'/SPECTRA/CKC14/'//spec_type//'.lambda',&
+          STATUS='OLD',iostat=stat,ACTION='READ')
+     OPEN(93,FILE=TRIM(SPS_HOME)//'/SPECTRA/CKC14/zlegend.dat',&
           STATUS='OLD',iostat=stat,ACTION='READ')
   ENDIF
   IF (stat.NE.0) THEN
@@ -194,9 +200,10 @@ SUBROUTINE SPS_SETUP(zin)
   CLOSE(91)
 
   !read in each metallicity
-  DO z=zmin,zmax
+  DO z=1,nzinit
 
-     WRITE(zstype,'(F6.4)') zlegend(z)
+     READ(93,*) zlegendinit(z)
+     WRITE(zstype,'(F6.4)') zlegendinit(z)
 
      !read in the spectral library
      IF (spec_type.EQ.'basel') THEN
@@ -226,8 +233,22 @@ SUBROUTINE SPS_SETUP(zin)
         STOP 
      ENDIF
 
-     READ(92,rec=1) speclib(:,z,:,:)
+     READ(92,rec=1) speclibinit(:,z,:,:)
      CLOSE(92)
+
+  ENDDO
+
+  CLOSE(93)
+
+  !interpolate the input spectral library to the isochrone grid
+  DO z=1,nz
+
+     i1 = MIN(MAX(locate(LOG10(zlegendinit),LOG10(zlegend(z))),1),nzinit-1)
+     dz = (LOG10(zlegend(z))-LOG10(zlegendinit(i1))) / &
+          (LOG10(zlegendinit(i1+1))-LOG10(zlegendinit(i1)))
+
+     speclib(:,z,:,:) = (1-dz)*speclibinit(:,i1,:,:) + &
+          dz*speclibinit(:,i1+1,:,:)
 
   ENDDO
 

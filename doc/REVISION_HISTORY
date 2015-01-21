@@ -1,11 +1,15 @@
 
 -------------------------REVISION HISTORY-----------------------------
 
+** Note that this file details only major revisions and version updates 
+   to the code.  The svn repository online contains more detail regarding 
+   minor changes and updates.
+
 01/10/09 
  - Release of FSPS v0.9
 
 1/18/09
- - small bug in compsp.f90 fixed.  effected tabulated SFH outputs
+ - small bug in compsp.f90 fixed.  Affected tabulated SFH outputs.
 
 1/24/09
 
@@ -26,8 +30,8 @@
    added to the parameter set to control various aspects of the dust
    model.  See the manual for details
  - WFPC2 F606W filter was added.  If you have added filters to the
-    FILTER_LIST file you will have to probably contact me to resolve
-    the conflict.
+   FILTER_LIST file you will have to probably contact me to resolve
+   the conflict.
 
 11/17/09 
 
@@ -99,14 +103,14 @@ XX/XX/14
  - Release of v2.5
  - Many updates to the internal workings of the code to increase performance
  - Bugs fixed related to post-AGB stars and to the flux normalization at
-   the very youngest ages.
+   the very youngest ages
  - A new print option in compsp allows users to print the time-dependent CMD
    in all the filters.  New IDL routine read_cmd.pro is included.
  - Smoothing can now be implemented in wavelength or velocity space
- - Added additional filters, including the Stromgren system.
+ - Added additional filters, including the Stromgren system
  - Implementation of Wolf-Rayet stars has changed.  We now include WC stars
    and metallicity dependence of both WN and WC spectra.
- - allow dust emission to be self-consistently re-absorbed (previously there 
+ - Allow dust emission to be self-consistently re-absorbed (previously there 
    was an artificial discontinuity at 1um for very large dust optical depths)
  - Nebular emission (both continuum and line) has been implemented, based on
    lookup tables from Cloudy (courtesy of Nell Byler).  This is off by default
@@ -117,3 +121,5 @@ XX/XX/14
    the default, which is vacuum.
  - Added IGM absorption option a la Madau (1995) prescription
  - Added the sf_trunc variable to work for all parameterized SFHs
+ - Added the distance modulus and a missing -2.5log(1+z) factor to the 
+   computed magnitudes in the case where a non-zero redshift is specified

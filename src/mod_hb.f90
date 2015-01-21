@@ -68,6 +68,7 @@ SUBROUTINE MOD_HB(f_bhb,t,mini,mact,logl,logt,logg,phase, &
            IF (flip.EQ.1) THEN
            
               !modify the HB
+              !once lum increases by 0.1 dex we've left the HB
               IF (ABS(logl(t,j)-hblum).LT.0.1) THEN 
                  
                  !keep track of total HB weight

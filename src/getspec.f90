@@ -14,7 +14,7 @@ SUBROUTINE GETSPEC(pset,mact,logt,lbol,logg,phase,ffco,spec)
   TYPE(PARAMS), INTENT(in) :: pset
   REAL(SP), INTENT(inout), DIMENSION(nspec) :: spec  
   REAL(SP), DIMENSION(nspec) :: ispec
-  REAL(SP) :: t,u,r2,test1,test2,test3,test4,loggi
+  REAL(SP) :: t,u,r2,test1,test2,test3,test4,loggi,teffi
   INTEGER  :: klo,jlo,flag
 
   !---------------------------------------------------------------!
