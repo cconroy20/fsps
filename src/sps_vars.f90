@@ -198,12 +198,10 @@ MODULE SPS_VARS
   INTEGER, PARAMETER :: ntabmax=10000
   !dimensions of BaSeL library
   INTEGER, PARAMETER :: ndim_logt=68, ndim_logg=19
-  !number of O-rich AGB spectra
-  INTEGER, PARAMETER :: n_agb_o=9
-  !number of C-rich AGB spectra
-  INTEGER, PARAMETER :: n_agb_c=5
-  !number of post-AGB spectra and number of spectral elements
-  INTEGER, PARAMETER :: ndim_pagb=14, nspec_pagb=9281
+  !number of O-rich, C-rich AGB spectra
+  INTEGER, PARAMETER :: n_agb_o=9, n_agb_c=5
+  !number of post-AGB spectra
+  INTEGER, PARAMETER :: ndim_pagb=14
   !number of WR spectra
   INTEGER, PARAMETER :: ndim_wr=12
   !wavelength dimension of the Draine & Li 2007 dust model
@@ -351,7 +349,6 @@ MODULE SPS_VARS
   
   !post-AGB library (Rauch 2003)
   REAL(SP), DIMENSION(nspec,ndim_pagb,2) :: pagb_spec=0.
-  REAL(SP), DIMENSION(nspec_pagb,ndim_pagb,2) :: pagb_specinit=0.
   REAL(SP), DIMENSION(ndim_pagb)         :: pagb_logt=0.
 
   !WR library (Smith et al. 2002)
