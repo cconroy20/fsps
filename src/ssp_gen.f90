@@ -139,7 +139,7 @@ SUBROUTINE SSP_GEN(pset,mass_ssp,lbol_ssp,spec_ssp)
   DO i=1,nt
 
      !flag that allows us to compute only a subset of models
-     IF (pset%ssp_gen_age(i).EQ.0) CONTINUE
+     IF (pset%ssp_gen_age(i).EQ.0) CYCLE
 
      !reset arrays
      hb_wght  = 0.

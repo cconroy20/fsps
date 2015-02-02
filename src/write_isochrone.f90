@@ -58,7 +58,7 @@ SUBROUTINE WRITE_ISOCHRONE(outfile,pset)
           CALL ADD_BS(pset%sbss,tt,mini,mact,logl,logt,logg,phase,&
           wght,hb_wght,nmass)
 
-     !modify the TP-AGB stars and Post-AGB stars
+     !modify the RGB and/or AGB stars
      CALL MOD_GB(zz,tt,timestep_isoc(zz,:),pset%delt,&
           pset%dell,pset%pagb,pset%redgb,nmass(tt),logl,logt,phase,wght)
 
