@@ -22,6 +22,7 @@ SUBROUTINE SPS_SETUP(zin)
   REAL(SP), DIMENSION(ntlam) :: tvega_lam=0.,tvega_spec=0.
   REAL(SP), DIMENSION(ntlam) :: tsun_lam=0.,tsun_spec=0.
   REAL(SP), DIMENSION(nlamagb) :: tagb_lam=0.
+  REAL(SP), DIMENSION(nspec_pagb) :: pagb_lam=0.0
   REAL(SP), DIMENSION(nlamagb,n_agb_c) :: tagbc_spec=0.
   REAL(SP), DIMENSION(nlamagb,n_agb_o) :: tagbo_spec=0.
   REAL(SP), DIMENSION(nlamwr) :: tlamwr=0.,tspecwr=0.
@@ -339,31 +340,41 @@ SUBROUTINE SPS_SETUP(zin)
   pagb_logt = LOG10(pagb_logt)
 
   !read in solar metallicity post-AGB spectra
-  OPEN(97,FILE=TRIM(SPS_HOME)//'/SPECTRA/Hot_spectra/ipagb_'//&
-       spec_type//'.spec_solar',STATUS='OLD',iostat=stat,ACTION='READ')
+  OPEN(97,FILE=TRIM(SPS_HOME)//'&
+       /SPECTRA/Hot_spectra/ipagb_solar.spec',&
+       STATUS='OLD',iostat=stat,ACTION='READ')
   IF (stat.NE.0) THEN
      WRITE(*,*) 'SPS_SETUP ERROR: /SPECTRA/Hot_spectra/'//&
           'ipagb.spec_solar cannot be opened'
      STOP 
   ENDIF
-  DO i=1,nspec
-     READ(97,*) d1,pagb_spec(i,:,2)
+  DO i=1,nspec_pagb
+     READ(97,*) pagb_lam(i),pagb_specinit(i,:,2)
   ENDDO
   CLOSE(97)
 
   !read in halo metallicity post-AGB spectra
-  OPEN(97,FILE=TRIM(SPS_HOME)//'/SPECTRA/Hot_spectra/ipagb_'//&
-       spec_type//'.spec_halo',STATUS='OLD',iostat=stat,ACTION='READ')
+  OPEN(97,FILE=TRIM(SPS_HOME)//&
+       '/SPECTRA/Hot_spectra/ipagb_halo.spec',&
+       STATUS='OLD',iostat=stat,ACTION='READ')
   IF (stat.NE.0) THEN
      WRITE(*,*) 'SPS_SETUP ERROR: /SPECTRA/Hot_spectra/'//&
           'ipagb.spec_halo cannot be opened'
      STOP 
   ENDIF
-  DO i=1,nspec
-     READ(97,*) d1,pagb_spec(i,:,1)
+  DO i=1,nspec_pagb
+     READ(97,*) pagb_lam(i),pagb_specinit(i,:,1)
   ENDDO
   CLOSE(97)
   
+  !interpolate to the main spectral array
+  DO j=1,2
+     DO i=1,ndim_pagb
+        pagb_spec(:,i,j) = MAX(linterparr(pagb_lam,pagb_specinit(:,i,j),&
+             spec_lambda),tiny_number)
+     ENDDO
+  ENDDO
+
   !--------------read in WR spectra from Smith et al.--------------;
 
   !read in WR-N Teff array
