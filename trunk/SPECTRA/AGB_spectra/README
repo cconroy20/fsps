@@ -3,7 +3,7 @@ averaged AGB spectra from Lancon & Mouhcine 2002
 Note (1): The spectra are normalized in such a way that the integral of
     Flambda.d(lambda) equals 1 (unit of energy), if the wavelengths are
     taken as is (i.e. in Angstroem). The extrapolation to a nil flux
-    density at 3500Å and 50000Å, justified in the paper, has been
+    density at 3500A and 50000A, justified in the paper, has been
     taken into account. In addition, the coolest O-rich spectrum (o_bin9)
     has been divided by 1.05 (this assumes that the standard extrapolation
     misses 5% of the total flux); the second coolest C-rich spectrum
@@ -20,5 +20,5 @@ Note (1): The spectra are normalized in such a way that the integral of
 
     Example of practical use: If you need a given spectrum to represent a
     star with a luminosity of 1 L{Sun}, use the spectrum as it is, and
-    simply consider the flux density units to be in L/Angstroem
+    simply consider the flux density units to be in L/Angstrom
     (the same is valid for any chosen energy unit).

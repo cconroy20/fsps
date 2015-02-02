@@ -13,7 +13,8 @@ SUBROUTINE SPS_SETUP(zin)
   IMPLICIT NONE
   INTEGER, INTENT(in) :: zin
   INTEGER :: stat=1,n,i,j,m,jj,k,i1,i2
-  INTEGER, PARAMETER :: ntlam=1221,nlamagb=3961,nlamwr=1963
+  INTEGER, PARAMETER :: ntlam=1221,nspec_agb=6146
+  INTEGER, PARAMETER :: nlamwr=1963,nspec_pagb=9281
   INTEGER :: n_isoc,z,zmin,zmax,nlam
   CHARACTER(1) :: char,sqpah
   CHARACTER(6) :: zstype
@@ -21,10 +22,6 @@ SUBROUTINE SPS_SETUP(zin)
   REAL(SP), DIMENSION(nspec) :: tspec=0.
   REAL(SP), DIMENSION(ntlam) :: tvega_lam=0.,tvega_spec=0.
   REAL(SP), DIMENSION(ntlam) :: tsun_lam=0.,tsun_spec=0.
-  REAL(SP), DIMENSION(nlamagb) :: tagb_lam=0.
-  REAL(SP), DIMENSION(nspec_pagb) :: pagb_lam=0.0
-  REAL(SP), DIMENSION(nlamagb,n_agb_c) :: tagbc_spec=0.
-  REAL(SP), DIMENSION(nlamagb,n_agb_o) :: tagbo_spec=0.
   REAL(SP), DIMENSION(nlamwr) :: tlamwr=0.,tspecwr=0.
   REAL(SP), DIMENSION(nlamwr,ndim_wr,5) :: twrc=0.,twrn=0.
   REAL(SP), DIMENSION(5) :: twrzmet=0.
@@ -35,8 +32,13 @@ SUBROUTINE SPS_SETUP(zin)
   REAL(SP), DIMENSION(14) :: lami=0.
   INTEGER,  DIMENSION(14) :: ind
   REAL(SP), DIMENSION(nlam_nebcont) :: readlambneb=0.,readcontneb=0.
-  REAL(SP), DIMENSION(22,n_agb_o) :: tagb_logt_o
-  REAL(SP), DIMENSION(22) :: tagb_logz_o
+  REAL(SP), DIMENSION(22,n_agb_o)   :: tagb_logt_o
+  REAL(SP), DIMENSION(22)           :: tagb_logz_o
+  REAL(SP), DIMENSION(nspec_pagb) :: pagb_lam=0.0
+  REAL(SP), DIMENSION(nspec_pagb,ndim_pagb,2) :: pagb_specinit=0.
+  REAL(SP), DIMENSION(nspec_agb)  :: agb_lam=0.0
+  REAL(SP), DIMENSION(nspec_agb,n_agb_o) :: agb_specinit_o=0.
+  REAL(SP), DIMENSION(nspec_agb,n_agb_c) :: agb_specinit_c=0.
 
   !---------------------------------------------------------------!
   !---------------------------------------------------------------!
@@ -256,11 +258,11 @@ SUBROUTINE SPS_SETUP(zin)
   !-----------Read in TP-AGB Library from Lancon & Wood------------;
 
   !read in AGB Teff array for O-rich spectra
-  OPEN(93,FILE=TRIM(SPS_HOME)//'/SPECTRA/AGB_spectra/Orich_teff_allZ'//&
-       '.dat',STATUS='OLD',iostat=stat,ACTION='READ')
+  OPEN(93,FILE=TRIM(SPS_HOME)//'/SPECTRA/AGB_spectra/Orich.teff',&
+       STATUS='OLD',iostat=stat,ACTION='READ')
   IF (stat.NE.0) THEN
      WRITE(*,*) 'SPS_SETUP ERROR: /SPECTRA/AGB_spectra'//&
-          'Orich_teff_allZ.dat cannot be opened'
+          'Orich.teff cannot be opened'
      STOP 
   ENDIF
   !burn the header
@@ -281,11 +283,11 @@ SUBROUTINE SPS_SETUP(zin)
   agb_logt_o = LOG10(agb_logt_o)
      
   !read in AGB Teff array for C-rich spectra
-  OPEN(94,FILE=TRIM(SPS_HOME)//'/SPECTRA/AGB_spectra/Crich_teff_allZ'//&
-       '.dat',STATUS='OLD',iostat=stat,ACTION='READ')
+  OPEN(94,FILE=TRIM(SPS_HOME)//'/SPECTRA/AGB_spectra/Crich.teff',&
+       STATUS='OLD',iostat=stat,ACTION='READ')
   IF (stat.NE.0) THEN
      WRITE(*,*) 'SPS_SETUP ERROR: /SPECTRA/AGB_spectra/'//&
-          'Crich_teff_allZ.dat cannot be opened'
+          'Crich.teff cannot be opened'
      STOP 
   ENDIF
   !burn the header
@@ -298,32 +300,44 @@ SUBROUTINE SPS_SETUP(zin)
   
   !read in TP-AGB O-rich spectra
   OPEN(95,FILE=TRIM(SPS_HOME)//&
-       '/SPECTRA/AGB_spectra/Orich_spec_all_'//spec_type//'.dat',&
+       '/SPECTRA/AGB_spectra/Orich.spec',&
        STATUS='OLD',iostat=stat,ACTION='READ')
   IF (stat.NE.0) THEN
-     WRITE(*,*) 'SPS_SETUP ERROR: /AGB_spectra/Orich_spec_all_'//&
-          spec_type//'.dat '//'cannot be opened'
+     WRITE(*,*) 'SPS_SETUP ERROR: /AGB_spectra/'//&
+          'Orich.spec '//'cannot be opened'
      STOP 
   ENDIF
-  DO i=1,nspec
-     READ(95,*) d1,agb_spec_o(i,:)
+  DO i=1,nspec_agb
+     READ(95,*) agb_lam(i),agb_specinit_o(i,:)
   ENDDO
   CLOSE(95)
   
+  !interpolate to the main spectral grid
+  DO i=1,n_agb_o
+     agb_spec_o(:,i) = MAX(linterparr(agb_lam,agb_specinit_o(:,i),&
+          spec_lambda),tiny_number)
+  ENDDO
+
   !read in TP-AGB C-rich spectra
   OPEN(96,FILE=TRIM(SPS_HOME)//&
-       '/SPECTRA/AGB_spectra/Crich_spec_all_'//spec_type//'.dat',&
+       '/SPECTRA/AGB_spectra/Crich.spec',&
        STATUS='OLD',iostat=stat,ACTION='READ')
   IF (stat.NE.0) THEN
-     WRITE(*,*) 'SPS_SETUP ERROR: /AGB_spectra/SPECTRA/'//&
-          'Crich_spec_all_'//spec_type//'.dat '//'cannot be opened'
+     WRITE(*,*) 'SPS_SETUP ERROR: /AGB_spectra/'//&
+          'Crich.spec '//'cannot be opened'
      STOP 
   ENDIF
-  DO i=1,nspec
-     READ(96,*) d1,agb_spec_c(i,:)
+  DO i=1,nspec_agb
+     READ(96,*) agb_lam(i),agb_specinit_c(i,:)
   ENDDO
   CLOSE(96)
  
+  !interpolate to the main spectral grid
+  DO i=1,n_agb_c
+     agb_spec_c(:,i) = MAX(linterparr(agb_lam,agb_specinit_c(:,i),&
+          spec_lambda),tiny_number)
+  ENDDO
+
   !------------read in post-AGB spectra from Rauch 2003------------;
 
   !read in post-AGB Teff array
