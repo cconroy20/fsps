@@ -1,9 +1,9 @@
 SUBROUTINE ZTINTERP(zpos,spec,lbol,mass,tpos,zpow)
 
   !Linearly interpolate a grid of SSPs with the following options:
-  !1) single metallicity (zpos) for a grid of ages
-  !2) single metallicity (zpos) for a single age (tpos)
-  !3) integrate over an MDF (zpos,zpow) for a grid of ages
+  !1) single metallicity (zpos) for a single age (tpos)
+  !2) integrate over an MDF (zpos,zpow) for a grid of ages
+  !3) single metallicity (zpos) for a grid of ages
 
   USE sps_vars; USE sps_utils, ONLY : locate, tsum
   IMPLICIT NONE

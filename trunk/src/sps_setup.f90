@@ -261,7 +261,7 @@ SUBROUTINE SPS_SETUP(zin)
   OPEN(93,FILE=TRIM(SPS_HOME)//'/SPECTRA/AGB_spectra/Orich.teff',&
        STATUS='OLD',iostat=stat,ACTION='READ')
   IF (stat.NE.0) THEN
-     WRITE(*,*) 'SPS_SETUP ERROR: /SPECTRA/AGB_spectra'//&
+     WRITE(*,*) 'SPS_SETUP ERROR: /SPECTRA/AGB_spectra/'//&
           'Orich.teff cannot be opened'
      STOP 
   ENDIF
