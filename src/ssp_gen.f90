@@ -26,6 +26,7 @@ SUBROUTINE SSP_GEN(pset,mass_ssp,lbol_ssp,spec_ssp)
   REAL(SP), DIMENSION(nm) :: wght
   !SSP spectrum
   REAL(SP), INTENT(inout), DIMENSION(nspec,ntfull) :: spec_ssp
+  REAL(SP), DIMENSION(nspec,ntfull) :: tspec_ssp
   !Mass and Lbol info
   REAL(SP), INTENT(inout), DIMENSION(ntfull) :: mass_ssp, lbol_ssp
 
@@ -219,6 +220,12 @@ SUBROUTINE SSP_GEN(pset,mass_ssp,lbol_ssp,spec_ssp)
         mass_ssp(j)   = (1-dt)*mass_ssp(klo)   + dt*mass_ssp(khi)
      ENDDO
   ENDIF
+
+  !add the nebular emission model once at the SSP level
+  IF (add_neb_emission.EQ.2) THEN
+    CALL ADD_NEBULAR(pset,spec_ssp,tspec_ssp)
+    spec_ssp = tspec_ssp
+ ENDIF
 
 END SUBROUTINE SSP_GEN
 

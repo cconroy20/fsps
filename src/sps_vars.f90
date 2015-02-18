@@ -437,4 +437,11 @@ MODULE SPS_VARS
   !used for Powell minimization
   TYPE(OBSDAT) :: powell_data, sedfit_data
 
+  !used for creating a pre-tabulated grid of CSPs as a function
+  !of tau and metallicity
+  INTEGER, PARAMETER :: ntaugrid=20
+  REAL(SP), DIMENSION(ntaugrid) :: taugrid=0.0
+  REAL(SP), DIMENSION(nspec,ntfull,nz,ntaugrid) :: csp_grid=0.0
+  INTEGER :: csp_grid_flag=0
+
 END MODULE SPS_VARS

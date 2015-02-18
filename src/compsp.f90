@@ -5,228 +5,6 @@
 !  units are Msun/yr.                                        !
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
-FUNCTION INTSFR(sfh,tau,const,sftrunc,sfstart,sftheta,t1,t2,tweight)
-
-  !simple routine to integrate the SFH from t1 to t2
-
-  USE sps_vars; USE sps_utils, ONLY : tsum, locate
-  IMPLICIT NONE
-
-  INTEGER, INTENT(in)  :: sfh
-  REAL(SP), INTENT(in) :: t1,t2,tau,const,sftrunc,sfstart,sftheta
-  INTEGER, INTENT(in), OPTIONAL :: tweight
-  INTEGER  :: lo,hi
-  REAL(SP) :: s1,s2,dt,intsfr,tt1
-
-  !-----------------------------------------------------!
-  !-----------------------------------------------------!
-
-  IF (t1.GT.sftrunc.AND.t2.LT.sftrunc) THEN
-     tt1 = sftrunc
-  ELSE
-     tt1 = t1
-  ENDIF
-
-  IF (sfh.EQ.1) THEN
-
-     IF (PRESENT(tweight)) THEN
-        !in this case the integral is int(t*sfr)
-        intsfr = tau*( (t2/tau/1E9+1)*EXP(-t2/tau/1E9) - &
-             (tt1/tau/1E9+1)*EXP(-tt1/tau/1E9) ) / &
-             (1-EXP(-(sftrunc-sfstart)/1E9/tau)) 
-        intsfr = intsfr*(1-const) + const*(tt1**2-t2**2)/2E9/(sftrunc-sfstart)
-     ELSE
-        intsfr = (EXP(-t2/tau/1E9) - EXP(-tt1/tau/1E9))/&
-             (1-EXP(-(sftrunc-sfstart)/1E9/tau)) 
-        intsfr = intsfr*(1-const) + const*(tt1-t2)/(sftrunc-sfstart)
-     ENDIF
-
-     IF (t2.GT.sftrunc) THEN
-        intsfr = 0.0
-     ENDIF
-
-  ELSE IF (sfh.EQ.4) THEN
-
-     IF (PRESENT(tweight)) THEN
-        !in this case the integral is int(t*sfr)
-        intsfr = tau*(EXP(-t2/tau/1E9)*(2+t2/tau/1E9*(t2/tau/1E9+2)) - &
-                  EXP(-tt1/tau/1E9)*(2+tt1/tau/1E9*(tt1/tau/1E9+2))) / &
-                  (1-EXP(-(sftrunc-sfstart)/1E9/tau)*((sftrunc-sfstart)/1E9/tau+1)) 
-        intsfr = intsfr*(1-const) + const*(tt1**2-t2**2)/2E9/(sftrunc-sfstart)
-     ELSE
-        intsfr = (EXP(-t2/tau/1E9)*(1+t2/tau/1E9) - &
-             EXP(-tt1/tau/1E9)*(1+tt1/tau/1E9)) / &
-             (1-EXP(-(sftrunc-sfstart)/1E9/tau)*((sftrunc-sfstart)/1E9/tau+1))  
-        intsfr = intsfr*(1-const) + const*(tt1-t2)/(sftrunc-sfstart)
-     ENDIF
-
-     IF (t2.GT.sftrunc) THEN
-        intsfr = 0.0
-     ENDIF
-
-  ELSE IF (sfh.EQ.5) THEN
-     
-     IF ((t1+sfstart).LT.sftrunc) THEN
-        intsfr = (EXP(-t2/tau/1E9)*(1+t2/tau/1E9) - &
-             EXP(-t1/tau/1E9)*(1+t1/tau/1E9)) * (tau*1E9)**2 
-     ELSE
-       intsfr =  TAN(sftheta)*&
-             (0.5*(t1**2-t2**2)-(t1-t2)*(sftrunc-sfstart))
-     ENDIF
-     intsfr = MAX(intsfr,0.0) / 1E10
-
-  ELSE IF (sfh.EQ.2.OR.sfh.EQ.3) THEN
-
-     !handle the edges separately
-     hi = MIN(MAX(locate(sfh_tab(1,1:ntabsfh),t1),1),ntabsfh-1)
-     dt = (t1-sfh_tab(1,hi))/(sfh_tab(1,hi+1)-sfh_tab(1,hi))
-     s1 = MAX((1-dt)*sfh_tab(2,hi) + dt*sfh_tab(2,hi+1),0.0)
-
-     lo = MIN(MAX(locate(sfh_tab(1,1:ntabsfh),t2),1),ntabsfh-1)
-     dt = (t2-sfh_tab(1,lo))/(sfh_tab(1,lo+1)-sfh_tab(1,lo))
-     s2 = MAX((1-dt)*sfh_tab(2,lo) + dt*sfh_tab(2,lo+1),0.0)
-
-     IF ((hi-lo).LT.2) THEN
-        intsfr = (t1-t2)*0.5*(s1+s2)
-     ELSE
-        lo = lo+1
-        intsfr = TSUM(sfh_tab(1,lo:hi),sfh_tab(2,lo:hi))
-        intsfr = intsfr + (t1-sfh_tab(1,hi))*0.5*(s1+sfh_tab(2,hi))
-        intsfr = intsfr + (sfh_tab(1,lo)-t2)*0.5*(s2+sfh_tab(2,lo))
-     ENDIF
-
-  ENDIF
-  
-  
-END FUNCTION INTSFR
-
-!------------------------------------------------------------!
-!------------------------------------------------------------!
-
-SUBROUTINE INTSPEC(pset,nti,spec_ssp,csp,mass_ssp,lbol_ssp,&
-     mass,lbol,specb,massb,lbolb,deltb,sfstart,tau,const,&
-     sftrunc,mdust,tweight)
-
-  !routine to perform integration of SSP over a SFH,
-  !including attenuation by dust.
-
-  USE sps_vars
-  USE sps_utils, ONLY : add_dust,intsfr,locate
-  IMPLICIT NONE
-  
-  INTEGER :: i,imax,indsf,wtesc
-  REAL(SP) :: t1,t2
-  REAL(SP), DIMENSION(ntfull) :: isfr,time
-  INTEGER, intent(in), optional :: tweight
-  INTEGER,  INTENT(in)    :: nti
-  REAL(SP), INTENT(in)    :: massb,lbolb,deltb,sfstart,tau,const,sftrunc
-  REAL(SP), INTENT(inout) :: mass, lbol, mdust
-  REAL(SP), INTENT(in), DIMENSION(ntfull) :: mass_ssp,lbol_ssp
-  REAL(SP), INTENT(in), DIMENSION(nspec,ntfull) :: spec_ssp
-  REAL(SP), INTENT(in), DIMENSION(nspec)    :: specb
-  REAL(SP), INTENT(inout), DIMENSION(nspec) :: csp
-  REAL(SP), DIMENSION(nspec)  :: csp1,csp2
-  TYPE(PARAMS), INTENT(in)    :: pset
-
-  !-----------------------------------------------------!
-  !-----------------------------------------------------!
-
-  time = 10**time_full
-
-  csp  = 0.0
-  csp1 = 0.0
-  csp2 = 0.0
-  mass = 0.0
-  lbol = 0.0
-
-  !only compute things if SF has "started"
-  IF (time(nti).GT.sfstart) THEN
-
-     !find where t~dust_tesc
-     wtesc = MIN(MAX(locate(time_full,&
-          LOG10(10**pset%dust_tesc+sfstart)),1),ntfull)
-     IF (pset%dust1.EQ.0.0.AND.pset%dust2.EQ.0.0) wtesc = ntfull
-
-     indsf = locate(time(nti)-time(1:nti),sfstart)
-     IF (sfstart.LE.tiny_number) indsf = nti
-     indsf = MIN(indsf,ntfull-1)
-     imax  = MIN(MIN(wtesc,nti),indsf)
-
-     !set up the integrated SFR array
-     DO i=1,indsf
-
-        t1   = time(nti)-sfstart-time(i)+time(1)
-        IF (i.EQ.indsf) t2 = 0.0
-        IF (i.NE.indsf) t2 = time(nti)-sfstart-time(i+1)+time(1)
-
-        IF (PRESENT(tweight)) THEN
-           isfr(i) = intsfr(pset%sfh,tau,const,sftrunc,sfstart,&
-                pset%sf_theta,t1,t2,1)
-        ELSE
-           isfr(i) = intsfr(pset%sfh,tau,const,sftrunc,sfstart,&
-                pset%sf_theta,t1,t2)
-        ENDIF
-
-     ENDDO
-
-     IF (indsf.EQ.1) THEN
-        csp1 = isfr(1)*spec_ssp(:,1)
-     ELSE
-        !t<tesc
-        DO i=1,imax-1
-           csp1 = csp1 + isfr(i)*0.5*(spec_ssp(:,i+1)+spec_ssp(:,i))
-        ENDDO
-        !t>tesc
-        IF (nti.GT.wtesc) THEN
-           DO i=wtesc,indsf-1
-              csp2 = csp2 + isfr(i)*0.5*(spec_ssp(:,i+1)+spec_ssp(:,i))
-           ENDDO
-           csp2 = csp2 + isfr(indsf)*spec_ssp(:,indsf)
-        ELSE
-           csp1 = csp1 + isfr(indsf)*spec_ssp(:,indsf)
-        ENDIF
-     ENDIF
-
-     !compute weighted mass and lbol
-     IF (indsf.EQ.1) THEN
-        mass = isfr(1)*mass_ssp(1)
-        lbol = LOG10( isfr(1)*10**lbol_ssp(1)+tiny_number )
-     ELSE
-        mass = SUM(isfr(1:indsf-1)/2.*&
-             (mass_ssp(1:indsf-1)+mass_ssp(2:indsf)))
-        lbol = SUM(isfr(1:indsf-1)/2.*&
-             (10**lbol_ssp(1:indsf-1)+10**lbol_ssp(2:indsf)))
-        mass = mass + isfr(indsf)*mass_ssp(indsf)
-        lbol = lbol + isfr(indsf)*10**lbol_ssp(indsf) 
-        lbol = LOG10(lbol+tiny_number)
-     ENDIF
-  
-     !add in an instantaneous burst
-     IF (pset%fburst.GT.tiny_number.AND.&
-          (pset%sfh.EQ.1.OR.pset%sfh.EQ.4)) THEN
-        IF (deltb.LT.10**pset%dust_tesc) THEN
-           csp1 = csp1*(1-pset%fburst) + specb*pset%fburst
-           csp2 = csp2*(1-pset%fburst)
-        ELSE
-           csp1 = csp1*(1-pset%fburst)
-           csp2 = csp2*(1-pset%fburst) + specb*pset%fburst
-        ENDIF
-        mass = mass*(1-pset%fburst) + massb*pset%fburst
-        lbol = LOG10( 10**lbol*(1-pset%fburst) + &
-             10**lbolb*pset%fburst )
-     ENDIF
-
-     !add dust, combine young and old csp
-     CALL ADD_DUST(pset,csp1,csp2,csp,mdust)
-
-  ENDIF
-
-END SUBROUTINE INTSPEC
-
-!-------------------------------------------------------------------!
-!-------------------------Main Routine------------------------------!
-!-------------------------------------------------------------------!
-
 SUBROUTINE COMPSP(write_compsp,nzin,outfile,mass_ssp,&
      lbol_ssp,tspec_ssp,pset,ocompsp)
 
@@ -242,7 +20,8 @@ SUBROUTINE COMPSP(write_compsp,nzin,outfile,mass_ssp,&
 
   USE sps_vars
   USE sps_utils, ONLY : getmags,add_dust,linterp,intspec,&
-       smoothspec,locate,getindx,write_isochrone,vactoair,igm_absorb
+       smoothspec,locate,getindx,write_isochrone,vactoair,igm_absorb,&
+       intsfr,intspec,compsp_grid
   IMPLICIT NONE
  
   !write_compsp = 1->write mags, 2->write spectra
@@ -538,9 +317,12 @@ SUBROUTINE COMPSP(write_compsp,nzin,outfile,mass_ssp,&
               lbol_csp,spec_burst,mass_burst,lbol_burst,&
               delt_burst,sfstart,tau,const,sftrunc,mdust)
 
+      ELSE IF (pset%sfh.EQ.99) THEN
+
+         CALL COMPSP_GRID(pset,i,spec_csp,sfstart,sftrunc)
+
       ENDIF
 
-      
       !smooth the spectrum
       IF (pset%sigma_smooth.GT.0.0) THEN
          CALL SMOOTHSPEC(spec_lambda,spec_csp,pset%sigma_smooth,&

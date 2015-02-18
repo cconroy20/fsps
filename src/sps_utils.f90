@@ -70,6 +70,16 @@ MODULE SPS_UTILS
   END INTERFACE
 
   INTERFACE
+     SUBROUTINE COMPSP_GRID(pset,nti,specout,sfstart,sftrunc)
+       USE sps_vars
+       TYPE(PARAMS), INTENT(in) :: pset
+       INTEGER, INTENT(in) :: nti
+       REAL(SP), DIMENSION(nspec), INTENT(inout) :: specout
+       REAL(SP), INTENT(in) :: sfstart,sftrunc 
+     END SUBROUTINE COMPSP_GRID
+  END INTERFACE
+
+  INTERFACE
      FUNCTION FUNCINT(func,a,b)
        USE sps_vars
        REAL(SP), INTENT(IN) :: a,b
