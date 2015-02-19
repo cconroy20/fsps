@@ -441,7 +441,7 @@ MODULE SPS_VARS
   !of tau and metallicity
   INTEGER, PARAMETER :: ntaugrid=20
   REAL(SP), DIMENSION(ntaugrid) :: taugrid=0.0
-  REAL(SP), DIMENSION(nspec,ntfull,nz,ntaugrid) :: csp_grid=0.0
+  REAL, DIMENSION(nspec,ntfull,ntaugrid,nz) :: csp_grid=0.0
   INTEGER :: csp_grid_flag=0
 
 END MODULE SPS_VARS
