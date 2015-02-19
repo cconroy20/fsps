@@ -98,7 +98,7 @@ SUBROUTINE COMPSP(write_compsp,nzin,outfile,mass_ssp,&
   imin    = 1
   imax    = ntfull
 
-  !SFH-specific setup 
+  !SFH-specific setup
   IF (pset%sfh.EQ.2) THEN
 
      IF (TRIM(pset%sfh_filename).EQ.'') THEN
@@ -165,10 +165,8 @@ SUBROUTINE COMPSP(write_compsp,nzin,outfile,mass_ssp,&
      ENDIF
 
      !set limits on the parameters tau and const
-     IF (pset%sfh.EQ.1.OR.pset%sfh.EQ.4.OR.pset%sfh.EQ.5) THEN
-        tau   = MIN(MAX(pset%tau,0.1),100.) !tau in Gyr
-        const = MIN(MAX(pset%const,0.0),1.0)
-     ENDIF
+     tau   = MIN(MAX(pset%tau,0.1),100.) !tau in Gyr
+     const = MIN(MAX(pset%const,0.0),1.0)
 
   ENDIF
 
@@ -197,13 +195,17 @@ SUBROUTINE COMPSP(write_compsp,nzin,outfile,mass_ssp,&
         ENDIF
      ENDDO
 
-  ELSE IF (pset%sfh.EQ.1.OR.pset%sfh.EQ.4.OR.pset%sfh.EQ.5) THEN
+  ELSE IF (pset%sfh.EQ.0) THEN
+
+     tsfr = 0.0
+
+  ELSE 
 
      tsfr  = 0.0
      IF (pset%sfh.EQ.1) &
           tsfr(indsf:indsft)  = EXP(-(powtime(indsf:indsft)-sfstart)/tau/1E9 )/&
           tau/1E9 / (1-EXP(-(sftrunc-sfstart)/1E9/tau))
-     IF (pset%sfh.EQ.4) &
+     IF (pset%sfh.EQ.4.OR.pset%sfh.EQ.99) &
           tsfr(indsf:indsft)  = ((powtime(indsf:indsft)-sfstart)/tau/1E9)*&
           EXP(-(powtime(indsf:indsft)-sfstart)/tau/1E9 )/tau/1E9 / &
           (1-EXP(-(sftrunc-sfstart)/1E9/tau)*((sftrunc-sfstart)/1E9/tau+1))
@@ -217,8 +219,6 @@ SUBROUTINE COMPSP(write_compsp,nzin,outfile,mass_ssp,&
         tsfr = MAX(tsfr,0.0) ! set SFR=0.0 if SFR<0
      ENDIF
 
-  ELSE IF (pset%sfh.EQ.0) THEN
-     tsfr = 0.0
   ENDIF
 
 
@@ -319,7 +319,7 @@ SUBROUTINE COMPSP(write_compsp,nzin,outfile,mass_ssp,&
 
       ELSE IF (pset%sfh.EQ.99) THEN
 
-         CALL COMPSP_GRID(pset,i,spec_csp,sfstart,sftrunc)
+         CALL COMPSP_GRID(pset,i,spec_csp)
 
       ENDIF
 
