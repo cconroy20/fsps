@@ -35,7 +35,7 @@ SUBROUTINE COMPSP(write_compsp,nzin,outfile,mass_ssp,&
 
   INTEGER  :: i,j,n,k,stat,klo,jlo,ilo,imin,imax,indsf,indsft
   REAL(SP) :: tau,const,maxtime,psfr,sfstart,zhist,sftrunc
-  REAL(SP) :: mass_csp,lbol_csp,dtb,dt,dz,zred=0.,t1,t2,mdust
+  REAL(SP) :: mass_csp,lbol_csp,dtb,dt,dz,zred=0.,t1,t2,mdust,sfr_ipol
   REAL(SP) :: mass_burst=0.0,lbol_burst=0.0,delt_burst=0.0,zero=0.0
   REAL(SP), DIMENSION(nbands)  :: mags
   REAL(SP), DIMENSION(nindx)   :: indx
@@ -369,6 +369,7 @@ SUBROUTINE COMPSP(write_compsp,nzin,outfile,mass_ssp,&
          ocompsp(i)%mags     = mags
          ocompsp(i)%indx     = indx
          ocompsp(i)%spec     = spec_csp
+         ocompsp(i)%sfr      = tsfr(i)
       ENDIF
 
    ENDDO
@@ -381,6 +382,8 @@ SUBROUTINE COMPSP(write_compsp,nzin,outfile,mass_ssp,&
            dt*ocompsp(imax)%mass_csp
       lbol_csp = (1-dt)*ocompsp(imin)%lbol_csp + &
            dt*ocompsp(imax)%lbol_csp
+      sfr_ipol = (1-dt)*ocompsp(imin)%sfr + &
+           dt*ocompsp(imax)%sfr
       DO i=1,nbands
          mags(i) = (1-dt)*ocompsp(imin)%mags(i) + &
               dt*ocompsp(imax)%mags(i)
@@ -392,7 +395,7 @@ SUBROUTINE COMPSP(write_compsp,nzin,outfile,mass_ssp,&
       spec_csp = (1-dt)*ocompsp(imin)%spec + &
            dt*ocompsp(imax)%spec
       CALL SAVE_COMPSP(write_compsp,ocompsp(1),&
-           LOG10(maxtime),mass_csp,lbol_csp,zero,mags,&
+           LOG10(maxtime),mass_csp,lbol_csp,sfr_ipol,mags,&
            spec_csp,mdust,indx)
    ENDIF
 
