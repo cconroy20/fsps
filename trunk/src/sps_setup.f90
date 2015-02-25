@@ -655,8 +655,13 @@ SUBROUTINE SPS_SETUP(zin)
   !----------------------------------------------------------------!
 
   !read in nebular continuum arrays.  Units are Lsun/Hz/Q
-  OPEN(99,FILE=TRIM(SPS_HOME)//'/nebular/ZAU_WD.cont',&
+  IF (cloudy_dust.EQ.1) THEN
+     OPEN(99,FILE=TRIM(SPS_HOME)//'/nebular/ZAU_WD.cont',&
        STATUS='OLD',iostat=stat,ACTION='READ')
+  ELSE
+     OPEN(99,FILE=TRIM(SPS_HOME)//'/nebular/ZAU_ND.cont',&
+       STATUS='OLD',iostat=stat,ACTION='READ')
+  ENDIF
   IF (stat.NE.0) THEN
      WRITE(*,*) 'SPS_SETUP ERROR: nebular cont file cannot be opened'
      STOP
@@ -680,8 +685,13 @@ SUBROUTINE SPS_SETUP(zin)
   CLOSE(99)
 
   !read in nebular emission line luminosities.  Units are Lsun/Q
-  OPEN(99,FILE=TRIM(SPS_HOME)//'/nebular/ZAU_WD.lines',&
-       STATUS='OLD',iostat=stat,ACTION='READ')
+  IF (cloudy_dust.EQ.1) THEN
+     OPEN(99,FILE=TRIM(SPS_HOME)//'/nebular/ZAU_WD.lines',&
+          STATUS='OLD',iostat=stat,ACTION='READ')
+  ELSE
+     OPEN(99,FILE=TRIM(SPS_HOME)//'/nebular/ZAU_ND.lines',&
+          STATUS='OLD',iostat=stat,ACTION='READ')
+  ENDIF
   IF (stat.NE.0) THEN
      WRITE(*,*) 'SPS_SETUP ERROR: nebular line file cannot be opened'
      STOP
