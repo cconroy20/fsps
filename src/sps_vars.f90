@@ -69,6 +69,8 @@ MODULE SPS_VARS
   !turn on/off the nebular continuum component (automatically 
   !turned off if the above is set to 0)
   INTEGER  :: add_neb_continuum=1
+  !include dust in the Cloudy tables or not
+  INTEGER :: cloudy_dust=0
   !minimum resolution (in velocity) for nebular lines, based 
   !on the resolution of the spectral libraries.
   REAL(SP) :: neb_res_min=1.0
