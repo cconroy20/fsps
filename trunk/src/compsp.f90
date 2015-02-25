@@ -158,7 +158,7 @@ SUBROUTINE COMPSP(write_compsp,nzin,outfile,mass_ssp,&
      !find sf_trunc in the time grid
      IF (pset%sf_trunc.GT.tiny_number) THEN
         sftrunc = pset%sf_trunc*1E9 !convert to yrs
-        indsft = MIN(MAX(locate(powtime,sftrunc),1),ntfull)
+        indsft  = MIN(MAX(locate(powtime,sftrunc),1),ntfull)
      ELSE
         indsft  = ntfull
         sftrunc = maxtime
@@ -228,6 +228,12 @@ SUBROUTINE COMPSP(write_compsp,nzin,outfile,mass_ssp,&
 
    !calculate mags at each time step
    DO i=imin,imax
+
+      !NB: This is a temporary fix.  I need to figure out
+      !all the implications of this for sftrunc, etc.
+      IF (pset%tage.GT.tiny_number) THEN
+         sftrunc = powtime(i)
+      ENDIF
 
       !Set up tabulated SFH
       IF (pset%sfh.EQ.2.OR.pset%sfh.EQ.3) THEN
