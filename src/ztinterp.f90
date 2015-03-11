@@ -13,7 +13,7 @@ SUBROUTINE ZTINTERP(zpos,spec,lbol,mass,tpos,zpow)
   REAL(SP),INTENT(inout),DIMENSION(:) :: mass, lbol
   REAL(SP),INTENT(inout),DIMENSION(:,:) :: spec
   INTEGER  :: zlo,tlo,i
-  REAL(SP) :: dz,dt,z0,imdf
+  REAL(SP) :: dz,dt,z0,imdf,w1=0.25,w2=0.5,w3=0.25
   REAL(SP), DIMENSION(nz) :: mdf
 
   !------------------------------------------------------------!
@@ -56,6 +56,7 @@ SUBROUTINE ZTINTERP(zpos,spec,lbol,mass,tpos,zpow)
           dz*dt*spec_ssp_zz(:,tlo+1,zlo+1)
      
   ELSE
+
      
      !integrate over an MDF and return a grid of ages
      !Note: this is a very crude implementation of an integral
@@ -63,9 +64,28 @@ SUBROUTINE ZTINTERP(zpos,spec,lbol,mass,tpos,zpow)
      !weights over which we sum the Z-dependent SSPs.
      IF (PRESENT(zpow)) THEN
 
-        z0  = 10**zpos*zsol
-        !mdf = ds/dlogZ
-        mdf = ( zlegend/z0 * EXP(-zlegend/z0) )**zpow
+        IF (zpow.LT.0) THEN
+           ! This smooths the SSPs in metallicity using a simple
+           ! triangular kernel given by w1,w2,w3.  The smoothed SSPs
+           ! are then interpolated to the target metallicity.  
+           mdf = 0.
+           zlo = MAX(MIN(locate(LOG10(zlegend/zsol),zpos),nz-1),1)
+           dz  = (zpos-LOG10(zlegend(zlo)/zsol)) / &
+                ( LOG10(zlegend(zlo+1)/zsol) - LOG10(zlegend(zlo)/zsol) )
+           ! Here the weights for the mdf are a combination of the
+           ! triangular kernel weights and the the linear interpolation
+           ! weights.  If the kernel extends off the metallicity grid
+           ! then the out-of-bounds weights are accumulated at the edges.
+           mdf(MAX(zlo-1,1)) = w1*(1-dz)
+           mdf(MIN(zlo+2,nz)) = w3*dz
+           mdf(zlo)   = mdf(zlo) + w2*(1-dz) + w1*dz
+           mdf(zlo+1) = mdf(zlo+1) + w3*(1-dz) + w2*dz
+           
+        ELSE
+           z0  = 10**zpos*zsol
+           !mdf = ds/dlogZ
+           mdf = ( zlegend/z0 * EXP(-zlegend/z0) )**zpow
+        ENDIF
         mdf = mdf / SUM(mdf)
 
         mass = 0.
