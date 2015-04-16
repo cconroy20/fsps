@@ -1,0 +1,1 @@
+This is the home of the source code for the Flexible Stellar Population Synthesis (FSPS) package.
