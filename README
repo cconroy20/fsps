@@ -1,9 +1,15 @@
 
-You should not need to update the SVN repository until an update is
+---------------------This is FSPS v2.5-------------------------
+
+When using this code please cite the following papers:
+Conroy, Gunn, & White 2009, ApJ, 699, 486
+Conroy & Gunn 2010, ApJ, 712, 833
+
+You should not need to update the git repository until an update is
 announced (which is why you need to be on the mailing list).  When an
-update is announced, you will need to simply type "svn update" in the
+update is announced, you will need to simply type "git pull" in the
 root fsps directory.  If you have made your own edits to the fsps
-files, svn will attempt to gracefully merge your local version with
+files, git will attempt to gracefully merge your local version with
 the repository version.
 
 Below is a brief description of the contents of the directories in the
@@ -41,7 +47,11 @@ instructions.
 
 dust: Contains the dust attenuation curves for the Witt & Gordon
 (2000) dust model and the dust emission spectra from the Draine & Li
-2007 grain model.
+2007 grain model.  Also contains the circumstellar dust models from 
+Villaume et al. 2015
+
+nebular: Contains the Cloudy lookup tables for nebular emission 
+(both continuum and line emission) computed by Nell Byler.
 
 pro: Contains IDL files for reading in the .mag, .indx, and .spec
 output files
