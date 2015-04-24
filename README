@@ -33,11 +33,6 @@ the fsps download.  The Hot_spectra directory contain the libraries
 for O stars, WR stars, and post-AGB stars, from Smith et al. 2002 and
 Rauch 2003, respectively.
 
-SSP: Contains the standard release versions of SSPs for a variety of
-IMFs, spectral libraries, and isochrone sets.  Each tarball contains
-the full range of metallicities, and each file contains the full range
-of ages.
-
 data: Contains files that define the set of filters and indices used
 in FSPS and the tabulated imfs and sfhs if those options are set.  The
 files in this directory are readily user editable.
