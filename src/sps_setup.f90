@@ -39,7 +39,8 @@ SUBROUTINE SPS_SETUP(zin)
   REAL(SP), DIMENSION(nspec_agb)  :: agb_lam=0.0
   REAL(SP), DIMENSION(nspec_agb,n_agb_o) :: agb_specinit_o=0.
   REAL(SP), DIMENSION(nspec_agb,n_agb_c) :: agb_specinit_c=0.
-
+  REAL(KIND(1.0)), DIMENSION(nspec,nzinit,ndim_logt,ndim_logg) :: speclibinit=0.
+ 
   !---------------------------------------------------------------!
   !---------------------------------------------------------------!
 
@@ -86,38 +87,10 @@ SUBROUTINE SPS_SETUP(zin)
      STOP
   ENDIF
 
-  IF (isoc_type.NE.'pdva'.AND.isoc_type.NE.'bsti'.AND.&
-       isoc_type.NE.'mist') THEN
-     WRITE(*,*) 'SPS_SETUP ERROR: isoc_type var set to invalid type: ',isoc_type
-     STOP
-  ENDIF
-
   IF (basel_str.NE.'pdva'.AND.basel_str.NE.'wlbc') THEN
      WRITE(*,*) 'SPS_SETUP ERROR: basel_str var set to invalid type: ',basel_str
      STOP
   ENDIF
-
-  IF (spec_type.NE.'basel'.AND.spec_type.NE.'miles'&
-       .AND.spec_type(1:5).NE.'ckc14') THEN
-     WRITE(*,*) 'SPS_SETUP ERROR: spec_type var set to invalid type: ',spec_type
-     STOP
-  ENDIF
-
-  IF (isoc_type.EQ.'pdva'.AND.spec_type.EQ.'basel'.AND.nz.NE.22) THEN
-     WRITE(*,*) 'SPS_SETUP ERROR: isoc_type="pdva", spec_type="basel", but nz NE 22!'
-     STOP
-  ENDIF
-
-  IF (isoc_type.EQ.'bsti'.AND.spec_type.EQ.'basel'.AND.nz.NE.10) THEN
-     WRITE(*,*) 'SPS_SETUP ERROR: isoc_type="bsti", spec_type="basel", but nz NE 10!'
-     STOP
-  ENDIF
-
-  IF (spec_type.EQ.'miles'.AND.nz.NE.5) THEN
-     WRITE(*,*) 'SPS_SETUP ERROR: spec_type="miles", but nz NE 5!'
-     STOP
-  ENDIF
-
 
   !----------------------------------------------------------------!
   !----------------Read in metallicity values----------------------!
@@ -125,18 +98,17 @@ SUBROUTINE SPS_SETUP(zin)
   
   !units are simply metal fraction by mass (e.g. Z=0.0190 for Zsun)
   IF (isoc_type.EQ.'pdva') THEN
-     OPEN(90,FILE=TRIM(SPS_HOME)//'/ISOCHRONES/Padova/Padova2007/zlegend_'//&
-          spec_type(1:5)//'.dat',STATUS='OLD',iostat=stat,ACTION='READ')
+     OPEN(90,FILE=TRIM(SPS_HOME)//'/ISOCHRONES/Padova/Padova2007/zlegend'//&
+          '.dat',STATUS='OLD',iostat=stat,ACTION='READ')
   ELSE IF (isoc_type.EQ.'bsti') THEN
-     OPEN(90,FILE=TRIM(SPS_HOME)//'/ISOCHRONES/BaSTI/zlegend_'//&
-          spec_type(1:5)//'.dat',STATUS='OLD',iostat=stat,ACTION='READ')
+     OPEN(90,FILE=TRIM(SPS_HOME)//'/ISOCHRONES/BaSTI/zlegend'//&
+          '.dat',STATUS='OLD',iostat=stat,ACTION='READ')
  ELSE IF (isoc_type.EQ.'mist') THEN
-     OPEN(90,FILE=TRIM(SPS_HOME)//'/ISOCHRONES/MIST/zlegend_'//&
-          spec_type(1:5)//'.dat',STATUS='OLD',iostat=stat,ACTION='READ')
+     OPEN(90,FILE=TRIM(SPS_HOME)//'/ISOCHRONES/MIST/zlegend'//&
+          '.dat',STATUS='OLD',iostat=stat,ACTION='READ')
   ENDIF
   IF (stat.NE.0) THEN
-     WRITE(*,*) 'SPS_SETUP ERROR: zlegend_*.dat '//&
-          'cannot be opened'
+     WRITE(*,*) 'SPS_SETUP ERROR: zlegend.dat cannot be opened'
      STOP 
   END IF
   DO z=1,nz

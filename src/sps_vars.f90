@@ -130,48 +130,35 @@ MODULE SPS_VARS
   !------------Pre-compiler defintions------------!
   
   !flag indicating type of isochrones to use
-  !'bsti' = BaSTI, 'pdva' = Padova 2007
+  !and number of metallicities in the set
 #if (BASTI)
   CHARACTER(4), PARAMETER :: isoc_type = 'bsti'
   INTEGER, PARAMETER :: nt=94
+  INTEGER, PARAMETER :: nz=10
 #elif (MIST)
   CHARACTER(4), PARAMETER :: isoc_type = 'mist'
   INTEGER, PARAMETER :: nt=107
+  INTEGER, PARAMETER :: nz=1
 #else
   CHARACTER(4), PARAMETER :: isoc_type = 'pdva'
   INTEGER, PARAMETER :: nt=94
+  INTEGER, PARAMETER :: nz=22
 #endif
 
   !flag indicating type of spectral library to use
+  !and number of elements per stellar spectrum
 #if (MILES)
   CHARACTER(5), PARAMETER :: spec_type = 'miles'
   INTEGER, PARAMETER :: nzinit=5
-#elif (CKC14)
-  !CHARACTER(5), PARAMETER :: spec_type = 'ckc14'
-  CHARACTER(6), PARAMETER :: spec_type = 'ckc14z'
-  INTEGER, PARAMETER :: nzinit=1
-#else
-  CHARACTER(5), PARAMETER :: spec_type = 'basel'
-  INTEGER, PARAMETER :: nzinit=6
-#endif
-
-  !number of metallicities in the isochrones
-  !number of elements per stellar spectrum
-#if (MILES)
-  INTEGER, PARAMETER :: nz=5
   INTEGER, PARAMETER :: nspec=5994
 #elif (CKC14)
-  INTEGER, PARAMETER :: nz=1
+  CHARACTER(5), PARAMETER :: spec_type = 'ckc14'
+  INTEGER, PARAMETER :: nzinit=6
   INTEGER, PARAMETER :: nspec=47378   ! 47378, 26500
-#else
+#elif (BASEL)
+  CHARACTER(5), PARAMETER :: spec_type = 'basel'
+  INTEGER, PARAMETER :: nzinit=6
   INTEGER, PARAMETER :: nspec=1963
-#if (BASTI)
-  INTEGER, PARAMETER :: nz=10
-#elif (MIST)
-  INTEGER, PARAMETER :: nz=1
-#else   
-  INTEGER, PARAMETER :: nz=22
-#endif
 #endif
 
   !flag indicating the type of normalization used in the BaSeL library
@@ -341,7 +328,6 @@ MODULE SPS_VARS
   REAL(SP), DIMENSION(ndim_logt) :: speclib_logt=0.
   REAL(SP), DIMENSION(ndim_logg) :: speclib_logg=0.
   REAL(KIND(1.0)), DIMENSION(nspec,nz,ndim_logt,ndim_logg) :: speclib=0.
-  REAL(KIND(1.0)), DIMENSION(nspec,nzinit,ndim_logt,ndim_logg) :: speclibinit=0.
   
   !AGB library (Lancon & Mouhcine 2002)
   REAL(SP), DIMENSION(nspec,n_agb_o) :: agb_spec_o=0.
@@ -362,7 +348,7 @@ MODULE SPS_VARS
   REAL(SP), DIMENSION(ndim_dl07,numin_dl07*2) :: dustem_dl07=0.
   REAL(SP), DIMENSION(nspec,7,numin_dl07*2)   :: dustem2_dl07=0.
 
-  !circumstellar AGB dust model (Villaume et al. in prep)
+  !circumstellar AGB dust model (Villaume et al. 2015)
   REAL(SP), DIMENSION(nspec,2,nteff_dagb,ntau_dagb) :: flux_dagb=0.
   REAL(SP), DIMENSION(2,ntau_dagb)                  :: tau1_dagb=0.
   REAL(SP), DIMENSION(2,nteff_dagb)                 :: teff_dagb=0.
@@ -441,9 +427,9 @@ MODULE SPS_VARS
 
   !used for creating a pre-tabulated grid of CSPs as a function
   !of tau and metallicity
-  INTEGER, PARAMETER :: ntaugrid=20
-  REAL(SP), DIMENSION(ntaugrid) :: taugrid=0.0
-  REAL, DIMENSION(nspec,ntfull,ntaugrid,nz) :: csp_grid=0.0
-  INTEGER :: csp_grid_flag=0
+  !INTEGER, PARAMETER :: ntaugrid=20
+  !REAL(SP), DIMENSION(ntaugrid) :: taugrid=0.0
+  !REAL, DIMENSION(nspec,ntfull,ntaugrid,nz) :: csp_grid=0.0
+  !INTEGER :: csp_grid_flag=0
 
 END MODULE SPS_VARS

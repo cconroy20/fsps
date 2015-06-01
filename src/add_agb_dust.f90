@@ -1,7 +1,7 @@
 FUNCTION COMPUTE_TAU1(cstar,mact,logt,logl,logg,zz)
 
   !routine to compute tau at 1um from input
-  !stellar parameters.  See Villaume et al. (in prep)
+  !stellar parameters.  See Villaume et al. (2015)
   
   USE sps_vars
   IMPLICIT NONE

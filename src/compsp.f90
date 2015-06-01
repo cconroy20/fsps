@@ -21,7 +21,7 @@ SUBROUTINE COMPSP(write_compsp,nzin,outfile,mass_ssp,&
   USE sps_vars
   USE sps_utils, ONLY : getmags,add_dust,linterp,intspec,&
        smoothspec,locate,getindx,write_isochrone,vactoair,igm_absorb,&
-       intsfr,intspec,compsp_grid
+       intsfr,intspec
   IMPLICIT NONE
  
   !write_compsp = 1->write mags, 2->write spectra
@@ -325,7 +325,8 @@ SUBROUTINE COMPSP(write_compsp,nzin,outfile,mass_ssp,&
 
       ELSE IF (pset%sfh.EQ.99) THEN
 
-         CALL COMPSP_GRID(pset,i,spec_csp)
+         !CALL COMPSP_GRID(pset,i,spec_csp)
+         WRITE(*,*) 'COMPSP ERROR: SFH=99 no longer supported'
 
       ENDIF
 
