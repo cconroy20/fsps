@@ -82,8 +82,6 @@ END
 
 FUNCTION READ_SPEC, file
 
-  ct = n_elements(file)
-
   spsdir = getenv('SPS_HOME')
   IF spsdir EQ '' THEN BEGIN
      print,'READ_SPEC ERROR: spsdir environment '+$
@@ -91,10 +89,10 @@ FUNCTION READ_SPEC, file
      return,0
   ENDIF
 
-  file = spsdir+'/OUTPUTS/'+file
+  infile = spsdir+'/OUTPUTS/'+file
+  file = findfile(infile,count=ct)
 
-  ff = findfile(file[0],count=ctf)
-  IF ctf EQ 0 THEN BEGIN
+  IF ct EQ 0 THEN BEGIN
      print,'READ_SPEC ERROR: file not found: ',file
      return,0
   ENDIF

@@ -190,9 +190,10 @@ FUNCTION READ_MAGS,file, allow_old=allow_old
      return,0
   ENDIF
 
-  file = spsdir+'/OUTPUTS/'+file
 
-  ff = findfile(file[0],count=ct)
+  infile = spsdir+'/OUTPUTS/'+file
+  file = findfile(infile,count=ct)
+
   IF ct EQ 0 THEN BEGIN
      print,'READ_MAGS ERROR: file not found: ',file
      return,0
