@@ -38,8 +38,8 @@ PROGRAM AUTOSPS
      WRITE(*,*) 'SETUP_SPS ERROR: spsdir environment variable not set!'
      STOP
   ENDIF
-  OPEN(90,FILE=TRIM(SPS_HOME)//'/ISOCHRONES/Padova/Padova2007/zlegend'&
-       //spec_type//'.dat',STATUS='OLD',ACTION='READ')
+  OPEN(90,FILE=TRIM(SPS_HOME)//'/ISOCHRONES/Padova/Padova2007/zlegend.dat',&
+       STATUS='OLD',ACTION='READ')
   DO z=1,nz
      READ(90,'(F6.4)') zlegend(z)
   ENDDO
