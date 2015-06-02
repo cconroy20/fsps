@@ -128,8 +128,8 @@ SUBROUTINE GETSPEC(pset,mact,logt,lbol,logg,phase,ffco,wght,spec)
         IF (verbose.EQ.1) & 
              WRITE(*,'(" GETSPEC WARNING: Part of the '//&
              'point is off the grid: Z=",I2,'//&
-             '" logT=",F5.2," logg=",F5.2," phase=",I2," lg wght=",F5.2)') &
-             pset%zmet,logt,loggi,INT(phase),LOG10(wght)
+             '" logT=",F5.2," logg=",F5.2," phase=",I2," lg IMF*L=",F5.2)') &
+             pset%zmet,logt,loggi,INT(phase),LOG10(wght*lbol)
 
         !this is a very crude hack.  just pick one of the spectra
         IF (test1.GT.tiny_number) ispec = speclib(:,pset%zmet,jlo,klo)
