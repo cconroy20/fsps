@@ -66,7 +66,7 @@ SUBROUTINE WRITE_ISOCHRONE(outfile,pset)
         
         !get the spectrum
         CALL GETSPEC(pset,mact(tt,i),logt(tt,i),10**logl(tt,i),&
-             logg(tt,i),phase(tt,i),ffco(tt,i),spec)
+             logg(tt,i),phase(tt,i),ffco(tt,i),wght(i),spec)
         !calculate magnitudes
         CALL GETMAGS(dz,spec,mags)
 

@@ -74,7 +74,7 @@ SUBROUTINE SBF(pset,outfile)
            
         !get spectrum of ith star
         CALL GETSPEC(pset,mact(i,j),logt(i,j),&
-             10**logl(i,j),logg(i,j),phase(i,j),ffco(i,j),tspec)
+             10**logl(i,j),logg(i,j),phase(i,j),ffco(i,j),wght(j),tspec)
 
         !compute first and second moments of flux for
         !all stars and also by evolutionary phase

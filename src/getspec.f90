@@ -1,4 +1,4 @@
-SUBROUTINE GETSPEC(pset,mact,logt,lbol,logg,phase,ffco,spec)
+SUBROUTINE GETSPEC(pset,mact,logt,lbol,logg,phase,ffco,wght,spec)
 
   ! Routine to return the spectrum of a star with an input logg,logt
   ! the phase flag determines if the star is a WR, P-AGB, or TP-AGB star
@@ -10,7 +10,7 @@ SUBROUTINE GETSPEC(pset,mact,logt,lbol,logg,phase,ffco,spec)
   USE sps_vars; USE sps_utils, ONLY: locate
   IMPLICIT NONE
 
-  REAL(SP), INTENT(in) :: mact,logt,lbol,logg,phase,ffco
+  REAL(SP), INTENT(in) :: mact,logt,lbol,logg,phase,ffco,wght
   TYPE(PARAMS), INTENT(in) :: pset
   REAL(SP), INTENT(inout), DIMENSION(nspec) :: spec  
   REAL(SP), DIMENSION(nspec) :: ispec
@@ -128,8 +128,8 @@ SUBROUTINE GETSPEC(pset,mact,logt,lbol,logg,phase,ffco,spec)
         IF (verbose.EQ.1) & 
              WRITE(*,'(" GETSPEC WARNING: Part of the '//&
              'point is off the grid: Z=",I2,'//&
-             '" logT=",F5.2," logg=",F5.2," phase=",I2)') &
-             pset%zmet,logt,loggi,INT(phase)
+             '" logT=",F5.2," logg=",F5.2," phase=",I2," lg wght=",F5.2)') &
+             pset%zmet,logt,loggi,INT(phase),LOG10(wght)
 
         !this is a very crude hack.  just pick one of the spectra
         IF (test1.GT.tiny_number) ispec = speclib(:,pset%zmet,jlo,klo)

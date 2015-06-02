@@ -191,7 +191,7 @@ SUBROUTINE SSP_GEN(pset,mass_ssp,lbol_ssp,spec_ssp)
         ENDIF
 
         CALL GETSPEC(pset,mact(i,j),logt(i,j),&
-             10**logl(i,j),logg(i,j),phase(i,j),tco,tspec)
+             10**logl(i,j),logg(i,j),phase(i,j),tco,wght(j)/MAXVAL(wght),tspec)
 
         !only construct SSPs for particular evolutionary
         !phases if evtype NE -1

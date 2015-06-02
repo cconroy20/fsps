@@ -136,9 +136,9 @@ MODULE SPS_UTILS
   END INTERFACE
   
   INTERFACE
-     SUBROUTINE GETSPEC(pset,mact,logt,lbol,logg,phase,ffco,spec)
+     SUBROUTINE GETSPEC(pset,mact,logt,lbol,logg,phase,ffco,wght,spec)
        USE sps_vars
-       REAL(SP), INTENT(in) :: mact,logt,lbol,logg,phase,ffco
+       REAL(SP), INTENT(in) :: mact,logt,lbol,logg,phase,ffco,wght
        TYPE(PARAMS), INTENT(in) :: pset
        REAL(SP), INTENT(inout), DIMENSION(nspec) :: spec 
      END SUBROUTINE GETSPEC
