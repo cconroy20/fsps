@@ -34,7 +34,7 @@ SUBROUTINE COMPSP(write_compsp,nzin,outfile,mass_ssp,&
   CHARACTER(100), INTENT(in) :: outfile
 
   INTEGER  :: i,j,n,k,stat,klo,jlo,ilo,imin,imax,indsf,indsft
-  REAL(SP) :: tau,const,maxtime,psfr,sfstart,zhist,sftrunc
+  REAL(SP) :: tau,const,maxtime,psfr,sfstart,zhist,sftrunc,sftrunc_i
   REAL(SP) :: mass_csp,lbol_csp,dtb,dt,dz,zred=0.,t1,t2,mdust,sfr_ipol
   REAL(SP) :: mass_burst=0.0,lbol_burst=0.0,delt_burst=0.0,zero=0.0
   REAL(SP), DIMENSION(nbands)  :: mags
@@ -156,6 +156,7 @@ SUBROUTINE COMPSP(write_compsp,nzin,outfile,mass_ssp,&
      ENDIF
 
      !find sf_trunc in the time grid
+     !indsft only used for the tsfr array
      IF (pset%sf_trunc.GT.tiny_number) THEN
         sftrunc = pset%sf_trunc*1E9 !convert to yrs
         indsft  = MIN(MAX(locate(powtime,sftrunc),1),ntfull)
@@ -229,10 +230,12 @@ SUBROUTINE COMPSP(write_compsp,nzin,outfile,mass_ssp,&
    !calculate mags at each time step
    DO i=imin,imax
 
-      !NB: This is a temporary fix.  I need to figure out
-      !all the implications of this for sftrunc, etc.
-      IF (pset%tage.GT.tiny_number) THEN
-         sftrunc = powtime(i)
+      !this is just one more example of how annoyingly complicated 
+      !compsp has become...
+      IF (pset%tage.GT.tiny_number.AND.sftrunc.GT.powtime(i)) THEN
+         sftrunc_i = powtime(i)
+      ELSE
+         sftrunc_i = sftrunc
       ENDIF
 
       !Set up tabulated SFH
@@ -307,11 +310,11 @@ SUBROUTINE COMPSP(write_compsp,nzin,outfile,mass_ssp,&
 
          CALL INTSPEC(pset,i,spec_ssp,csp1,mass_ssp,lbol_ssp,&
               mass_csp,lbol_csp,spec_burst,mass_burst,&
-              lbol_burst,delt_burst,sfstart,tau,const,sftrunc,mdust)
+              lbol_burst,delt_burst,sfstart,tau,const,sftrunc_i,mdust)
          IF (compute_light_ages.EQ.1) THEN
             CALL INTSPEC(pset,i,spec_ssp,csp2,mass_ssp,lbol_ssp,&
                  mass_csp,lbol_csp,spec_burst,mass_burst,&
-                 lbol_burst,delt_burst,sfstart,tau,const,sftrunc,mdust,1)
+                 lbol_burst,delt_burst,sfstart,tau,const,sftrunc_i,mdust,1)
             spec_csp = 10**time_full(i)/1E9 - csp2/csp1 - sfstart/1E9
          ELSE
             spec_csp = csp1
@@ -321,7 +324,7 @@ SUBROUTINE COMPSP(write_compsp,nzin,outfile,mass_ssp,&
 
          CALL INTSPEC(pset,i,ispec,spec_csp,imass,ilbol,mass_csp,&
               lbol_csp,spec_burst,mass_burst,lbol_burst,&
-              delt_burst,sfstart,tau,const,sftrunc,mdust)
+              delt_burst,sfstart,tau,const,sftrunc_i,mdust)
 
       ELSE IF (pset%sfh.EQ.99) THEN
 

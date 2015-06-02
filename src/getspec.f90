@@ -159,8 +159,9 @@ SUBROUTINE GETSPEC(pset,mact,logt,lbol,logg,phase,ffco,wght,spec)
   IF (verbose.EQ.1) THEN
      IF (flag.EQ.0.AND.(spec_type.EQ.'basel'.OR.spec_type.EQ.'ckc14').AND.&
           phase.NE.6.AND.phase.NE.9) THEN
-        WRITE(*,'(" GETSPEC WARNING: point entirely off the grid: ",2F6.3,1x,I1)') ,&
-             logt,loggi,INT(phase)
+        WRITE(*,'(" GETSPEC WARNING: point entirely off the grid: Z=",I2,'//&
+             '" logT=",F5.2," logg=",F5.2," phase=",I2," lg IMF*L=",F5.2)') &
+            pset%zmet,logt,loggi,INT(phase),LOG10(wght*lbol)
 
      ELSE IF (flag.GT.1) THEN
         WRITE(*,'(" GETSPEC WARNING: isochrone point assigned *two* spectra!")') 
