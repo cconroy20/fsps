@@ -62,7 +62,8 @@ SUBROUTINE COMPSP(write_compsp,nzin,outfile,mass_ssp,&
 
   !if sf_start > sf_trunc then return
   IF (pset%sf_start.GE.pset%sf_trunc.AND.&
-       pset%sf_start.GT.tiny_number) THEN
+       pset%sf_start.GT.tiny_number.AND.&
+       pset%sf_trunc.GT.tiny_number) THEN
      DO i=1,ntfull
         ocompsp(i)%age      = 0.0
         ocompsp(i)%mass_csp = 0.0
