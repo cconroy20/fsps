@@ -62,6 +62,16 @@ SUBROUTINE COMPSP(write_compsp,nzin,outfile,mass_ssp,&
 
   !if sf_start > sf_trunc then return
   IF (pset%sf_start.GE.pset%sf_trunc) THEN
+     DO i=1,ntfull
+        ocompsp(i)%age      = 0.0
+        ocompsp(i)%mass_csp = 0.0
+        ocompsp(i)%lbol_csp = 0.0
+        ocompsp(i)%sfr      = 0.0
+        ocompsp(i)%mags     = 0.0
+        ocompsp(i)%spec     = 0.0
+        ocompsp(i)%mdust    = 0.0
+        ocompsp(i)%indx     = 0.0
+     ENDDO
      IF (verbose.EQ.1) &
           WRITE(*,*) 'COMPSP WARNING: sf_start>=sf_trunc, returning'
      RETURN
