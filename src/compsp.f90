@@ -60,6 +60,13 @@ SUBROUTINE COMPSP(write_compsp,nzin,outfile,mass_ssp,&
      STOP
   ENDIF
 
+  !if sf_start > sf_trunc then return
+  IF (pset%sf_start.GE.pset%sf_trunc) THEN
+     IF (verbose.EQ.1) &
+          WRITE(*,*) 'COMPSP WARNING: sf_start>=sf_trunc, returning'
+     RETURN
+  ENDIF
+
   !-------------------------------------------------------------!
   !-----------------Write the CMDs and exit---------------------!
   !-------------------------------------------------------------!
