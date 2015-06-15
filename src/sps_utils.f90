@@ -56,6 +56,15 @@ MODULE SPS_UTILS
      END FUNCTION AIRTOVAC
   END INTERFACE
 
+ INTERFACE
+     FUNCTION ATTN_CURVE(dtype,pset)
+       USE sps_vars
+       INTEGER, INTENT(in) :: dtype
+       TYPE(PARAMS), INTENT(in) :: pset
+       REAL(SP), DIMENSION(nspec) :: attn_curve
+     END FUNCTION ATTN_CURVE
+  END INTERFACE
+
   INTERFACE
      SUBROUTINE COMPSP(write_compsp,nzin,outfile,mass_ssp,&
           lbol_ssp,spec_ssp,pset,ocompsp)

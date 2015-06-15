@@ -748,7 +748,7 @@ SUBROUTINE SAVE_COMPSP(write_compsp,cspo,time,mass,&
   IF (write_compsp.EQ.2.OR.write_compsp.EQ.3) THEN
      WRITE(20,'(4(F8.4,1x))') time,&
           LOG10(mass+tiny_number),lbol,LOG10(sfr+tiny_number)
-     WRITE(20,'(50000(E14.6))') spec
+     WRITE(20,'(50000(E14.6))') MAX(spec,tiny_number)
   ENDIF
 
   !write to indx file
