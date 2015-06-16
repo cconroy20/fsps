@@ -53,6 +53,10 @@ MODULE SPS_VARS
   !the factor by which we increase the time array
   INTEGER, PARAMETER :: time_res_incr=2
 
+  !Use Aringer et al. (2009) Carbon star library if set
+  !otherwise use Lancon & Wood (2002) empirical spectra
+  INTEGER, PARAMETER :: cstar_aringer=0
+
   !turn on/off computation of light-weighted stellar ages
   !NB: currently only works with sfh=1,4 options
   INTEGER :: compute_light_ages=0
@@ -138,7 +142,7 @@ MODULE SPS_VARS
 #elif (MIST)
   CHARACTER(4), PARAMETER :: isoc_type = 'mist'
   INTEGER, PARAMETER :: nt=107
-  INTEGER, PARAMETER :: nz=1
+  INTEGER, PARAMETER :: nz=5
 #else
   CHARACTER(4), PARAMETER :: isoc_type = 'pdva'
   INTEGER, PARAMETER :: nt=94
@@ -187,8 +191,8 @@ MODULE SPS_VARS
   INTEGER, PARAMETER :: ntabmax=10000
   !dimensions of BaSeL library
   INTEGER, PARAMETER :: ndim_logt=68, ndim_logg=19
-  !number of O-rich, C-rich AGB spectra
-  INTEGER, PARAMETER :: n_agb_o=9, n_agb_c=5
+  !number of O-rich, C-rich AGB spectra (and Aringer C-rich spec)
+  INTEGER, PARAMETER :: n_agb_o=9, n_agb_c=5, n_agb_car=9
   !number of post-AGB spectra
   INTEGER, PARAMETER :: ndim_pagb=14
   !number of WR spectra
@@ -334,7 +338,10 @@ MODULE SPS_VARS
   REAL(SP), DIMENSION(nz,n_agb_o)    :: agb_logt_o=0.
   REAL(SP), DIMENSION(nspec,n_agb_c) :: agb_spec_c=0.
   REAL(SP), DIMENSION(n_agb_c)       :: agb_logt_c=0.
-  
+  !C-rich library (Aringer et al. 2009)
+  REAL(SP), DIMENSION(n_agb_car)       :: agb_logt_car=0.
+  REAL(SP), DIMENSION(nspec,n_agb_car) :: agb_spec_car=0.
+
   !post-AGB library (Rauch 2003)
   REAL(SP), DIMENSION(nspec,ndim_pagb,2) :: pagb_spec=0.
   REAL(SP), DIMENSION(ndim_pagb)         :: pagb_logt=0.

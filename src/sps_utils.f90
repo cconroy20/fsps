@@ -57,9 +57,10 @@ MODULE SPS_UTILS
   END INTERFACE
 
  INTERFACE
-     FUNCTION ATTN_CURVE(dtype,pset)
+     FUNCTION ATTN_CURVE(lambda,dtype,pset)
        USE sps_vars
        INTEGER, INTENT(in) :: dtype
+       REAL(SP), INTENT(in), DIMENSION(nspec) :: lambda
        TYPE(PARAMS), INTENT(in) :: pset
        REAL(SP), DIMENSION(nspec) :: attn_curve
      END FUNCTION ATTN_CURVE

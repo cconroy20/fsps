@@ -13,7 +13,7 @@ SUBROUTINE SPS_SETUP(zin)
   IMPLICIT NONE
   INTEGER, INTENT(in) :: zin
   INTEGER :: stat=1,n,i,j,m,jj,k,i1,i2
-  INTEGER, PARAMETER :: ntlam=1221,nspec_agb=6146
+  INTEGER, PARAMETER :: ntlam=1221,nspec_agb=6146,nspec_aringer=9032
   INTEGER, PARAMETER :: nlamwr=1963,nspec_pagb=9281
   INTEGER :: n_isoc,z,zmin,zmax,nlam
   CHARACTER(1) :: char,sqpah
@@ -37,8 +37,10 @@ SUBROUTINE SPS_SETUP(zin)
   REAL(SP), DIMENSION(nspec_pagb) :: pagb_lam=0.0
   REAL(SP), DIMENSION(nspec_pagb,ndim_pagb,2) :: pagb_specinit=0.
   REAL(SP), DIMENSION(nspec_agb)  :: agb_lam=0.0
+  REAL(SP), DIMENSION(nspec_aringer)  :: aringer_lam=0.0
   REAL(SP), DIMENSION(nspec_agb,n_agb_o) :: agb_specinit_o=0.
   REAL(SP), DIMENSION(nspec_agb,n_agb_c) :: agb_specinit_c=0.
+  REAL(SP), DIMENSION(nspec_aringer,n_agb_car) :: aringer_specinit=0.
   REAL(KIND(1.0)), DIMENSION(nspec,nzinit,ndim_logt,ndim_logg) :: speclibinit=0.
  
   !---------------------------------------------------------------!
@@ -283,7 +285,6 @@ SUBROUTINE SPS_SETUP(zin)
      READ(95,*) agb_lam(i),agb_specinit_o(i,:)
   ENDDO
   CLOSE(95)
-  
   !interpolate to the main spectral grid
   DO i=1,n_agb_o
      agb_spec_o(:,i) = MAX(linterparr(agb_lam,agb_specinit_o(:,i),&
@@ -303,10 +304,45 @@ SUBROUTINE SPS_SETUP(zin)
      READ(96,*) agb_lam(i),agb_specinit_c(i,:)
   ENDDO
   CLOSE(96)
- 
   !interpolate to the main spectral grid
   DO i=1,n_agb_c
      agb_spec_c(:,i) = MAX(linterparr(agb_lam,agb_specinit_c(:,i),&
+          spec_lambda),tiny_number)
+  ENDDO
+
+  !---------Read in Aringer carbon star library---------!
+
+  !read in Aringer C-rich Teff grid
+  OPEN(94,FILE=TRIM(SPS_HOME)//'/SPECTRA/AGB_spectra/Crich_Aringer.teff',&
+       STATUS='OLD',iostat=stat,ACTION='READ')
+  IF (stat.NE.0) THEN
+     WRITE(*,*) 'SPS_SETUP ERROR: /SPECTRA/AGB_spectra/'//&
+          'Crich_Aringer.teff cannot be opened'
+     STOP 
+  ENDIF
+  !burn the header
+  DO i=1,n_agb_car
+     READ(94,*) agb_logt_car(i)
+  ENDDO
+  CLOSE(94)
+  agb_logt_car = LOG10(agb_logt_car)
+
+  !read in Aringer C-rich spectra
+  OPEN(96,FILE=TRIM(SPS_HOME)//&
+       '/SPECTRA/AGB_spectra/Crich_Aringer.spec',&
+       STATUS='OLD',iostat=stat,ACTION='READ')
+  IF (stat.NE.0) THEN
+     WRITE(*,*) 'SPS_SETUP ERROR: /AGB_spectra/'//&
+          'Crich_Aringer.spec '//'cannot be opened'
+     STOP 
+  ENDIF
+  DO i=1,nspec_aringer
+     READ(96,*) aringer_lam(i),aringer_specinit(i,:)
+  ENDDO
+  CLOSE(96)
+  !interpolate to the main spectral grid
+  DO i=1,n_agb_car
+     agb_spec_car(:,i) = MAX(linterparr(aringer_lam,aringer_specinit(:,i),&
           spec_lambda),tiny_number)
   ENDDO
 

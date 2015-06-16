@@ -1,4 +1,4 @@
-FUNCTION ATTN_CURVE(dtype,pset)
+FUNCTION ATTN_CURVE(lambda,dtype,pset)
 
   ! Routine to generate and return the attenuation curve for a chosen 
   ! dust type.  The V-band optical depth (dust2) is passed via the 
@@ -13,6 +13,7 @@ FUNCTION ATTN_CURVE(dtype,pset)
   TYPE(PARAMS), INTENT(in) :: pset
   INTEGER  :: w63
   REAL(SP) :: eb,zero=0.0,dd63=6300.00,lamv=5500.0,dlam=350.0,lamuvb=2175.0
+  REAL(SP), INTENT(in), DIMENSION(nspec) :: lambda
   REAL(SP), DIMENSION(nspec) :: x,a,b,y,fa,fb,hack,cal00
   REAL(SP), DIMENSION(nspec) :: attn_curve,drude,tmp
  
@@ -25,7 +26,7 @@ FUNCTION ATTN_CURVE(dtype,pset)
   !power-law attenuation
   IF (dtype.EQ.0) THEN 
 
-     attn_curve = (spec_lambda/lamv)**pset%dust_index * pset%dust2
+     attn_curve = (lambda/lamv)**pset%dust_index * pset%dust2
 
   !-----------------CCM89 MW curve w/ variable UV bump------------------!
 
@@ -35,7 +36,7 @@ FUNCTION ATTN_CURVE(dtype,pset)
      tmp = 0.0
 
      !use CCM89 extinction curve parameterization
-     x = 1E4/spec_lambda
+     x = 1E4/lambda
      y = x-1.82
 
      !IR
@@ -100,12 +101,12 @@ FUNCTION ATTN_CURVE(dtype,pset)
 
   ELSE IF (dtype.EQ.2) THEN 
 
-     w63   = locate(spec_lambda,dd63)
+     w63   = locate(lambda,dd63)
      cal00 = 0.0
-     cal00(w63+1:) = 1.17*( -1.857+1.04*(1E4/spec_lambda(w63+1:)) ) + 1.78
-     cal00(1:w63)  = 1.17*(-2.156+1.509*(1E4/spec_lambda(1:w63))-&
-          0.198*(1E4/spec_lambda(1:w63))**2 + &
-          0.011*(1E4/spec_lambda(1:w63))**3) + 1.78
+     cal00(w63+1:) = 1.17*( -1.857+1.04*(1E4/lambda(w63+1:)) ) + 1.78
+     cal00(1:w63)  = 1.17*(-2.156+1.509*(1E4/lambda(1:w63))-&
+          0.198*(1E4/lambda(1:w63))**2 + &
+          0.011*(1E4/lambda(1:w63))**3) + 1.78
      !NB: I'm not completely sure I have this normalization correct
      ! but comparison to other curves for tauV=1.0 looks OK
      cal00 = cal00/0.44/4.05  !R=4.05
@@ -127,12 +128,12 @@ FUNCTION ATTN_CURVE(dtype,pset)
   ELSE IF (dtype.EQ.4) THEN
 
      !Calzetti curve
-     w63   = locate(spec_lambda,dd63)
+     w63   = locate(lambda,dd63)
      cal00 = 0.0
-     cal00(w63+1:) = 1.17*( -1.857+1.04*(1E4/spec_lambda(w63+1:)) ) + 1.78
-     cal00(1:w63)  = 1.17*(-2.156+1.509*(1E4/spec_lambda(1:w63))-&
-          0.198*(1E4/spec_lambda(1:w63))**2 + &
-          0.011*(1E4/spec_lambda(1:w63))**3) + 1.78
+     cal00(w63+1:) = 1.17*( -1.857+1.04*(1E4/lambda(w63+1:)) ) + 1.78
+     cal00(1:w63)  = 1.17*(-2.156+1.509*(1E4/lambda(1:w63))-&
+          0.198*(1E4/lambda(1:w63))**2 + &
+          0.011*(1E4/lambda(1:w63))**3) + 1.78
      !R=4.05 NB: I'm not sure I have this normalization correct...
      cal00 = cal00/0.44/4.05 
      w63   = locate(cal00,zero)
@@ -143,11 +144,11 @@ FUNCTION ATTN_CURVE(dtype,pset)
      eb = 0.85 - 1.9 * pset%dust_index  !KC13 Eqn 3
 
      !Drude profile for 2175A bump
-     drude = eb*(spec_lambda*dlam)**2 / &
-          ( (spec_lambda**2-lamuvb**2)**2 + (spec_lambda*dlam)**2 )
+     drude = eb*(lambda*dlam)**2 / &
+          ( (lambda**2-lamuvb**2)**2 + (lambda*dlam)**2 )
 
      attn_curve = pset%dust2*(cal00+drude/4.05)*&
-          (spec_lambda/lamv)**pset%dust_index
+          (lambda/lamv)**pset%dust_index
 
   ENDIF
 

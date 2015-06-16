@@ -89,15 +89,27 @@ SUBROUTINE GETSPEC(pset,mact,logt,lbol,logg,phase,ffco,wght,spec)
   ELSE IF (phase.EQ.5.0.AND.logt.LT.3.6.AND.ffco.GT.1.0) THEN
      
      flag = 1
-     jlo  = MAX(MIN(locate(agb_logt_c,logt),n_agb_c-1),1)
-     t    = (logt - agb_logt_c(jlo)) / &
-          (agb_logt_c(jlo+1)-agb_logt_c(jlo))
-     t    = MIN(MAX(t,0.0),1.0)
 
-     !The spectra are Fdlambda, need to convert to Fdnu and 
-     !interpolate in Teff.
-     spec = lbol*spec_lambda*spec_lambda/clight * &
-           ( (1-t)*agb_spec_c(:,jlo) + t*(agb_spec_c(:,jlo+1)) )
+     IF (cstar_aringer.EQ.1) THEN 
+        jlo  = MAX(MIN(locate(agb_logt_car,logt),n_agb_car-1),1)
+        t    = (logt - agb_logt_car(jlo)) / &
+             (agb_logt_car(jlo+1)-agb_logt_car(jlo))
+        t    = MIN(MAX(t,0.0),1.0)
+
+        !The spectra are Fnu/Lbol
+        spec = lbol*( (1-t)*agb_spec_car(:,jlo) + t*(agb_spec_car(:,jlo+1)) )
+
+     ELSE
+        jlo  = MAX(MIN(locate(agb_logt_c,logt),n_agb_c-1),1)
+        t    = (logt - agb_logt_c(jlo)) / &
+             (agb_logt_c(jlo+1)-agb_logt_c(jlo))
+        t    = MIN(MAX(t,0.0),1.0)
+
+        !The spectra are Fdlambda, need to convert to Fdnu and 
+        !interpolate in Teff.
+        spec = lbol*spec_lambda*spec_lambda/clight * &
+             ( (1-t)*agb_spec_c(:,jlo) + t*(agb_spec_c(:,jlo+1)) )
+     ENDIF
 
   !use the primary library for the rest of the isochrone
   ELSE IF (logt.LT.4.699) THEN

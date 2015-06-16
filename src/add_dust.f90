@@ -53,7 +53,7 @@ SUBROUTINE ADD_DUST(pset,csp1,csp2,specdust,mdust)
   !---------------------------------------------------------------!
 
   !compute attenuation curve for diffuse dust
-  diff_dust = EXP(-attn_curve(dust_type,pset))
+  diff_dust = EXP(-attn_curve(spec_lambda,dust_type,pset))
  
   !combine old and young stars, attenuating the young
   !with a fixed power-law attn curve, and allowing a fraction
