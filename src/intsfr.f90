@@ -1,4 +1,4 @@
-FUNCTION INTSFR(sfh,tau,const,sftrunc,sfstart,sftheta,t1,t2,tweight)
+FUNCTION INTSFR(sfh,tau,const,sftrunc,sfstart,sfslope,tmax,t1,t2,tweight)
 
   !simple routine to integrate the SFH from t1 to t2
 
@@ -6,10 +6,10 @@ FUNCTION INTSFR(sfh,tau,const,sftrunc,sfstart,sftheta,t1,t2,tweight)
   IMPLICIT NONE
 
   INTEGER, INTENT(in)  :: sfh
-  REAL(SP), INTENT(in) :: t1,t2,tau,const,sftrunc,sfstart,sftheta
+  REAL(SP), INTENT(in) :: t1,t2,tau,const,sftrunc,sfstart,sfslope,tmax
   INTEGER, INTENT(in), OPTIONAL :: tweight
   INTEGER  :: lo,hi
-  REAL(SP) :: s1,s2,dt,intsfr,tt1
+  REAL(SP) :: s1,s2,dt,intsfr,tt1,norm,sft
 
   !-----------------------------------------------------!
   !-----------------------------------------------------!
@@ -34,9 +34,7 @@ FUNCTION INTSFR(sfh,tau,const,sftrunc,sfstart,sftheta,t1,t2,tweight)
         intsfr = intsfr*(1-const) + const*(tt1-t2)/(sftrunc-sfstart)
      ENDIF
 
-     IF (t2.GT.sftrunc) THEN
-        intsfr = 0.0
-     ENDIF
+     IF (t2.GT.sftrunc) intsfr = 0.0
 
   ELSE IF (sfh.EQ.4) THEN
 
@@ -49,24 +47,32 @@ FUNCTION INTSFR(sfh,tau,const,sftrunc,sfstart,sftheta,t1,t2,tweight)
      ELSE
         intsfr = (EXP(-t2/tau/1E9)*(1+t2/tau/1E9) - &
              EXP(-tt1/tau/1E9)*(1+tt1/tau/1E9)) / &
-             (1-EXP(-(sftrunc-sfstart)/1E9/tau)*((sftrunc-sfstart)/1E9/tau+1))  
+             (1-EXP(-(sftrunc-sfstart)/1E9/tau)*((sftrunc-sfstart)/1E9/tau+1))
         intsfr = intsfr*(1-const) + const*(tt1-t2)/(sftrunc-sfstart)
      ENDIF
 
-     IF (t2.GT.sftrunc) THEN
-        intsfr = 0.0
-     ENDIF
+     IF (t2.GT.sftrunc) intsfr = 0.0
 
   ELSE IF (sfh.EQ.5) THEN
-     
+
+     norm = (1-EXP(-(sftrunc-sfstart)/1E9/tau)*((sftrunc-sfstart)/1E9/tau+1))
+     !SFR at the transition time
+     sft = ((sftrunc-sfstart)/tau/1E9)*&
+          EXP(-(sftrunc-sfstart)/tau/1E9 )/tau/1E9
+     !add the normalization due to the linearly declining comp.
+     norm = norm + sft*(tmax-sftrunc)*(1-sfslope*sftrunc/1e9)+&
+          sft/1E9*sfslope*0.5*(tmax**2-sftrunc**2)
+
      IF ((t1+sfstart).LT.sftrunc) THEN
         intsfr = (EXP(-t2/tau/1E9)*(1+t2/tau/1E9) - &
-             EXP(-t1/tau/1E9)*(1+t1/tau/1E9)) * (tau*1E9)**2 
+             EXP(-t1/tau/1E9)*(1+t1/tau/1E9)) !* (tau*1E9)**2 
      ELSE
-       intsfr =  TAN(sftheta)*&
-             (0.5*(t1**2-t2**2)-(t1-t2)*(sftrunc-sfstart))
+        !intsfr = sfslope*(0.5*(t1**2-t2**2)-(t1-t2)*(sftrunc-sfstart))
+        intsfr = sft*(t1-t2)*(1-sfslope*sftrunc/1e9)+&
+             sft/1E9*sfslope*0.5*(t1**2-t2**2)
      ENDIF
-     intsfr = MAX(intsfr,0.0) / 1E10
+
+     intsfr = MAX(intsfr/norm,0.0)
 
   ELSE IF (sfh.EQ.2.OR.sfh.EQ.3) THEN
 

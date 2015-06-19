@@ -16,12 +16,12 @@ SUBROUTINE COMPSP(write_compsp,nzin,outfile,mass_ssp,&
 
   !for sfh=1 or 4:
   !If tage >0  -> run only one integration to t=tage
-  !If tage<=0  -> produce outputs from tmin<t<tmax
+  !If tage<=0  -> produce outputs from tmin<t<maxtime
 
   USE sps_vars
   USE sps_utils, ONLY : getmags,add_dust,linterp,intspec,&
        smoothspec,locate,getindx,write_isochrone,vactoair,igm_absorb,&
-       intsfr,intspec
+       intspec
   IMPLICIT NONE
  
   !write_compsp = 1->write mags, 2->write spectra
@@ -34,8 +34,9 @@ SUBROUTINE COMPSP(write_compsp,nzin,outfile,mass_ssp,&
   CHARACTER(100), INTENT(in) :: outfile
 
   INTEGER  :: i,j,n,k,stat,klo,jlo,ilo,imin,imax,indsf,indsft
-  REAL(SP) :: tau,const,maxtime,psfr,sfstart,zhist,sftrunc,sftrunc_i
-  REAL(SP) :: mass_csp,lbol_csp,dtb,dt,dz,zred=0.,t1,t2,mdust,sfr_ipol
+  REAL(SP) :: tau,const,maxtime,psfr,sft,sfstart,zhist
+  REAL(SP) :: mass_csp,lbol_csp,dtb,dt,dz,zred=0.,t1,t2
+  REAL(SP) :: mdust,sfr_ipol,norm,tmax=0.0,sftrunc,sftrunc_i
   REAL(SP) :: mass_burst=0.0,lbol_burst=0.0,delt_burst=0.0,zero=0.0
   REAL(SP), DIMENSION(nbands)  :: mags
   REAL(SP), DIMENSION(nindx)   :: indx
@@ -176,7 +177,8 @@ SUBROUTINE COMPSP(write_compsp,nzin,outfile,mass_ssp,&
 
      !find sf_trunc in the time grid
      !indsft only used for the tsfr array
-     IF (pset%sf_trunc.GT.tiny_number) THEN
+     !forcing sftrunc<=maxtime (CC: 6/19/15)
+     IF (pset%sf_trunc.GT.tiny_number.AND.pset%sf_trunc.LT.maxtime/1E9) THEN
         sftrunc = pset%sf_trunc*1E9 !convert to yrs
         indsft  = MIN(MAX(locate(powtime,sftrunc),1),ntfull)
      ELSE
@@ -197,9 +199,13 @@ SUBROUTINE COMPSP(write_compsp,nzin,outfile,mass_ssp,&
   IF (write_compsp.GT.0) &
        CALL COMPSP_SETUP_OUTPUT(write_compsp,pset,outfile,imin,imax)
 
-  !tsfr is a function of the age of Universe
-  !these are only used for writing the SFH to file
-  IF (pset%sfh.EQ.2.OR.pset%sfh.EQ.3) THEN
+  !Compute SFR(t).  Only used for writing to file
+  tsfr  = 0.0
+  IF (pset%sfh.EQ.0) THEN
+     
+     tsfr = 0.0
+
+  ELSE IF (pset%sfh.EQ.2.OR.pset%sfh.EQ.3) THEN
 
      !linearly interpolate the tabulated SFH to the internal time grid
      DO j=1,ntfull
@@ -215,29 +221,42 @@ SUBROUTINE COMPSP(write_compsp,nzin,outfile,mass_ssp,&
         ENDIF
      ENDDO
 
-  ELSE IF (pset%sfh.EQ.0) THEN
+  ELSE IF (pset%sfh.EQ.1) THEN
 
-     tsfr = 0.0
-
-  ELSE 
-
-     tsfr  = 0.0
-     IF (pset%sfh.EQ.1) &
-          tsfr(indsf:indsft)  = EXP(-(powtime(indsf:indsft)-sfstart)/tau/1E9 )/&
+     tsfr(indsf:indsft)  = EXP(-(powtime(indsf:indsft)-sfstart)/tau/1E9 )/&
           tau/1E9 / (1-EXP(-(sftrunc-sfstart)/1E9/tau))
-     IF (pset%sfh.EQ.4.OR.pset%sfh.EQ.99) &
-          tsfr(indsf:indsft)  = ((powtime(indsf:indsft)-sfstart)/tau/1E9)*&
+     tsfr(indsf:indsft) = tsfr(indsf:indsft)*(1-const) + const/(sftrunc-sfstart)
+
+  ELSE IF (pset%sfh.EQ.4.OR.pset%sfh.EQ.99) THEN
+
+     tsfr(indsf:indsft)  = ((powtime(indsf:indsft)-sfstart)/tau/1E9)*&
           EXP(-(powtime(indsf:indsft)-sfstart)/tau/1E9 )/tau/1E9 / &
           (1-EXP(-(sftrunc-sfstart)/1E9/tau)*((sftrunc-sfstart)/1E9/tau+1))
      tsfr(indsf:indsft) = tsfr(indsf:indsft)*(1-const) + const/(sftrunc-sfstart)
 
-     IF (pset%sfh.EQ.5) THEN
-        tsfr(indsf:indsft)  = (powtime(indsf:indsft)-sfstart)*&
-             EXP(-(powtime(indsf:indsft)-sfstart)/tau/1E9 )
-        IF (indsft.LT.ntfull) tsfr(indsft+1:) = tsfr(indsft) + &
-             TAN(pset%sf_theta)*(powtime(indsft+1:)-sftrunc)
-        tsfr = MAX(tsfr,0.0) ! set SFR=0.0 if SFR<0
+  ELSE  IF (pset%sfh.EQ.5) THEN
+
+     !integral of the delayed tau model
+     norm = (1-EXP(-(sftrunc-sfstart)/1E9/tau)*((sftrunc-sfstart)/1E9/tau+1))
+     tsfr(indsf:indsft)  = ((powtime(indsf:indsft)-sfstart)/tau/1E9)*&
+          EXP(-(powtime(indsf:indsft)-sfstart)/tau/1E9 )/tau/1E9 
+     !the stuff below only happens if sf_trunc < maxtime
+     IF (indsft.LT.ntfull) THEN
+        !SFR at the transition time
+        sft = ((sftrunc-sfstart)/tau/1E9)*&
+             EXP(-(sftrunc-sfstart)/tau/1E9 )/tau/1E9
+        !age where SFR=0.0 (or maxtime)
+        IF (pset%sf_slope.LT.0.0) THEN
+           tmax = MIN(-1.0/pset%sf_slope*1E9+sftrunc,maxtime)
+        ELSE
+           tmax = maxtime
+        ENDIF
+        !add the normalization due to the linearly declining comp.
+        norm = norm + sft*(tmax-powtime(indsft+1))*(1-pset%sf_slope*sftrunc/1e9)+&
+             sft/1E9*pset%sf_slope*0.5*(tmax**2-powtime(indsft+1)**2)
+        tsfr(indsft+1:) = sft*(1+pset%sf_slope*(powtime(indsft+1:)-sftrunc)/1e9)
      ENDIF
+     tsfr = MAX(tsfr/norm,0.0) ! set SFR=0.0 if SFR<0
 
   ENDIF
 
@@ -329,11 +348,11 @@ SUBROUTINE COMPSP(write_compsp,nzin,outfile,mass_ssp,&
 
          CALL INTSPEC(pset,i,spec_ssp,csp1,mass_ssp,lbol_ssp,&
               mass_csp,lbol_csp,spec_burst,mass_burst,&
-              lbol_burst,delt_burst,sfstart,tau,const,sftrunc_i,mdust)
+              lbol_burst,delt_burst,sfstart,tau,const,sftrunc_i,tmax,mdust)
          IF (compute_light_ages.EQ.1) THEN
             CALL INTSPEC(pset,i,spec_ssp,csp2,mass_ssp,lbol_ssp,&
                  mass_csp,lbol_csp,spec_burst,mass_burst,&
-                 lbol_burst,delt_burst,sfstart,tau,const,sftrunc_i,mdust,1)
+                 lbol_burst,delt_burst,sfstart,tau,const,sftrunc_i,tmax,mdust,1)
             spec_csp = 10**time_full(i)/1E9 - csp2/csp1 - sfstart/1E9
          ELSE
             spec_csp = csp1
@@ -343,7 +362,7 @@ SUBROUTINE COMPSP(write_compsp,nzin,outfile,mass_ssp,&
 
          CALL INTSPEC(pset,i,ispec,spec_csp,imass,ilbol,mass_csp,&
               lbol_csp,spec_burst,mass_burst,lbol_burst,&
-              delt_burst,sfstart,tau,const,sftrunc_i,mdust)
+              delt_burst,sfstart,tau,const,sftrunc_i,tmax,mdust)
 
       ELSE IF (pset%sfh.EQ.99) THEN
 

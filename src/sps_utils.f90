@@ -173,10 +173,10 @@ MODULE SPS_UTILS
   END INTERFACE
 
   INTERFACE
-     FUNCTION INTSFR(sfh,tau,const,maxtime,sfstart,sftheta,t1,t2,tweight)
+     FUNCTION INTSFR(sfh,tau,const,maxtime,sfstart,sfslope,tmax,t1,t2,tweight)
        USE sps_vars
        INTEGER, INTENT(in)  :: sfh
-       REAL(SP), INTENT(in) :: t1,t2,tau,const,maxtime,sfstart,sftheta
+       REAL(SP), INTENT(in) :: t1,t2,tau,const,maxtime,sfstart,sfslope,tmax
        REAL(SP) :: intsfr
        INTEGER, intent(in), optional :: tweight
      END FUNCTION INTSFR
@@ -184,12 +184,12 @@ MODULE SPS_UTILS
 
   INTERFACE
      SUBROUTINE INTSPEC(pset,nti,spec_ssp,csp,mass_ssp,lbol_ssp,&
-          mass,lbol,specb,massb,lbolb,deltb,sfstart,tau,const,maxtime,&
-          mdust,tweight)
+          mass,lbol,specb,massb,lbolb,deltb,sfstart,tau,const,sftrunc,&
+          tmax,mdust,tweight)
        USE sps_vars
        INTEGER, intent(in), optional :: tweight
        INTEGER,  INTENT(in)    :: nti
-       REAL(SP), INTENT(in)    :: massb,lbolb,deltb,sfstart,tau,const,maxtime
+       REAL(SP), INTENT(in)    :: massb,lbolb,deltb,sfstart,tau,const,sftrunc,tmax
        REAL(SP), INTENT(inout) :: mass, lbol, mdust
        REAL(SP), INTENT(in), DIMENSION(ntfull) :: mass_ssp,lbol_ssp
        REAL(SP), INTENT(in), DIMENSION(nspec,ntfull) :: spec_ssp

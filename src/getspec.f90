@@ -85,26 +85,26 @@ SUBROUTINE GETSPEC(pset,mact,logt,lbol,logg,phase,ffco,wght,spec)
      spec = lbol*spec_lambda*spec_lambda/clight * &
           ( (1-t)*agb_spec_o(:,jlo) + t*(agb_spec_o(:,jlo+1)) )
 
-  !C-rich TP-AGB spectra, from Lancon & Mouhcine 2002
+  !C-rich TP-AGB spectra
   ELSE IF (phase.EQ.5.0.AND.logt.LT.3.6.AND.ffco.GT.1.0) THEN
      
      flag = 1
 
+     !use Aringer et al. (2009) synthetic spectra
      IF (cstar_aringer.EQ.1) THEN 
         jlo  = MAX(MIN(locate(agb_logt_car,logt),n_agb_car-1),1)
         t    = (logt - agb_logt_car(jlo)) / &
              (agb_logt_car(jlo+1)-agb_logt_car(jlo))
         t    = MIN(MAX(t,0.0),1.0)
-
         !The spectra are Fnu/Lbol
         spec = lbol*( (1-t)*agb_spec_car(:,jlo) + t*(agb_spec_car(:,jlo+1)) )
 
+     !use LW02 empirical spectra
      ELSE
         jlo  = MAX(MIN(locate(agb_logt_c,logt),n_agb_c-1),1)
         t    = (logt - agb_logt_c(jlo)) / &
              (agb_logt_c(jlo+1)-agb_logt_c(jlo))
         t    = MIN(MAX(t,0.0),1.0)
-
         !The spectra are Fdlambda, need to convert to Fdnu and 
         !interpolate in Teff.
         spec = lbol*spec_lambda*spec_lambda/clight * &

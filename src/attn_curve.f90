@@ -107,8 +107,6 @@ FUNCTION ATTN_CURVE(lambda,dtype,pset)
      cal00(1:w63)  = 1.17*(-2.156+1.509*(1E4/lambda(1:w63))-&
           0.198*(1E4/lambda(1:w63))**2 + &
           0.011*(1E4/lambda(1:w63))**3) + 1.78
-     !NB: I'm not completely sure I have this normalization correct
-     ! but comparison to other curves for tauV=1.0 looks OK
      cal00 = cal00/0.44/4.05  !R=4.05
      w63   = locate(cal00,zero)
      IF (w63.NE.nspec) THEN

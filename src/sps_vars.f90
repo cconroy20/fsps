@@ -55,7 +55,7 @@ MODULE SPS_VARS
 
   !Use Aringer et al. (2009) Carbon star library if set
   !otherwise use Lancon & Wood (2002) empirical spectra
-  INTEGER, PARAMETER :: cstar_aringer=0
+  INTEGER, PARAMETER :: cstar_aringer=1
 
   !turn on/off computation of light-weighted stellar ages
   !NB: currently only works with sfh=1,4 options
@@ -142,7 +142,7 @@ MODULE SPS_VARS
 #elif (MIST)
   CHARACTER(4), PARAMETER :: isoc_type = 'mist'
   INTEGER, PARAMETER :: nt=107
-  INTEGER, PARAMETER :: nz=5
+  INTEGER, PARAMETER :: nz=6
 #else
   CHARACTER(4), PARAMETER :: isoc_type = 'pdva'
   INTEGER, PARAMETER :: nt=94
@@ -186,7 +186,7 @@ MODULE SPS_VARS
   !max dimension of array for each isochrone
   INTEGER, PARAMETER :: nm=1500
   !max number of lines to read in
-  INTEGER, PARAMETER ::  nlines=100000
+  INTEGER, PARAMETER ::  nlines=1000000
   !max number of lines in tabulated SFH
   INTEGER, PARAMETER :: ntabmax=10000
   !dimensions of BaSeL library
@@ -395,7 +395,7 @@ MODULE SPS_VARS
           logzsol=0.,zred=0.,pmetals=0.02,imf1=1.3,imf2=2.3,imf3=2.3,&
           vdmc=0.08,dust_clumps=-99.,frac_nodust=0.,dust_index=-0.7,&
           dust_tesc=7.0,frac_obrun=0.,uvb=1.0,mwr=3.1,redgb=1.0,&
-          dust1_index=-1.0,mdave=0.5,sf_start=0.,sf_trunc=0.,sf_theta=0.,&
+          dust1_index=-1.0,mdave=0.5,sf_start=0.,sf_trunc=0.,sf_slope=0.,&
           duste_gamma=0.01,duste_umin=1.0,duste_qpah=3.5,fcstar=1.0,&
           masscut=150.0,sigma_smooth=0.,agb_dust=1.0,min_wave_smooth=1E3,&
           max_wave_smooth=1E4,gas_logu=-2.0,gas_logz=0.,igm_factor=1.0
