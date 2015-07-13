@@ -3,13 +3,15 @@ SUBROUTINE INTSPEC(pset,nti,spec_ssp,csp,mass_ssp,lbol_ssp,&
      sftrunc,tmax,mdust,tweight)
 
   !routine to perform integration of SSP over a SFH.
-  !Dust absorption and re-radiation is also included here
+  !Dust absorption and re-radiation are also included here.
 
   !note that integrals over the SFH are all formally wrong
   !basically were assuming int(SFR*spec) = <spec>*int(SFR)
   !we used to do something a priori more sensible but it turns
   !out that analytically calculating int(SFR) is more often than
   !not the better thing to do, esp when SFR is changing rapidly
+  !also, correctly numerically integrating this function at each
+  !wavelength point is very slow.
 
   USE sps_vars
   USE sps_utils, ONLY : add_dust,intsfr,locate
@@ -52,7 +54,7 @@ SUBROUTINE INTSPEC(pset,nti,spec_ssp,csp,mass_ssp,lbol_ssp,&
      IF (sfstart.LE.tiny_number) indsf = nti
      indsf = MIN(indsf,ntfull-1)
      imax  = MIN(MIN(wtesc,nti),indsf)
-
+    
      !set up the integrated SFR array
      DO i=1,indsf
 
@@ -87,6 +89,11 @@ SUBROUTINE INTSPEC(pset,nti,spec_ssp,csp,mass_ssp,lbol_ssp,&
            csp1 = csp1 + isfr(indsf)*spec_ssp(:,indsf)
         ENDIF
      ENDIF
+
+     !renormalize the integrated SFR to be unity
+     !we do this because the actual integral is from sf_start
+     !to sf_trunc but the isfr array is indexed to the time array
+     isfr(1:indsf) = isfr(1:indsf) / SUM(isfr(1:indsf))
 
      !compute weighted mass and lbol
      IF (indsf.EQ.1) THEN

@@ -62,9 +62,11 @@ SUBROUTINE COMPSP(write_compsp,nzin,outfile,mass_ssp,&
   ENDIF
 
   !if sf_start > sf_trunc then return
-  IF (pset%sf_start.GE.pset%sf_trunc.AND.&
+  IF ((pset%sf_start.GE.pset%sf_trunc.AND.&
        pset%sf_start.GT.tiny_number.AND.&
-       pset%sf_trunc.GT.tiny_number) THEN
+       pset%sf_trunc.GT.tiny_number).OR.&
+       (pset%tage.LE.pset%sf_start.AND.&
+       pset%tage.GT.tiny_number)) THEN
      DO i=1,ntfull
         ocompsp(i)%age      = 0.0
         ocompsp(i)%mass_csp = 0.0
@@ -76,7 +78,8 @@ SUBROUTINE COMPSP(write_compsp,nzin,outfile,mass_ssp,&
         ocompsp(i)%indx     = 0.0
      ENDDO
      IF (verbose.EQ.1) &
-          WRITE(*,*) 'COMPSP WARNING: sf_start>=sf_trunc, returning'
+          WRITE(*,*) 'COMPSP WARNING: sf_start>=sf_trunc or '//&
+          'tage<sf_start, returning'
      RETURN
   ENDIF
 
@@ -112,11 +115,7 @@ SUBROUTINE COMPSP(write_compsp,nzin,outfile,mass_ssp,&
   mass_burst = 0.0
   lbol_burst = 0.0
   sfstart    = 0.0
- 
   powtime = 10**time_full
-  maxtime = powtime(ntfull)
-  imin    = 1
-  imax    = ntfull
 
   !SFH-specific setup
   IF (pset%sfh.EQ.2) THEN
@@ -164,6 +163,10 @@ SUBROUTINE COMPSP(write_compsp,nzin,outfile,mass_ssp,&
         maxtime = pset%tage*1E9
         imin    = MIN(MAX(locate(powtime,maxtime),1),ntfull-1)
         imax    = imin+1
+     ELSE
+        maxtime = powtime(ntfull)
+        imin    = 1
+        imax    = ntfull
      ENDIF
 
      !find sf_start in the time grid
@@ -486,11 +489,6 @@ SUBROUTINE COMPSP_WARNING(maxtime,pset,nzin,write_compsp)
        (pset%sfh.EQ.1.OR.pset%sfh.EQ.4)) THEN
      WRITE(*,*) 'COMPSP WARNING: burst time > age of system....'//&
           ' the burst component will NOT be added'
-  ENDIF
-
-  IF (pset%tage.LT.pset%sf_start.AND.pset%tage.GT.tiny_number) THEN
-     WRITE(*,*) 'COMPSP ERROR: tage<sf_start  stopping...'
-     STOP
   ENDIF
 
   IF (pset%sf_start.LT.0.0) THEN

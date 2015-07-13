@@ -97,7 +97,7 @@ SUBROUTINE SPS_SETUP(zin)
   !----------------------------------------------------------------!
   !----------------Read in metallicity values----------------------!
   !----------------------------------------------------------------!
-  
+
   !units are simply metal fraction by mass (e.g. Z=0.0190 for Zsun)
   IF (isoc_type.EQ.'pdva') THEN
      OPEN(90,FILE=TRIM(SPS_HOME)//'/ISOCHRONES/Padova/Padova2007/zlegend'//&
@@ -105,7 +105,7 @@ SUBROUTINE SPS_SETUP(zin)
   ELSE IF (isoc_type.EQ.'bsti') THEN
      OPEN(90,FILE=TRIM(SPS_HOME)//'/ISOCHRONES/BaSTI/zlegend'//&
           '.dat',STATUS='OLD',iostat=stat,ACTION='READ')
- ELSE IF (isoc_type.EQ.'mist') THEN
+  ELSE IF (isoc_type.EQ.'mist') THEN
      OPEN(90,FILE=TRIM(SPS_HOME)//'/ISOCHRONES/MIST/zlegend'//&
           '.dat',STATUS='OLD',iostat=stat,ACTION='READ')
   ENDIF
@@ -253,9 +253,10 @@ SUBROUTINE SPS_SETUP(zin)
      dz = (LOG10(zlegend(i)/zsol)-tagb_logz_o(i1)) / &
           (tagb_logz_o(i1+1)-tagb_logz_o(i1))
      agb_logt_o(i,:) = (1-dz)*tagb_logt_o(i1,:)+dz*tagb_logt_o(i1+1,:)
+
   ENDDO
   agb_logt_o = LOG10(agb_logt_o)
-     
+
   !read in AGB Teff array for C-rich spectra
   OPEN(94,FILE=TRIM(SPS_HOME)//'/SPECTRA/AGB_spectra/Crich.teff',&
        STATUS='OLD',iostat=stat,ACTION='READ')
