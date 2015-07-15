@@ -26,7 +26,7 @@ SUBROUTINE COMPSP(write_compsp,nzin,outfile,mass_ssp,&
  
   !write_compsp = 1->write mags, 2->write spectra
   !               3->write mags+spec, 4->write indices
-  !               5->write CMDs
+  !               5->write CMDs  
   INTEGER, INTENT(in) :: write_compsp,nzin
   REAL(SP), INTENT(in), DIMENSION(ntfull,nzin) :: lbol_ssp,mass_ssp
   REAL(SP), INTENT(in), DIMENSION(nspec,ntfull,nzin) :: tspec_ssp
