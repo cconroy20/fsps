@@ -1,6 +1,7 @@
 FUNCTION INTSFR(sfh,tau,const,sftrunc,sfstart,sfslope,tmax,t1,t2,tweight)
 
   !simple routine to integrate the SFH from t1 to t2
+  !the edges should now be handled correctly (as of 7/15)
 
   USE sps_vars; USE sps_utils, ONLY : tsum, locate
   IMPLICIT NONE
@@ -14,8 +15,9 @@ FUNCTION INTSFR(sfh,tau,const,sftrunc,sfstart,sfslope,tmax,t1,t2,tweight)
   !-----------------------------------------------------!
   !-----------------------------------------------------!
 
-  IF (t1.GT.sftrunc.AND.t2.LT.sftrunc) THEN
-     tt1 = sftrunc
+  !changed to sftrunc-sfstart (7/15)
+  IF (t1.GT.(sftrunc-sfstart)) THEN
+     tt1 = sftrunc-sfstart
   ELSE
      tt1 = t1
   ENDIF
@@ -34,7 +36,7 @@ FUNCTION INTSFR(sfh,tau,const,sftrunc,sfstart,sfslope,tmax,t1,t2,tweight)
         intsfr = intsfr*(1-const) + const*(tt1-t2)/(sftrunc-sfstart)
      ENDIF
 
-     IF (t2.GT.sftrunc) intsfr = 0.0
+     IF (t2.GT.(sftrunc-sfstart)) intsfr = 0.0
 
   ELSE IF (sfh.EQ.4) THEN
 
@@ -51,25 +53,33 @@ FUNCTION INTSFR(sfh,tau,const,sftrunc,sfstart,sfslope,tmax,t1,t2,tweight)
         intsfr = intsfr*(1-const) + const*(tt1-t2)/(sftrunc-sfstart)
      ENDIF
 
-     IF (t2.GT.sftrunc) intsfr = 0.0
+     IF (t2.GT.(sftrunc-sfstart)) intsfr = 0.0
 
   ELSE IF (sfh.EQ.5) THEN
 
-     norm = (1-EXP(-(sftrunc-sfstart)/1E9/tau)*((sftrunc-sfstart)/1E9/tau+1))
      !SFR at the transition time
      sft = ((sftrunc-sfstart)/tau/1E9)*&
           EXP(-(sftrunc-sfstart)/tau/1E9 )/tau/1E9
+     norm = (1-EXP(-(sftrunc-sfstart)/1E9/tau)*((sftrunc-sfstart)/1E9/tau+1))
      !add the normalization due to the linearly declining comp.
      norm = norm + sft*(tmax-sftrunc)*(1-sfslope*sftrunc/1e9)+&
           sft/1E9*sfslope*0.5*(tmax**2-sftrunc**2)
 
-     IF ((t1+sfstart).LT.sftrunc) THEN
+     IF ((t1+sfstart).LE.sftrunc) THEN
         intsfr = (EXP(-t2/tau/1E9)*(1+t2/tau/1E9) - &
-             EXP(-t1/tau/1E9)*(1+t1/tau/1E9)) !* (tau*1E9)**2 
+             EXP(-t1/tau/1E9)*(1+t1/tau/1E9))
+     ELSE IF ((t1+sfstart).GT.sftrunc.AND.(t1+sfstart).LE.tmax) THEN
+        IF ((t2+sfstart).GT.sftrunc) THEN
+           intsfr = sft*(t1-t2)*(1-sfslope*sftrunc/1e9)+&
+                sft/1E9*sfslope*0.5*((t1+sfstart)**2-(t2+sfstart)**2)
+        ELSE
+           intsfr = (EXP(-t2/tau/1E9)*(1+t2/tau/1E9) - &
+                EXP(-(sftrunc-sfstart)/tau/1E9)*(1+(sftrunc-sfstart)/tau/1E9))
+           intsfr = intsfr + sft*(t1+sfstart-sftrunc)*(1-sfslope*sftrunc/1e9)+&
+                sft/1E9*sfslope*0.5*((t1+sfstart)**2-(sftrunc)**2)
+        ENDIF
      ELSE
-        !intsfr = sfslope*(0.5*(t1**2-t2**2)-(t1-t2)*(sftrunc-sfstart))
-        intsfr = sft*(t1-t2)*(1-sfslope*sftrunc/1e9)+&
-             sft/1E9*sfslope*0.5*(t1**2-t2**2)
+        intsfr = 0.0
      ENDIF
 
      intsfr = MAX(intsfr/norm,0.0)

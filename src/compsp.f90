@@ -172,7 +172,7 @@ SUBROUTINE COMPSP(write_compsp,nzin,outfile,mass_ssp,&
      !find sf_start in the time grid
      IF (pset%sf_start.GT.tiny_number) THEN
         sfstart = pset%sf_start*1E9 !convert to yrs
-        indsf = MIN(MAX(locate(powtime,sfstart),1),ntfull-1)
+        indsf   = MIN(MAX(locate(powtime,sfstart),1),ntfull-1)
      ELSE
         indsf   = 1
         sfstart = 0.0
@@ -185,9 +185,12 @@ SUBROUTINE COMPSP(write_compsp,nzin,outfile,mass_ssp,&
         sftrunc = pset%sf_trunc*1E9 !convert to yrs
         indsft  = MIN(MAX(locate(powtime,sftrunc),1),ntfull)
      ELSE
-        indsft  = ntfull
         sftrunc = maxtime
+        indsft  = ntfull
      ENDIF
+
+  !   sftrunc = pset%sf_trunc*1E9 !convert to yrs
+  !   indsft  = MIN(MAX(locate(powtime,sftrunc),1),ntfull)
 
      !set limits on the parameters tau and const
      tau   = MIN(MAX(pset%tau,0.1),100.) !tau in Gyr
@@ -258,6 +261,8 @@ SUBROUTINE COMPSP(write_compsp,nzin,outfile,mass_ssp,&
         norm = norm + sft*(tmax-powtime(indsft+1))*(1-pset%sf_slope*sftrunc/1e9)+&
              sft/1E9*pset%sf_slope*0.5*(tmax**2-powtime(indsft+1)**2)
         tsfr(indsft+1:) = sft*(1+pset%sf_slope*(powtime(indsft+1:)-sftrunc)/1e9)
+     ELSE
+        tmax = sftrunc
      ENDIF
      tsfr = MAX(tsfr/norm,0.0) ! set SFR=0.0 if SFR<0
 
@@ -271,13 +276,37 @@ SUBROUTINE COMPSP(write_compsp,nzin,outfile,mass_ssp,&
    !calculate mags at each time step
    DO i=imin,imax
 
-      !this is just one more example of how annoyingly complicated 
-      !compsp has become...
+      !SF truncation is limited by the age of the model when
+      !the age is specifically set.  This must be done here
+      !b/c the interpolation between imin and imax requires
+      !that trunc be set each time to the i-th age.
       IF (pset%tage.GT.tiny_number.AND.sftrunc.GT.powtime(i)) THEN
          sftrunc_i = powtime(i)
       ELSE
          sftrunc_i = sftrunc
       ENDIF
+
+      !age where SFR=0.0.  Must be set here for the same reasons
+      !as sftrunc above.
+      IF (pset%sfh.EQ.5) THEN
+         IF (pset%tage.GT.tiny_number) THEN
+            IF (indsft.LT.ntfull) THEN
+               IF (pset%sf_slope.LT.0.0) THEN
+                  tmax = MIN(-1.0/pset%sf_slope*1E9+sftrunc,powtime(i))
+               ELSE
+                  tmax = powtime(i)
+               ENDIF
+            ELSE
+               tmax=sftrunc_i
+            ENDIF
+         ELSE
+            IF (pset%sf_slope.LT.0.0) THEN
+               tmax = MIN(-1.0/pset%sf_slope*1E9+sftrunc,maxtime)
+            ELSE
+               tmax = maxtime
+            ENDIF
+        ENDIF
+     ENDIF
 
       !Set up tabulated SFH
       IF (pset%sfh.EQ.2.OR.pset%sfh.EQ.3) THEN

@@ -13,12 +13,14 @@ SUBROUTINE INTSPEC(pset,nti,spec_ssp,csp,mass_ssp,lbol_ssp,&
   !also, correctly numerically integrating this function at each
   !wavelength point is very slow.
 
+  !To Do: properly deal with the edges around dust_tesc
+
   USE sps_vars
   USE sps_utils, ONLY : add_dust,intsfr,locate
   IMPLICIT NONE
   
   INTEGER :: i,imax,indsf,wtesc
-  REAL(SP) :: t1,t2
+  REAL(SP) :: t1,t2,tmptrunc
   REAL(SP), DIMENSION(ntfull) :: isfr,time
   INTEGER, intent(in), optional :: tweight
   INTEGER,  INTENT(in)    :: nti
@@ -41,6 +43,13 @@ SUBROUTINE INTSPEC(pset,nti,spec_ssp,csp,mass_ssp,lbol_ssp,&
   csp2 = 0.0
   mass = 0.0
   lbol = 0.0
+  isfr = 0.0
+
+  IF (pset%sfh.EQ.5) THEN
+     tmptrunc = tmax
+  ELSE
+     tmptrunc = sftrunc
+  ENDIF
 
   !only compute things if SF has "started"
   IF (time(nti).GT.sfstart) THEN
@@ -50,17 +59,22 @@ SUBROUTINE INTSPEC(pset,nti,spec_ssp,csp,mass_ssp,lbol_ssp,&
           LOG10(10**pset%dust_tesc+sfstart)),1),ntfull)
      IF (pset%dust1.EQ.0.0.AND.pset%dust2.EQ.0.0) wtesc = ntfull
 
-     indsf = locate(time(nti)-time(1:nti),sfstart)
-     IF (sfstart.LE.tiny_number) indsf = nti
+     IF (sfstart.LE.tiny_number) THEN
+        indsf = nti
+     ELSE
+        indsf = locate(time(nti)-time(1:nti),sfstart)
+     ENDIF
      indsf = MIN(indsf,ntfull-1)
      imax  = MIN(MIN(wtesc,nti),indsf)
-    
+   
      !set up the integrated SFR array
      DO i=1,indsf
 
         t1   = time(nti)-sfstart-time(i)+time(1)
+        IF (t1.GT.(tmptrunc-sfstart)) t1 = tmptrunc-sfstart
         IF (i.EQ.indsf) t2 = 0.0
         IF (i.NE.indsf) t2 = time(nti)-sfstart-time(i+1)+time(1)
+        t2 = MIN(t2,t1)
 
         IF (PRESENT(tweight)) THEN
            isfr(i) = intsfr(pset%sfh,tau,const,sftrunc,sfstart,&
@@ -90,20 +104,18 @@ SUBROUTINE INTSPEC(pset,nti,spec_ssp,csp,mass_ssp,lbol_ssp,&
         ENDIF
      ENDIF
 
-     !renormalize the integrated SFR to be unity
-     !we do this because the actual integral is from sf_start
-     !to sf_trunc but the isfr array is indexed to the time array
-     isfr(1:indsf) = isfr(1:indsf) / SUM(isfr(1:indsf))
+     !write(*,'(5F10.4,I5)') time(nti)/1E9,(time(nti)-time(indsf))/1E9,&
+     !     sftrunc/1E9,tmax/1E9,SUM(isfr(1:indsf)),indsf
 
      !compute weighted mass and lbol
      IF (indsf.EQ.1) THEN
         mass = isfr(1)*mass_ssp(1)
         lbol = LOG10( isfr(1)*10**lbol_ssp(1)+tiny_number )
      ELSE
-        mass = SUM(isfr(1:indsf-1)/2.*&
-             (mass_ssp(1:indsf-1)+mass_ssp(2:indsf)))
-        lbol = SUM(isfr(1:indsf-1)/2.*&
-             (10**lbol_ssp(1:indsf-1)+10**lbol_ssp(2:indsf)))
+        mass = SUM(isfr(1:indsf-1)*&
+             (mass_ssp(1:indsf-1)+mass_ssp(2:indsf))/2.)
+        lbol = SUM(isfr(1:indsf-1)*&
+             (10**lbol_ssp(1:indsf-1)+10**lbol_ssp(2:indsf))/2.)
         mass = mass + isfr(indsf)*mass_ssp(indsf)
         lbol = lbol + isfr(indsf)*10**lbol_ssp(indsf) 
         lbol = LOG10(lbol+tiny_number)
@@ -111,7 +123,7 @@ SUBROUTINE INTSPEC(pset,nti,spec_ssp,csp,mass_ssp,lbol_ssp,&
   
      !add in an instantaneous burst
      IF (pset%fburst.GT.tiny_number.AND.&
-          (pset%sfh.EQ.1.OR.pset%sfh.EQ.4)) THEN
+          (pset%sfh.EQ.1.OR.pset%sfh.EQ.4.OR.pset%sfh.EQ.5)) THEN
         IF (deltb.LT.10**pset%dust_tesc) THEN
            csp1 = csp1*(1-pset%fburst) + specb*pset%fburst
            csp2 = csp2*(1-pset%fburst)
