@@ -189,9 +189,6 @@ SUBROUTINE COMPSP(write_compsp,nzin,outfile,mass_ssp,&
         indsft  = ntfull
      ENDIF
 
-  !   sftrunc = pset%sf_trunc*1E9 !convert to yrs
-  !   indsft  = MIN(MAX(locate(powtime,sftrunc),1),ntfull)
-
      !set limits on the parameters tau and const
      tau   = MIN(MAX(pset%tau,0.1),100.) !tau in Gyr
      const = MIN(MAX(pset%const,0.0),1.0)
@@ -277,10 +274,10 @@ SUBROUTINE COMPSP(write_compsp,nzin,outfile,mass_ssp,&
    DO i=imin,imax
 
       !SF truncation is limited by the age of the model when
-      !the age is specifically set.  This must be done here
+      !the age is specifically set.  This piece of code is important
       !b/c the interpolation between imin and imax requires
       !that trunc be set each time to the i-th age.
-      IF (pset%tage.GT.tiny_number.AND.sftrunc.GT.powtime(i)) THEN
+      IF (pset%tage.GT.tiny_number.AND.sftrunc.GT.pset%tage) THEN
          sftrunc_i = powtime(i)
       ELSE
          sftrunc_i = sftrunc
@@ -466,8 +463,8 @@ SUBROUTINE COMPSP(write_compsp,nzin,outfile,mass_ssp,&
          indx(i) = (1-dt)*ocompsp(imin)%indx(i) + &
               dt*ocompsp(imax)%indx(i)
       ENDDO
-      spec_csp = (1-dt)*ocompsp(imin)%spec + &
-           dt*ocompsp(imax)%spec
+      spec_csp = 10**((1-dt)*LOG10(ocompsp(imin)%spec) + &
+           dt*LOG10(ocompsp(imax)%spec))
       CALL SAVE_COMPSP(write_compsp,ocompsp(1),&
            LOG10(maxtime),mass_csp,lbol_csp,sfr_ipol,mags,&
            spec_csp,mdust,indx)
