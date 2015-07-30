@@ -1,122 +1,128 @@
-1	Johnson V (from Bessell 1990 via M. Blanton) - this defines the Vega system
-2	Johnson U (from Bessell 1990 via M. Blanton)
-3	Johnson B (from Bessell 1990 via M. Blanton)
-4	Buser B2  (from BC03)
-5	Cousins R (from Bessell 1990 via M. Blanton) 
-6 	Cousins I (from Bessell 1990 via M. Blanton) 
-7	CFHT B-band (from Blanton's kcorrect)
-8	CFHT R-band (from Blanton's kcorrect)
-9	CFHT I-band (from Blanton's kcorrect)
-10	2MASS J filter (total response w/atm)
-11 	2MASS H filter (total response w/atm)
-12	2MASS Ks filter (total response w/atm)
-13	SDSS Camera u Response Function, airmass = 1.3 (June 2001)
-14	SDSS Camera g Response Function, airmass = 1.3 (June 2001)
-15	SDSS Camera r Response Function, airmass = 1.3 (June 2001)
-16	SDSS Camera i Response Function, airmass = 1.3 (June 2001)
-17	SDSS Camera z Response Function, airmass = 1.3 (June 2001)
-18	HST WFPC2 F255W (http://acs.pha.jhu.edu/instrument/photometry/)
-19	HST WFPC2 F300W (http://acs.pha.jhu.edu/instrument/photometry/)
-20	HST WFPC2 F336W (http://acs.pha.jhu.edu/instrument/photometry/)
-21	HST WFPC2 F439W (http://acs.pha.jhu.edu/instrument/photometry/)
-22	HST WFPC2 F450W (http://acs.pha.jhu.edu/instrument/photometry/)
-23	HST WFPC2 F555W (http://acs.pha.jhu.edu/instrument/photometry/)
-24	HST WFPC2 F606W (http://acs.pha.jhu.edu/instrument/photometry/)
-25	HST WFPC2 F814W (http://acs.pha.jhu.edu/instrument/photometry/)
-26	HST WFPC2 F850LP (http://acs.pha.jhu.edu/instrument/photometry/)
-27 	HST ACS F435W  (http://acs.pha.jhu.edu/instrument/photometry/)
-28 	HST ACS F475W  (http://acs.pha.jhu.edu/instrument/photometry/)
-29 	HST ACS F555W (http://acs.pha.jhu.edu/instrument/photometry/)
-30	HST ACS F606W  (http://acs.pha.jhu.edu/instrument/photometry/)
-31	HST ACS F625W  (http://acs.pha.jhu.edu/instrument/photometry/)
-32	HST ACS F775W  (http://acs.pha.jhu.edu/instrument/photometry/)
-33	HST ACS F814W  (http://acs.pha.jhu.edu/instrument/photometry/)
-34	HST ACS F850LP  (http://acs.pha.jhu.edu/instrument/photometry/)
-35	HST WFC3 UVIS F218W (http://www.stsci.edu/~WFC3/UVIS/SystemThroughput/) Chip #1
-36	HST WFC3 UVIS F225W (http://www.stsci.edu/~WFC3/UVIS/SystemThroughput/) Chip #1
-37	HST WFC3 UVIS F275W (http://www.stsci.edu/~WFC3/UVIS/SystemThroughput/) Chip #1
-38	HST WFC3 UVIS F336W (http://www.stsci.edu/~WFC3/UVIS/SystemThroughput/) Chip #1
-39	HST WFC3 UVIS F390W (http://www.stsci.edu/~WFC3/UVIS/SystemThroughput/) Chip #1
-40	HST WFC3 UVIS F438W (http://www.stsci.edu/~WFC3/UVIS/SystemThroughput/) Chip #1
-41	HST WFC3 UVIS F475W (http://www.stsci.edu/~WFC3/UVIS/SystemThroughput/) Chip #1
-42	HST WFC3 UVIS F555W (http://www.stsci.edu/~WFC3/UVIS/SystemThroughput/) Chip #1
-43	HST WFC3 UVIS F606W (http://www.stsci.edu/~WFC3/UVIS/SystemThroughput/) Chip #1
-44	HST WFC3 UVIS F775W (http://www.stsci.edu/~WFC3/UVIS/SystemThroughput/) Chip #1
-45	HST WFC3 UVIS F814W (http://www.stsci.edu/~WFC3/UVIS/SystemThroughput/) Chip #1
-46	HST WFC3 UVIS F850LP (http://www.stsci.edu/~WFC3/UVIS/SystemThroughput/) Chip #1
-47	HST WFC3 IR F098M (http://www.stsci.edu/~WFC3/UVIS/SystemThroughput/)
-48	HST WFC3 IR F105W (http://www.stsci.edu/~WFC3/UVIS/SystemThroughput/)
-49	HST WFC3 IR F110W (http://www.stsci.edu/~WFC3/UVIS/SystemThroughput/)
-50	HST WFC3 IR F125W (http://www.stsci.edu/~WFC3/UVIS/SystemThroughput/)
-51	HST WFC3 IR F140W (http://www.stsci.edu/~WFC3/UVIS/SystemThroughput/)
-52	HST WFC3 IR F160W (http://www.stsci.edu/~WFC3/UVIS/SystemThroughput/)
-53	Spitzer IRAC Channel 1 (3.6um)
-54	Spitzer IRAC Channel 2 (4.5um)
-55	Spitzer IRAC Channel 3 (5.8um)
-56	Spitzer IRAC Channel 4 (8.0um)
-57	ISAAC Ks
-58	FORS V
-59	FORS R
-60	HST NICMOS F110W
-61	HST NICMOS F160W
-62	GALEX FUV
-63	GALEX NUV
-64	DES g  (from Huan Lin, for DES camera)
-65	DES r  (from Huan Lin, for DES camera)
-66	DES i  (from Huan Lin, for DES camera)
-67	DES z  (from Huan Lin, for DES camera)
-68	DES Y  (from Huan Lin, for DES camera)
-69	WFCAM (UKIRT) Z  (from Hewett et al. 2006, via A. Smith)
-70	WFCAM (UKIRT) Y  (from Hewett et al. 2006, via A. Smith)
-71	WFCAM (UKIRT) J  (from Hewett et al. 2006, via A. Smith)
-72	WFCAM (UKIRT) H  (from Hewett et al. 2006, via A. Smith)
-73	WFCAM (UKIRT) K  (from Hewett et al. 2006, via A. Smith)
-74  	Steidel Un (via A. Shapley; see Steidel et al. 2003)
-75	Steidel G  (via A. Shapley; see Steidel et al. 2003)
-76 	Steidel Rs (via A. Shapley; see Steidel et al. 2003)
-77	Steidel I  (via A. Shapley; see Steidel et al. 2003)
-78	CFHT MegaCam u* (cadcwww.dao.nrc.ca/megapipe/docs/filters.html, Dec 2010)
-79	CFHT MegaCam g' (cadcwww.dao.nrc.ca/megapipe/docs/filters.html, Dec 2010)
-80	CFHT MegaCam r' (cadcwww.dao.nrc.ca/megapipe/docs/filters.html, Dec 2010)
-81	CFHT MegaCam i' (cadcwww.dao.nrc.ca/megapipe/docs/filters.html, Dec 2010)
-82	CFHT MegaCam z' (cadcwww.dao.nrc.ca/megapipe/docs/filters.html, Dec 2010)
-83	WISE W1, 3.4um (http://www.astro.ucla.edu/~wright/WISE/passbands.html)
-84	WISE W2, 4.6um (http://www.astro.ucla.edu/~wright/WISE/passbands.html)
-85	WISE W3, 12um (http://www.astro.ucla.edu/~wright/WISE/passbands.html)
-86	WISE W4, 22um (http://www.astro.ucla.edu/~wright/WISE/passbands.html)
-87	UVOT W2 (from Erik Hoversten, 2011)
-88	UVOT M2 (from Erik Hoversten, 2011)
-89	UVOT W1 (from Erik Hoversten, 2011)
-90	Spitzer MIPS 24um
-91	Spitzer MIPS 70um
-92	Spitzer MIPS 160um
-93	SCUBA 450WB (www.jach.hawaii.edu/JCMT/continuum/background/background.html)
-94	SCUBA 850WB (www.jach.hawaii.edu/JCMT/continuum/background/background.html)
-95	Herschel PACS   70um
-96	Herschel PACS  100um
-97	Herschel PACS  160um
-98	Herschel SPIRE 250um
-99	Herschel SPIRE 350um
-100	Herschel SPIRE 500um
-101	IRAS 12um
-102	IRAS 25um
-103	IRAS 60um
-104	IRAS 100um
-105	Bessell L band  (Bessell & Brett 1988)
-106	Bessell L' band (Bessell & Brett 1988)
-107	Bessell M band  (Bessell & Brett 1988)
-108	Stromgren u (Bessell 2011)
-109	Stromgren v (Bessell 2011)
-110	Stromgren b (Bessell 2011)
-111	Stromgren y (Bessell 2011)
-112	Idealized 1500A bandpass with 15% bandwidth, FWHM = 225A from M. Dickinson
-113	Idealized 2300A bandpass with 15% bandwidth, FWHM = 345A from M. Dickinson
-114	Idealized 2800A bandpass with 15% bandwidth, FWHM = 420A from M. Dickinson
-115	JWST F070W (http://www.stsci.edu/jwst/instruments/nircam/instrumentdesign/filters/)
-116	JWST F090W (http://www.stsci.edu/jwst/instruments/nircam/instrumentdesign/filters/)
-117	JWST F115W (http://www.stsci.edu/jwst/instruments/nircam/instrumentdesign/filters/)
-118	JWST F150W (http://www.stsci.edu/jwst/instruments/nircam/instrumentdesign/filters/)
-119	JWST F200W (http://www.stsci.edu/jwst/instruments/nircam/instrumentdesign/filters/)
-120	JWST F277W (http://www.stsci.edu/jwst/instruments/nircam/instrumentdesign/filters/)
-121	JWST F356W (http://www.stsci.edu/jwst/instruments/nircam/instrumentdesign/filters/)
-122	JWST F444W (http://www.stsci.edu/jwst/instruments/nircam/instrumentdesign/filters/)
+1   V			Johnson V (from Bessell 1990 via M. Blanton) - this defines the Vega system
+2   U			Johnson U (from Bessell 1990 via M. Blanton)
+3   B			Johnson B (from Bessell 1990 via M. Blanton)
+4   Buser_B		Buser B2  (from BC03)
+5   Cousins_R		Cousins R (from Bessell 1990 via M. Blanton) 
+6   Cousins_I		Cousins I (from Bessell 1990 via M. Blanton) 
+7   CFHT_B		CFHT B-band (from Blanton's kcorrect)
+8   CFHT_R		CFHT R-band (from Blanton's kcorrect)
+9   CFHT_I		CFHT I-band (from Blanton's kcorrect)
+10  2MASS_J		2MASS J filter (total response w/atm)
+11  2MASS_H 		2MASS H filter (total response w/atm)
+12  2MASS_Ks		2MASS Ks filter (total response w/atm)
+13  SDSS_u		SDSS Camera u Response Function, airmass = 1.3 (June 2001)
+14  SDSS_g		SDSS Camera g Response Function, airmass = 1.3 (June 2001)
+15  SDSS_r		SDSS Camera r Response Function, airmass = 1.3 (June 2001)
+16  SDSS_i		SDSS Camera i Response Function, airmass = 1.3 (June 2001)
+17  SDSS_z		SDSS Camera z Response Function, airmass = 1.3 (June 2001)
+18  WFPC2_F255W		HST WFPC2 F255W (http://acs.pha.jhu.edu/instrument/photometry/)
+19  WFPC2_F300W		HST WFPC2 F300W (http://acs.pha.jhu.edu/instrument/photometry/)
+20  WFPC2_F336W		HST WFPC2 F336W (http://acs.pha.jhu.edu/instrument/photometry/)
+21  WFPC2_F439W		HST WFPC2 F439W (http://acs.pha.jhu.edu/instrument/photometry/)
+22  WFPC2_F450W		HST WFPC2 F450W (http://acs.pha.jhu.edu/instrument/photometry/)
+23  WFPC2_F555W		HST WFPC2 F555W (http://acs.pha.jhu.edu/instrument/photometry/)
+24  WFPC2_F606W		HST WFPC2 F606W (http://acs.pha.jhu.edu/instrument/photometry/)
+25  WFPC2_F814W	    	HST WFPC2 F814W (http://acs.pha.jhu.edu/instrument/photometry/)
+26  WFPC2_F850LP	HST WFPC2 F850LP (http://acs.pha.jhu.edu/instrument/photometry/)
+27  WFC_ACS_F435W	HST ACS F435W  (http://acs.pha.jhu.edu/instrument/photometry/)
+28  WFC_ACS_F475W 	HST ACS F475W  (http://acs.pha.jhu.edu/instrument/photometry/)
+29  WFC_ACS_F555W 	HST ACS F555W (http://acs.pha.jhu.edu/instrument/photometry/)
+30  WFC_ACS_F606W	HST ACS F606W  (http://acs.pha.jhu.edu/instrument/photometry/)
+31  WFC_ACS_F625W	HST ACS F625W  (http://acs.pha.jhu.edu/instrument/photometry/)
+32  WFC_ACS_F775W	HST ACS F775W  (http://acs.pha.jhu.edu/instrument/photometry/)
+33  WFC_ACS_F814W	HST ACS F814W  (http://acs.pha.jhu.edu/instrument/photometry/)
+34  WFC_ACS_F850LP	HST ACS F850LP  (http://acs.pha.jhu.edu/instrument/photometry/)
+35  WFC3_UVIS_F218W	HST WFC3 UVIS F218W (http://www.stsci.edu/~WFC3/UVIS/SystemThroughput/) Chip #1
+36  WFC3_UVIS_F225W	HST WFC3 UVIS F225W (http://www.stsci.edu/~WFC3/UVIS/SystemThroughput/) Chip #1
+37  WFC3_UVIS_F275W	HST WFC3 UVIS F275W (http://www.stsci.edu/~WFC3/UVIS/SystemThroughput/) Chip #1
+38  WFC3_UVIS_F336W	HST WFC3 UVIS F336W (http://www.stsci.edu/~WFC3/UVIS/SystemThroughput/) Chip #1
+39  WFC3_UVIS_F390W	HST WFC3 UVIS F390W (http://www.stsci.edu/~WFC3/UVIS/SystemThroughput/) Chip #1
+40  WFC3_UVIS_F438W	HST WFC3 UVIS F438W (http://www.stsci.edu/~WFC3/UVIS/SystemThroughput/) Chip #1
+41  WFC3_UVIS_F475W	HST WFC3 UVIS F475W (http://www.stsci.edu/~WFC3/UVIS/SystemThroughput/) Chip #1
+42  WFC3_UVIS_F555W	HST WFC3 UVIS F555W (http://www.stsci.edu/~WFC3/UVIS/SystemThroughput/) Chip #1
+43  WFC3_UVIS_F606W	HST WFC3 UVIS F606W (http://www.stsci.edu/~WFC3/UVIS/SystemThroughput/) Chip #1
+44  WFC3_UVIS_F775W	HST WFC3 UVIS F775W (http://www.stsci.edu/~WFC3/UVIS/SystemThroughput/) Chip #1
+45  WFC3_UVIS_F814W	HST WFC3 UVIS F814W (http://www.stsci.edu/~WFC3/UVIS/SystemThroughput/) Chip #1
+46  WFC3_UVIS_F850LP	HST WFC3 UVIS F850LP (http://www.stsci.edu/~WFC3/UVIS/SystemThroughput/) Chip #1
+47  WFC3_IR_F098M	HST WFC3 IR F098M (http://www.stsci.edu/~WFC3/UVIS/SystemThroughput/)
+48  WFC3_IR_F105W	HST WFC3 IR F105W (http://www.stsci.edu/~WFC3/UVIS/SystemThroughput/)
+49  WFC3_IR_F110W	HST WFC3 IR F110W (http://www.stsci.edu/~WFC3/UVIS/SystemThroughput/)
+50  WFC3_IR_F125W	HST WFC3 IR F125W (http://www.stsci.edu/~WFC3/UVIS/SystemThroughput/)
+51  WFC3_IR_F140W	HST WFC3 IR F140W (http://www.stsci.edu/~WFC3/UVIS/SystemThroughput/)
+52  WFC3_IR_F160W	HST WFC3 IR F160W (http://www.stsci.edu/~WFC3/UVIS/SystemThroughput/)
+53  IRAC_1		Spitzer IRAC Channel 1 (3.6um)
+54  IRAC_2		Spitzer IRAC Channel 2 (4.5um)
+55  IRAC_3		Spitzer IRAC Channel 3 (5.8um)
+56  IRAC_4		Spitzer IRAC Channel 4 (8.0um)
+57  ISAAC_Ks		ISAAC Ks
+58  FORS_V		FORS V
+59  FORS_R		FORS R
+60  NICMOS_F110W	HST NICMOS F110W
+61  NICMOS_F160W	HST NICMOS F160W
+62  GALEX_FUV		GALEX FUV
+63  GALEX_NUV		GALEX NUV
+64  DES_g		DES g  (from Huan Lin, for DES camera)
+65  DES_r		DES r  (from Huan Lin, for DES camera)
+66  DES_i		DES i  (from Huan Lin, for DES camera)
+67  DES_z		DES z  (from Huan Lin, for DES camera)
+68  DES_Y		DES Y  (from Huan Lin, for DES camera)
+69  WFCAM_Z		WFCAM (UKIRT) Z  (from Hewett et al. 2006, via A. Smith)
+70  WFCAM_Y		WFCAM (UKIRT) Y  (from Hewett et al. 2006, via A. Smith)
+71  WFCAM_J		WFCAM (UKIRT) J  (from Hewett et al. 2006, via A. Smith)
+72  WFCAM_H		WFCAM (UKIRT) H  (from Hewett et al. 2006, via A. Smith)
+73  WFCAM_K		WFCAM (UKIRT) K  (from Hewett et al. 2006, via A. Smith)
+74  Steidel_Un  	Steidel Un (via A. Shapley; see Steidel et al. 2003)
+75  Steidel_G		Steidel G  (via A. Shapley; see Steidel et al. 2003)
+76  Steidel_Rs 	 	Steidel Rs (via A. Shapley; see Steidel et al. 2003)
+77  Steidel_I		Steidel I  (via A. Shapley; see Steidel et al. 2003)
+78  MegaCam_u		CFHT MegaCam u (via 3DHST filter list; includes atm transmission)
+79  MegaCam_g		CFHT MegaCam g (via 3DHST filter list; includes atm transmission)
+80  MegaCam_r		CFHT MegaCam r (via 3DHST filter list; includes atm transmission)
+81  MegaCam_i		CFHT MegaCam i (via 3DHST filter list; includes atm transmission)
+82  MegaCam_z		CFHT MegaCam z (via 3DHST filter list; includes atm transmission)
+83  WISE_W1		WISE W1, 3.4um (http://www.astro.ucla.edu/~wright/WISE/passbands.html)
+84  WISE_W2		WISE W2, 4.6um (http://www.astro.ucla.edu/~wright/WISE/passbands.html)
+85  WISE_W3		WISE W3, 12um (http://www.astro.ucla.edu/~wright/WISE/passbands.html)
+86  WISE_W4		WISE W4, 22um (http://www.astro.ucla.edu/~wright/WISE/passbands.html)
+87  UVOT_W2		UVOT W2 (from Erik Hoversten, 2011)
+88  UVOT_M2		UVOT M2 (from Erik Hoversten, 2011)
+89  UVOT_W1		UVOT W1 (from Erik Hoversten, 2011)
+90  MPIS_24		Spitzer MIPS 24um
+91  MPIS_70		Spitzer MIPS 70um
+92  MIPS_160		Spitzer MIPS 160um
+93  SCUBA_450WB		SCUBA 450WB (www.jach.hawaii.edu/JCMT/continuum/background/background.html)
+94  SCUBA_850WB		SCUBA 850WB (www.jach.hawaii.edu/JCMT/continuum/background/background.html)
+95  PACS_70		Herschel PACS   70um
+96  PACS_100		Herschel PACS  100um
+97  PACS_160		Herschel PACS  160um
+98  SPIRE_250		Herschel SPIRE 250um
+99  SPIRE_350		Herschel SPIRE 350um
+100 SPIRE_500		Herschel SPIRE 500um
+101 IRAS_12		IRAS 12um
+102 IRAS_25		IRAS 25um
+103 IRAS_60		IRAS 60um
+104 IRAS_100		IRAS 100um
+105 Bessell_L		Bessell L band  (Bessell & Brett 1988)
+106 Bessell_LP		Bessell L' band (Bessell & Brett 1988)
+107 Bessell_M		Bessell M band  (Bessell & Brett 1988)
+108 Stromgren_u		Stromgren u (Bessell 2011)
+109 Stromgren_v		Stromgren v (Bessell 2011)
+110 Stromgren_b		Stromgren b (Bessell 2011)
+111 Stromgren_y		Stromgren y (Bessell 2011)
+112 I1500		Idealized 1500A bandpass with 15% bandwidth, FWHM = 225A from M. Dickinson
+113 I2300		Idealized 2300A bandpass with 15% bandwidth, FWHM = 345A from M. Dickinson
+114 I2800		Idealized 2800A bandpass with 15% bandwidth, FWHM = 420A from M. Dickinson
+115 JWST_F070W		JWST F070W (http://www.stsci.edu/jwst/instruments/nircam/instrumentdesign/filters/)
+116 JWST_F090W		JWST F090W (http://www.stsci.edu/jwst/instruments/nircam/instrumentdesign/filters/)
+117 JWST_F115W		JWST F115W (http://www.stsci.edu/jwst/instruments/nircam/instrumentdesign/filters/)
+118 JWST_F150W		JWST F150W (http://www.stsci.edu/jwst/instruments/nircam/instrumentdesign/filters/)
+119 JWST_F200W		JWST F200W (http://www.stsci.edu/jwst/instruments/nircam/instrumentdesign/filters/)
+120 JWST_F277W		JWST F277W (http://www.stsci.edu/jwst/instruments/nircam/instrumentdesign/filters/)
+121 JWST_F356W		JWST F356W (http://www.stsci.edu/jwst/instruments/nircam/instrumentdesign/filters/)
+122 JWST_F444W		JWST F444W (http://www.stsci.edu/jwst/instruments/nircam/instrumentdesign/filters/)
+123 NEWFIRM_J1		NEWFIRM J1 (via 3DHST filter list)
+124 NEWFIRM_J2		NEWFIRM J2 (via 3DHST filter list)
+125 NEWFIRM_J3		NEWFIRM J3 (via 3DHST filter list)
+126 NEWFIRM_H1		NEWFIRM H1 (via 3DHST filter list)
+127 NEWFIRM_H2		NEWFIRM H2 (via 3DHST filter list)
+128 NEWFIRM_K		NEWFIRM K  (via 3DHST filter list)
