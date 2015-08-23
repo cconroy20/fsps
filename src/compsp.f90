@@ -254,9 +254,15 @@ SUBROUTINE COMPSP(write_compsp,nzin,outfile,mass_ssp,&
         ELSE
            tmax = maxtime
         ENDIF
+
         !add the normalization due to the linearly declining comp.
-        norm = norm + sft*(tmax-powtime(indsft+1))*(1-pset%sf_slope*sftrunc/1e9)+&
-             sft/1E9*pset%sf_slope*0.5*(tmax**2-powtime(indsft+1)**2)
+        norm = norm + sft*(tmax-sftrunc)*(1-pset%sf_slope*sftrunc/1e9)+&
+             sft/1E9*pset%sf_slope*0.5*(tmax**2-sftrunc**2)
+    !    write(*,*) sft,pset%sf_slope*sftrunc/1e9,norm
+     !   write(*,*) (tmax-powtime(indsft+1))*(sft*1E9-pset%sf_slope*sftrunc),&
+     !        pset%sf_slope*0.5*(tmax**2-powtime(indsft+1)**2)
+    !    norm = norm + (tmax-powtime(indsft+1))*(sft-pset%sf_slope*sftrunc/1e9)+&
+    !         pset%sf_slope*0.5*(tmax**2-powtime(indsft+1)**2)
         tsfr(indsft+1:) = sft*(1+pset%sf_slope*(powtime(indsft+1:)-sftrunc)/1e9)
      ELSE
         tmax = sftrunc
@@ -269,42 +275,42 @@ SUBROUTINE COMPSP(write_compsp,nzin,outfile,mass_ssp,&
   !-------------------------------------------------------------!
   !-------------Generate composite spectra and mags-------------!
   !-------------------------------------------------------------!
-
-   !calculate mags at each time step
-   DO i=imin,imax
-
-      !SF truncation is limited by the age of the model when
-      !the age is specifically set.  This piece of code is important
-      !b/c the interpolation between imin and imax requires
-      !that trunc be set each time to the i-th age.
-      IF (pset%tage.GT.tiny_number.AND.sftrunc.GT.pset%tage) THEN
-         sftrunc_i = powtime(i)
-      ELSE
-         sftrunc_i = sftrunc
-      ENDIF
-
-      !age where SFR=0.0.  Must be set here for the same reasons
-      !as sftrunc above.
-      IF (pset%sfh.EQ.5) THEN
-         IF (pset%tage.GT.tiny_number) THEN
-            IF (indsft.LT.ntfull) THEN
-               IF (pset%sf_slope.LT.0.0) THEN
-                  tmax = MIN(-1.0/pset%sf_slope*1E9+sftrunc,powtime(i))
-               ELSE
-                  tmax = powtime(i)
-               ENDIF
-            ELSE
-               tmax=sftrunc_i
-            ENDIF
-         ELSE
-            IF (pset%sf_slope.LT.0.0) THEN
-               tmax = MIN(-1.0/pset%sf_slope*1E9+sftrunc,maxtime)
-            ELSE
-               tmax = maxtime
-            ENDIF
+  
+  !calculate mags at each time step
+  DO i=imin,imax
+     
+     !age where SFR=0.0.  Must be set here for the same reasons
+     !as sftrunc above.
+     IF (pset%sfh.EQ.5) THEN
+        IF (pset%tage.GT.tiny_number) THEN
+           IF (indsft.LT.ntfull) THEN
+              IF (pset%sf_slope.LT.0.0) THEN
+                 tmax = MIN(-1.0/pset%sf_slope*1E9+sftrunc,powtime(i))
+              ELSE
+                 tmax = powtime(i)
+              ENDIF
+           ELSE
+              tmax=sftrunc
+           ENDIF
+        ELSE
+           IF (pset%sf_slope.LT.0.0) THEN
+              tmax = MIN(-1.0/pset%sf_slope*1E9+sftrunc,maxtime)
+           ELSE
+              tmax = maxtime
+           ENDIF
         ENDIF
      ENDIF
-
+     
+     !SF truncation is limited by the age of the model when
+     !the age is specifically set.  This piece of code is important
+     !b/c the interpolation between imin and imax requires
+     !that trunc be set each time to the i-th age.
+     sftrunc_i = sftrunc
+     IF (pset%tage.GT.tiny_number) THEN
+        IF (sftrunc.GT.pset%tage.AND.pset%sfh.NE.5) sftrunc_i  = powtime(i)
+        IF (sftrunc.GT.powtime(i).AND.pset%sfh.EQ.5) sftrunc_i = tmax
+     ENDIF
+      
       !Set up tabulated SFH
       IF (pset%sfh.EQ.2.OR.pset%sfh.EQ.3) THEN
          

@@ -20,14 +20,8 @@ SUBROUTINE ADD_NEBULAR(pset,sspi,sspo)
 
   !locate the maximum nebular age point in the full time array
   !nti = locate(time_full,nebem_age(nebnage))
+  !right now we only include nebular emission for ages<10^7 yr
   nti = locate(time_full,7.d0)
-
-  !set limits on the velocity dispersion for broadening
-  IF (smooth_velocity.EQ.1) THEN
-     sigma = MAX(pset%sigma_smooth,neb_res_min)
-  ELSE
-     dlam  = MAX(pset%sigma_smooth,1.0)
-  ENDIF
 
   !set up the interpolation variables for logZ and logU
   z1 = MAX(MIN(locate(nebem_logz,pset%gas_logz),nebnz-1),1)
@@ -41,8 +35,15 @@ SUBROUTINE ADD_NEBULAR(pset,sspi,sspo)
   !this makes the code run *much* faster
   DO i=1,nemline
      IF (smooth_velocity.EQ.1) THEN
-        dlam = nebem_line_pos(i) * sigma/clight*1E13
+        !smoothing variable is km/s
+        dlam = nebem_line_pos(i)*pset%sigma_smooth/clight*1E13
+     ELSE
+        !smoothing variable is A
+        dlam = pset%sigma_smooth
      ENDIF
+     !broaden the line to at least the resolution element 
+     !of the spectrum.  This is approximate.
+     dlam = MAX(dlam,neb_res_min(i))
      tmparr(:,i) = 1/SQRT(2*mypi)/dlam*&
           EXP(-(spec_lambda-nebem_line_pos(i))**2/2/dlam**2)  / &
           clight*nebem_line_pos(i)**2

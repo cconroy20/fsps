@@ -51,7 +51,7 @@ MODULE SPS_VARS
   INTEGER :: pzcon=0
   
   !the factor by which we increase the time array
-  INTEGER, PARAMETER :: time_res_incr=10
+  INTEGER, PARAMETER :: time_res_incr=2
 
   !Use Aringer et al. (2009) Carbon star library if set
   !otherwise use Lancon & Wood (2002) empirical spectra
@@ -75,10 +75,7 @@ MODULE SPS_VARS
   INTEGER  :: add_neb_continuum=1
   !include dust in the Cloudy tables or not
   INTEGER :: cloudy_dust=0
-  !minimum resolution (in velocity) for nebular lines, based 
-  !on the resolution of the spectral libraries.
-  REAL(SP) :: neb_res_min=1.0
-
+ 
   !turn on/off IGM absorption a la Madau (1995)
   INTEGER :: add_igm_absorption=0
 
@@ -367,6 +364,9 @@ MODULE SPS_VARS
   REAL(SP), DIMENSION(nebnz)   :: nebem_logz=0.
   REAL(SP), DIMENSION(nebnage) :: nebem_age=0.
   REAL(SP), DIMENSION(nebnip)  :: nebem_logu=0.
+  !minimum resolution for nebular lines, based 
+  !on the resolution of the spectral libraries.
+  REAL(SP), DIMENSION(nspec)   :: neb_res_min=0.0
 
   !arrays for the isochrone data
   REAL(SP), DIMENSION(nz,nt,nm) :: mact_isoc=0.,logl_isoc=0.,&

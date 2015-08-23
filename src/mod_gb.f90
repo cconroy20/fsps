@@ -62,8 +62,8 @@ SUBROUTINE MOD_GB(zz,t,age,delt,dell,pagb,redgb,&
      ENDIF
 
      !modify RGB + red clump HB + AGB
-     !NB: this currently only works with BaSTI, which
-     !defines these phases
+     !NB: this feature does not work w/ Padova isochrones, which
+     !dont have these phases explicitly defined
      IF (phase(t,i).EQ.2.OR.phase(t,i).EQ.3 &
           .OR.phase(t,i).EQ.4.OR.phase(t,i).EQ.5) THEN
         wght(i) = wght(i)*redgb

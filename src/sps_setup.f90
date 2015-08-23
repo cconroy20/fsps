@@ -725,15 +725,10 @@ SUBROUTINE SPS_SETUP(zin)
 
   !define the minimum resolution of the emission lines
   !based on the resolution of the spectral library
-  !note that the numbers below are only approximate
-  IF (spec_type(1:5).EQ.'ckc14') THEN
-     neb_res_min = 10.0
-  ELSE IF (spec_type(1:5).EQ.'miles') THEN
-     neb_res_min = 100.0
-  ELSE IF (spec_type(1:5).EQ.'basel') THEN
-     neb_res_min = 1000.0
-  ENDIF
-
+  DO i=1,nemline
+     j = MIN(MAX(locate(spec_lambda,nebem_line_pos(i)),1),nspec-1)
+     neb_res_min(i) = spec_lambda(j+1)-spec_lambda(j)
+  ENDDO
 
   !----------------------------------------------------------------!
   !-------------------Set up magnitude info------------------------!
