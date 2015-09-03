@@ -784,7 +784,7 @@ SUBROUTINE SAVE_COMPSP(write_compsp,cspo,time,mass,&
   cspo%lbol_csp = lbol
   cspo%sfr      = sfr
   cspo%mags     = mags
-  cspo%spec     = spec
+  cspo%spec     = MAX(spec,tiny_number)
   cspo%mdust    = mdust
   cspo%indx     = indx
 
