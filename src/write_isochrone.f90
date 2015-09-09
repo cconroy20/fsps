@@ -1,6 +1,8 @@
 SUBROUTINE WRITE_ISOCHRONE(outfile,pset)
 
   !routine to write all isochrones and CMDs at a given metallicity
+  !note that the output age grid is the native spacing, not boosted
+  !by the parameter time_res_incr
 
   USE sps_vars; USE sps_utils, ONLY : getmags,getspec,imf_weight
   IMPLICIT NONE
@@ -14,7 +16,8 @@ SUBROUTINE WRITE_ISOCHRONE(outfile,pset)
   REAL(SP), DIMENSION(nm)     :: wght
   REAL(SP), DIMENSION(nbands) :: mags
   !temp arrays for the isochrone data
-  REAL(SP), DIMENSION(nt,nm)  :: mini,mact,logl,logt,logg,ffco,phase
+  REAL(SP), DIMENSION(nt,nm)  :: mini,mact,logl,logt,logg,&
+       ffco,phase,lmdot
   INTEGER, DIMENSION(nt)      :: nmass
 
   !---------------------------------------------------------------!
@@ -39,6 +42,7 @@ SUBROUTINE WRITE_ISOCHRONE(outfile,pset)
   logt  = logt_isoc(zz,:,:)  !log(Teff)
   logg  = logg_isoc(zz,:,:)  !log(g)
   ffco  = ffco_isoc(zz,:,:)  !is the TP-AGB star C-rich or O-rich?
+  lmdot = lmdot_isoc(zz,:,:) !log Mdot
   phase = phase_isoc(zz,:,:) !flag indicating phase of evolution
   nmass = nmass_isoc(zz,:)   !number of elements per isochrone
 
@@ -66,7 +70,7 @@ SUBROUTINE WRITE_ISOCHRONE(outfile,pset)
         
         !get the spectrum
         CALL GETSPEC(pset,mact(tt,i),logt(tt,i),10**logl(tt,i),&
-             logg(tt,i),phase(tt,i),ffco(tt,i),wght(i),spec)
+             logg(tt,i),phase(tt,i),ffco(tt,i),lmdot(tt,i),wght(i),spec)
         !calculate magnitudes
         CALL GETMAGS(dz,spec,mags)
 

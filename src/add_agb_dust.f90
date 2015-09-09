@@ -1,4 +1,4 @@
-FUNCTION COMPUTE_TAU1(cstar,mact,logt,logl,logg,zz)
+FUNCTION COMPUTE_TAU1(cstar,mact,logt,logl,logg,zz,lmdot)
 
   !routine to compute tau at 1um from input
   !stellar parameters.  See Villaume et al. (2015)
@@ -6,7 +6,7 @@ FUNCTION COMPUTE_TAU1(cstar,mact,logt,logl,logg,zz)
   USE sps_vars
   IMPLICIT NONE
   INTEGER, INTENT(in) :: cstar
-  REAL(SP), INTENT(in)  :: mact,logt,logl,logg, zz
+  REAL(SP), INTENT(in)  :: mact,logt,logl,logg, zz,lmdot
   REAL(SP) :: compute_tau1, radius, period, vexp, vexp_max
   REAL(SP) :: rin, delta, kappa, delta_agb, mdot
 
@@ -43,16 +43,21 @@ FUNCTION COMPUTE_TAU1(cstar,mact,logt,logl,logg,zz)
   vexp     = MAX(MIN(vexp,15.0),3.0)
 
   !mass-loss rate in Msun/yr
-  !see Vassiliadis & Wood (1993) for details
-  IF (period.LT.500.) THEN
-     IF (mact.LT.2.5) THEN
-        mdot = 10**(-11.4+0.0123*period)
-     ELSE
-        mdot = 10**(-11.4+0.0125*(period-100*(mact-2.5)))
-     ENDIF
+  IF (use_isoc_mdot.EQ.1) THEN
+     !use Mdot from the isochrone files
+     mdot = MIN(10**lmdot,1E-4)
   ELSE
-     !superwind phase
-     mdot = 10**logl/vexp*1.93E3*yr2sc/clight
+     !see Vassiliadis & Wood (1993) for details
+     IF (period.LT.500.) THEN
+        IF (mact.LT.2.5) THEN
+           mdot = 10**(-11.4+0.0123*period)
+        ELSE
+           mdot = 10**(-11.4+0.0125*(period-100*(mact-2.5)))
+        ENDIF
+     ELSE
+        !superwind phase
+        mdot = 10**logl/vexp*1.93E3*yr2sc/clight
+     ENDIF
   ENDIF
 
   !inner radius (assuming Td=1100K for C-rich and 
@@ -79,7 +84,8 @@ END FUNCTION COMPUTE_TAU1
 !------------------------------------------------------------!
 !------------------------------------------------------------!
 
-SUBROUTINE ADD_AGB_DUST(weight,tspec,mact,logt,logl,logg,zz,tco)
+SUBROUTINE ADD_AGB_DUST(weight,tspec,mact,logt,logl,logg,zz,&
+     tco,lmdot)
 
   !routine to add a circumstellar dust shell to AGB stars
   !computes the optical depth at 1um from stellar parameters
@@ -90,7 +96,7 @@ SUBROUTINE ADD_AGB_DUST(weight,tspec,mact,logt,logl,logg,zz,tco)
   IMPLICIT NONE
 
   REAL(SP), DIMENSION(nspec), INTENT(inout) :: tspec
-  REAL(SP), INTENT(in)  :: weight,mact,logt,logl,logg,zz,tco
+  REAL(SP), INTENT(in)  :: weight,mact,logt,logl,logg,zz,tco,lmdot
   INTEGER :: cstar,jlo,klo
   REAL(SP) :: tau1,dj,dk, compute_tau1, loggi
   REAL(SP), DIMENSION(nspec) :: dusty
@@ -112,7 +118,7 @@ SUBROUTINE ADD_AGB_DUST(weight,tspec,mact,logt,logl,logg,zz,tco)
         loggi = logg
     ENDIF
    !compute tau1 based on input stellar parameters
-   tau1 = compute_tau1(cstar,mact,logt,logl,loggi,zz)
+   tau1 = compute_tau1(cstar,mact,logt,logl,loggi,zz,lmdot)
 
   !allow the user to manually adjust the tau1 value
   !by an overall scale factor

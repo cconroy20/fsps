@@ -1,4 +1,4 @@
-SUBROUTINE GETSPEC(pset,mact,logt,lbol,logg,phase,ffco,wght,spec)
+SUBROUTINE GETSPEC(pset,mact,logt,lbol,logg,phase,ffco,lmdot,wght,spec)
 
   ! Routine to return the spectrum of a star with an input logg,logt
   ! the phase flag determines if the star is a WR, P-AGB, or TP-AGB star
@@ -10,7 +10,7 @@ SUBROUTINE GETSPEC(pset,mact,logt,lbol,logg,phase,ffco,wght,spec)
   USE sps_vars; USE sps_utils, ONLY: locate
   IMPLICIT NONE
 
-  REAL(SP), INTENT(in) :: mact,logt,lbol,logg,phase,ffco,wght
+  REAL(SP), INTENT(in) :: mact,logt,lbol,logg,phase,ffco,wght,lmdot
   TYPE(PARAMS), INTENT(in) :: pset
   REAL(SP), INTENT(inout), DIMENSION(nspec) :: spec  
   REAL(SP), DIMENSION(nspec) :: ispec
@@ -184,7 +184,7 @@ SUBROUTINE GETSPEC(pset,mact,logt,lbol,logg,phase,ffco,wght,spec)
   IF ((phase.EQ.4.OR.phase.EQ.5) &
        .AND.add_agb_dust_model.EQ.1.AND.pset%agb_dust.GT.tiny_number) THEN
      CALL ADD_AGB_DUST(pset%agb_dust,spec,mact,&
-          logt,LOG10(lbol),logg,zlegend(pset%zmet),ffco)
+          logt,LOG10(lbol),logg,zlegend(pset%zmet),ffco,lmdot)
   ENDIF
 
 

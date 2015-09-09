@@ -529,13 +529,22 @@ SUBROUTINE SPS_SETUP(zin)
            IF (m.EQ.1) n_isoc = n_isoc+1
            BACKSPACE(97)
            IF (m.GT.nm) THEN
-              WRITE(*,*) 'SPS_SETUP ERROR: number of mass points GT nm'
+              WRITE(*,*) 'SPS_SETUP ERROR: number of mass points GT nm: ',m
               STOP
            ENDIF
-           READ(97,*,IOSTAT=stat) logage,mini_isoc(z,n_isoc,m),&
-                mact_isoc(z,n_isoc,m),logl_isoc(z,n_isoc,m),&
-                logt_isoc(z,n_isoc,m),logg_isoc(z,n_isoc,m),&
-                ffco_isoc(z,n_isoc,m),phase_isoc(z,n_isoc,m)
+           IF (use_isoc_mdot.EQ.1) THEN
+              READ(97,*,IOSTAT=stat) logage,mini_isoc(z,n_isoc,m),&
+                   mact_isoc(z,n_isoc,m),logl_isoc(z,n_isoc,m),&
+                   logt_isoc(z,n_isoc,m),logg_isoc(z,n_isoc,m),&
+                   ffco_isoc(z,n_isoc,m),phase_isoc(z,n_isoc,m),&
+                   lmdot_isoc(z,n_isoc,m)
+           ELSE
+              READ(97,*,IOSTAT=stat) logage,mini_isoc(z,n_isoc,m),&
+                   mact_isoc(z,n_isoc,m),logl_isoc(z,n_isoc,m),&
+                   logt_isoc(z,n_isoc,m),logg_isoc(z,n_isoc,m),&
+                   ffco_isoc(z,n_isoc,m),phase_isoc(z,n_isoc,m)
+              lmdot_isoc(z,n_isoc,m)=-99.
+           ENDIF
            IF (stat.NE.0) GOTO 20
            IF (m.EQ.1) timestep_isoc(z,n_isoc) = logage
            nmass_isoc(z,n_isoc) = nmass_isoc(z,n_isoc)+1

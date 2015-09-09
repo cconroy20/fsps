@@ -174,7 +174,7 @@ END
 ;-----------------------------------------------------------------;
 ;-----------------------------------------------------------------;
 
-FUNCTION READ_CMD,file
+FUNCTION READ_CMD,file,nohead=nohead
 
   spsdir = getenv('SPS_HOME')
   IF spsdir EQ '' THEN BEGIN
@@ -183,7 +183,8 @@ FUNCTION READ_CMD,file
      return,0
   ENDIF
 
-  file = spsdir+'/OUTPUTS/'+file
+  IF NOT(keyword_set(nohead)) THEN $
+     file = spsdir+'/OUTPUTS/'+file
 
   ff = findfile(file[0],count=ct)
   IF ct EQ 0 THEN BEGIN

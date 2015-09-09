@@ -51,7 +51,7 @@ MODULE SPS_VARS
   INTEGER :: pzcon=0
   
   !the factor by which we increase the time array
-  INTEGER, PARAMETER :: time_res_incr=2
+  INTEGER, PARAMETER :: time_res_incr=1
 
   !Use Aringer et al. (2009) Carbon star library if set
   !otherwise use Lancon & Wood (2002) empirical spectra
@@ -128,6 +128,11 @@ MODULE SPS_VARS
   !1 = colors redshifted according to the age of the SSP or CSP
   INTEGER :: redshift_colors=0
 
+  !flag indicating whether to use the Mdot tabulated in the isochrone
+  !files (if available) for the AGB dust model.  Note: only use this
+  !feature in conjunction with isochrone files that include Mdot!
+  INTEGER, PARAMETER :: use_isoc_mdot=0
+
   !------------Pre-compiler defintions------------!
   
   !flag indicating type of isochrones to use
@@ -155,7 +160,7 @@ MODULE SPS_VARS
 #elif (CKC14)
   CHARACTER(5), PARAMETER :: spec_type = 'ckc14'
   INTEGER, PARAMETER :: nzinit=6
-  INTEGER, PARAMETER :: nspec=47378   ! 47378, 26500
+  INTEGER, PARAMETER :: nspec=10000   ! 47378, 26500
 #elif (BASEL)
   CHARACTER(5), PARAMETER :: spec_type = 'basel'
   INTEGER, PARAMETER :: nzinit=6
@@ -181,7 +186,7 @@ MODULE SPS_VARS
   !unless you are changing the libraries
 
   !max dimension of array for each isochrone
-  INTEGER, PARAMETER :: nm=1500
+  INTEGER, PARAMETER :: nm=2000
   !max number of lines to read in
   INTEGER, PARAMETER ::  nlines=1000000
   !max number of lines in tabulated SFH
@@ -370,8 +375,8 @@ MODULE SPS_VARS
 
   !arrays for the isochrone data
   REAL(SP), DIMENSION(nz,nt,nm) :: mact_isoc=0.,logl_isoc=0.,&
-       logt_isoc=0.,logg_isoc=0.,ffco_isoc=0.,phase_isoc=0.
-  REAL(SP), DIMENSION(nz,nt,nm) :: mini_isoc=0.
+       logt_isoc=0.,logg_isoc=0.,ffco_isoc=0.,phase_isoc=0.,&
+       mini_isoc=0.,lmdot_isoc=0.
 
   !arrays holding the number of mass elements for each isochrone,
   !the age of each isochrone, and the metallicity of each isochrone

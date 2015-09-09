@@ -43,7 +43,7 @@ FUNCTION READ_SPEC1, file
   str  = {agegyr:0.0,logmass:0.0,loglbol:0.0,logsfr:0.0,spec:dblarr(nl),$
           lambda:fltarr(nl)}
   str   = replicate(str,nt)
-  tspec = fltarr(nl)
+  tspec = dblarr(nl)
   t = 0.
   m = 0.
   l = 0.
@@ -80,7 +80,7 @@ END
 ;------------------------------------------------------------;
 ;------------------------------------------------------------;
 
-FUNCTION READ_SPEC, file
+FUNCTION READ_SPEC, file,nohead=nohead
 
   spsdir = getenv('SPS_HOME')
   IF spsdir EQ '' THEN BEGIN
@@ -89,7 +89,9 @@ FUNCTION READ_SPEC, file
      return,0
   ENDIF
 
-  infile = spsdir+'/OUTPUTS/'+file
+  IF NOT(keyword_set(nohead)) THEN $
+     infile = spsdir+'/OUTPUTS/'+file ELSE infile=file
+
   file = findfile(infile,count=ct)
 
   IF ct EQ 0 THEN BEGIN

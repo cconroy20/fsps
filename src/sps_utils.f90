@@ -1,10 +1,11 @@
 MODULE SPS_UTILS
 
   INTERFACE
-     SUBROUTINE ADD_AGB_DUST(weight,tspec,mact,logt,logl,logg,zz,tco)
+     SUBROUTINE ADD_AGB_DUST(weight,tspec,mact,logt,logl,logg,&
+          zz,tco,lmdot)
        USE sps_vars
        REAL(SP), DIMENSION(nspec), INTENT(out) :: tspec
-       REAL(SP), INTENT(in)  :: weight,mact,logt,logl,logg,zz,tco
+       REAL(SP), INTENT(in)  :: weight,mact,logt,logl,logg,zz,tco,lmdot
      END SUBROUTINE ADD_AGB_DUST
   END INTERFACE
 
@@ -146,9 +147,9 @@ MODULE SPS_UTILS
   END INTERFACE
   
   INTERFACE
-     SUBROUTINE GETSPEC(pset,mact,logt,lbol,logg,phase,ffco,wght,spec)
+     SUBROUTINE GETSPEC(pset,mact,logt,lbol,logg,phase,ffco,lmdot,wght,spec)
        USE sps_vars
-       REAL(SP), INTENT(in) :: mact,logt,lbol,logg,phase,ffco,wght
+       REAL(SP), INTENT(in) :: mact,logt,lbol,logg,phase,ffco,wght,lmdot
        TYPE(PARAMS), INTENT(in) :: pset
        REAL(SP), INTENT(inout), DIMENSION(nspec) :: spec 
      END SUBROUTINE GETSPEC

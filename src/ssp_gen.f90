@@ -31,17 +31,16 @@ SUBROUTINE SSP_GEN(pset,mass_ssp,lbol_ssp,spec_ssp)
   REAL(SP), INTENT(inout), DIMENSION(ntfull) :: mass_ssp, lbol_ssp
 
   !temp arrays for the isochrone data
-  REAL(SP), DIMENSION(nt,nm) :: mini,mact,logl,logt,logg,ffco,phase
-  !arrays holding the number of mass elements for each isochrone
-  !and the age of each isochrone
+  REAL(SP), DIMENSION(nt,nm) :: mini,mact,logl,logt,logg,&
+       ffco,phase,lmdot
+  !arrays holding the number of mass elements for each 
+  !isochrone and the age of each isochrone
   INTEGER, DIMENSION(nt)     :: nmass
   REAL(SP), DIMENSION(nt)    :: time
   REAL(SP), DIMENSION(nspec) :: tspec
-
   !structure containing all necessary parameters
   !(TYPE objects defined in sps_vars.f90)
   TYPE(PARAMS), INTENT(in) :: pset
-
   CHARACTER(2) :: istr,istr2
 
   !-----------------------------------------------------------!
@@ -111,6 +110,7 @@ SUBROUTINE SSP_GEN(pset,mass_ssp,lbol_ssp,spec_ssp)
   logg  = logg_isoc(pset%zmet,:,:)  !log(g)
   ffco  = ffco_isoc(pset%zmet,:,:)  !is the TP-AGB star C-rich or O-rich?
   phase = phase_isoc(pset%zmet,:,:) !flag indicating phase of evolution
+  lmdot = lmdot_isoc(pset%zmet,:,:) !log Mdot
   nmass = nmass_isoc(pset%zmet,:)   !number of elements per isochrone
   time  = timestep_isoc(pset%zmet,:)!age of each isochrone in log(yr)
 
@@ -191,7 +191,7 @@ SUBROUTINE SSP_GEN(pset,mass_ssp,lbol_ssp,spec_ssp)
         ENDIF
 
         CALL GETSPEC(pset,mact(i,j),logt(i,j),&
-             10**logl(i,j),logg(i,j),phase(i,j),tco,&
+             10**logl(i,j),logg(i,j),phase(i,j),tco,lmdot(i,j),&
              wght(j)/MAXVAL(wght(1:nmass(i))*10**logl(i,1:nmass(i))),tspec)
 
         !only construct SSPs for particular evolutionary

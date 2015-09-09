@@ -181,7 +181,7 @@ END
 ;-----------------------------------------------------------------;
 
 
-FUNCTION READ_MAGS,file, allow_old=allow_old
+FUNCTION READ_MAGS,file, allow_old=allow_old,nohead=nohead
 
   spsdir = getenv('SPS_HOME')
   IF spsdir EQ '' THEN BEGIN
@@ -190,8 +190,9 @@ FUNCTION READ_MAGS,file, allow_old=allow_old
      return,0
   ENDIF
 
+  IF NOT(keyword_set(nohead)) THEN $
+     infile = spsdir+'/OUTPUTS/'+file ELSE infile=file
 
-  infile = spsdir+'/OUTPUTS/'+file
   file = findfile(infile,count=ct)
 
   IF ct EQ 0 THEN BEGIN
