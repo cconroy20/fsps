@@ -97,7 +97,7 @@ FUNCTION IMF(mass)
                 imf(i) = mass(i)**(-imf_user_alpha(3,n))*&
                 imf_user_alpha(1,n)**(-imf_user_alpha(3,n-1)+&
                 imf_user_alpha(3,n))*imfcu
-           imfcu = imf_user_alpha(1,n)**(-imf_user_alpha(3,n-1)+&
+           imfcu = imfcu*imf_user_alpha(1,n)**(-imf_user_alpha(3,n-1)+&
                 imf_user_alpha(3,n))
         ENDDO
      ENDDO
