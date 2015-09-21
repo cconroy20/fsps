@@ -15,6 +15,8 @@ FUNCTION INTSFR(sfh,tau,const,sftrunc,sfstart,sfslope,tmax,t1,t2,tweight)
   !-----------------------------------------------------!
   !-----------------------------------------------------!
 
+  intsfr=0.0
+
   !changed to sftrunc-sfstart (7/15)
   IF (t1.GT.(sftrunc-sfstart)) THEN
      tt1 = sftrunc-sfstart
@@ -70,9 +72,11 @@ FUNCTION INTSFR(sfh,tau,const,sftrunc,sfstart,sfslope,tmax,t1,t2,tweight)
              EXP(-t1/tau/1E9)*(1+t1/tau/1E9))
      ELSE IF ((t1+sfstart).GT.sftrunc.AND.(t1+sfstart).LE.tmax) THEN
         IF ((t2+sfstart).GT.sftrunc) THEN
-           intsfr = sft*(t1-t2)*(1-sfslope*sftrunc/1e9)+&
+           !both t1 and t2 are >sftrunc
+           intsfr = sft*(t1-t2)*(1-sfslope*tmax/1e9)+&
                 sft/1E9*sfslope*0.5*((t1+sfstart)**2-(t2+sfstart)**2)
         ELSE
+           !in this case t1>sftrunc but t2<sftrunc, so break integral in two
            intsfr = (EXP(-t2/tau/1E9)*(1+t2/tau/1E9) - &
                 EXP(-(sftrunc-sfstart)/tau/1E9)*(1+(sftrunc-sfstart)/tau/1E9))
            intsfr = intsfr + sft*(t1+sfstart-sftrunc)*(1-sfslope*sftrunc/1e9)+&

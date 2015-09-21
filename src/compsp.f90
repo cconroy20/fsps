@@ -186,15 +186,15 @@ SUBROUTINE COMPSP(write_compsp,nzin,outfile,mass_ssp,&
         sfstart = 0.0
      ENDIF
 
-     !find sf_trunc in the time grid
-     !indsft only used for the tsfr array
-     !forcing sftrunc<=maxtime (CC: 6/19/15)
+     !always force sftrunc<=maxtime (CC: 6/19/15)
      IF (pset%sf_trunc.GT.tiny_number.AND.pset%sf_trunc.LT.maxtime/1E9) THEN
         sftrunc = pset%sf_trunc*1E9 !convert to yrs
      ELSE
         sftrunc = maxtime
      ENDIF
-     indsft = MIN(MAX(locate(powtime,sftrunc),1),ntfull)
+     !find sf_trunc in the time grid
+     !indsft only used for the tsfr array
+     indsft  = MIN(MAX(locate(powtime,sftrunc),1),ntfull)
         
      !set limits on the parameters tau and const
      tau   = MIN(MAX(pset%tau,0.1),100.) !tau in Gyr
@@ -315,7 +315,7 @@ SUBROUTINE COMPSP(write_compsp,nzin,outfile,mass_ssp,&
                  tmax = powtime(i)
               ENDIF
            ELSE
-              tmax=sftrunc
+              tmax = sftrunc
            ENDIF
         ELSE
            IF (pset%sf_slope.LT.0.0) THEN
@@ -330,13 +330,17 @@ SUBROUTINE COMPSP(write_compsp,nzin,outfile,mass_ssp,&
      !the age is specifically set.  This piece of code is important
      !b/c the interpolation between imin and imax requires
      !that trunc be set each time to the i-th age.
+     !changes made 9/17/15
      sftrunc_i = sftrunc
-     IF (pset%tage.GT.tiny_number) THEN
-        IF (sftrunc.GT.pset%tage.AND.pset%sfh.NE.5)  sftrunc_i = powtime(i)
- !       IF (sftrunc.GT.powtime(i).AND.pset%sfh.EQ.5) sftrunc_i = tmax
-     ENDIF
+     IF (sftrunc.EQ.maxtime.AND.(imax-imin).EQ.1) sftrunc_i = powtime(i)
+   !  IF (sftrunc.GT.tmax.AND.(imax-imin).EQ.1) sftrunc_i = tmax
+
+     !IF (pset%tage.GT.tiny_number) THEN
+     !   IF (sftrunc.GT.maxtime.AND.pset%sfh.NE.5) sftrunc_i = powtime(i)
+     !   IF (sftrunc.GT.powtime(i).AND.pset%sfh.EQ.5)  sftrunc_i = tmax
+     !ENDIF
       
-     write(*,'(2I4,8F8.4)') i,indsft,powtime(i)/1E9,tmax/1E9,maxtime/1E9,sftrunc/1E9,sftrunc_i/1E9
+   !  write(*,'(2I4,8F8.4)') i,indsft,powtime(i)/1E9,tmax/1E9,maxtime/1E9,sftrunc/1E9,sftrunc_i/1E9
 
       !Set up tabulated SFH
       IF (pset%sfh.EQ.2.OR.pset%sfh.EQ.3) THEN
