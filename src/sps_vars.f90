@@ -51,7 +51,7 @@ MODULE SPS_VARS
   INTEGER :: pzcon=0
   
   !the factor by which we increase the time array
-  INTEGER, PARAMETER :: time_res_incr=1
+  INTEGER, PARAMETER :: time_res_incr=2
 
   !Use Aringer et al. (2009) Carbon star library if set
   !otherwise use Lancon & Wood (2002) empirical spectra
