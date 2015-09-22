@@ -17,8 +17,8 @@ FUNCTION INTSFR(sfh,tau,const,sftrunc,sfstart,sfslope,tmax,t1,t2,tweight)
 
   intsfr=0.0
 
-  !changed to sftrunc-sfstart (7/15)
-  IF (t1.GT.(sftrunc-sfstart)) THEN
+  !t1 is limited to sftrunc to handle boundary cases below
+  IF ((t1+sfstart).GT.sftrunc) THEN
      tt1 = sftrunc-sfstart
   ELSE
      tt1 = t1
@@ -38,7 +38,7 @@ FUNCTION INTSFR(sfh,tau,const,sftrunc,sfstart,sfslope,tmax,t1,t2,tweight)
         intsfr = intsfr*(1-const) + const*(tt1-t2)/(sftrunc-sfstart)
      ENDIF
 
-     IF (t2.GT.(sftrunc-sfstart)) intsfr = 0.0
+     IF ((t2+sfstart).GT.sftrunc) intsfr = 0.0
 
   ELSE IF (sfh.EQ.4) THEN
 
@@ -55,7 +55,7 @@ FUNCTION INTSFR(sfh,tau,const,sftrunc,sfstart,sfslope,tmax,t1,t2,tweight)
         intsfr = intsfr*(1-const) + const*(tt1-t2)/(sftrunc-sfstart)
      ENDIF
 
-     IF (t2.GT.(sftrunc-sfstart)) intsfr = 0.0
+     IF ((t2+sfstart).GT.sftrunc) intsfr = 0.0
 
   ELSE IF (sfh.EQ.5) THEN
 
@@ -68,6 +68,7 @@ FUNCTION INTSFR(sfh,tau,const,sftrunc,sfstart,sfslope,tmax,t1,t2,tweight)
           sft/1E9*sfslope*0.5*(tmax**2-sftrunc**2)
   
      IF ((t1+sfstart).LE.sftrunc) THEN
+        !both t1 and t2 are <sftrunc
         intsfr = (EXP(-t2/tau/1E9)*(1+t2/tau/1E9) - &
              EXP(-t1/tau/1E9)*(1+t1/tau/1E9))
      ELSE IF ((t1+sfstart).GT.sftrunc.AND.(t1+sfstart).LE.tmax) THEN
@@ -85,8 +86,6 @@ FUNCTION INTSFR(sfh,tau,const,sftrunc,sfstart,sfslope,tmax,t1,t2,tweight)
      ELSE
         intsfr = 0.0
      ENDIF
-
-     write(*,*) t1/1E9,t2/1E9,intsfr,sftrunc/1E9,tmax/1E9
 
      intsfr = MAX(intsfr/norm,0.0)
 
@@ -112,5 +111,8 @@ FUNCTION INTSFR(sfh,tau,const,sftrunc,sfstart,sfslope,tmax,t1,t2,tweight)
 
   ENDIF
   
+  
+  !write(*,*) t1/1E9,t2/1E9,intsfr,sftrunc/1E9,tmax/1E9
+
   
 END FUNCTION INTSFR

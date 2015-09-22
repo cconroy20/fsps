@@ -36,7 +36,7 @@ SUBROUTINE COMPSP(write_compsp,nzin,outfile,mass_ssp,&
   INTEGER  :: i,j,n,k,stat,klo,jlo,ilo,imin,imax,indsf,indsft
   REAL(SP) :: tau,const,maxtime,psfr,sft,sfstart,zhist,tsfr_tage
   REAL(SP) :: mass_csp,lbol_csp,dtb,dt,dz,zred=0.,t1,t2
-  REAL(SP) :: mdust,sfr_ipol,norm,tmax=0.0,sftrunc,sftrunc_i
+  REAL(SP) :: mdust,norm,tmax=0.0,sftrunc,sftrunc_i
   REAL(SP) :: mass_burst=0.0,lbol_burst=0.0,delt_burst=0.0,zero=0.0
   REAL(SP), DIMENSION(nbands)  :: mags
   REAL(SP), DIMENSION(nindx)   :: indx
@@ -343,8 +343,8 @@ SUBROUTINE COMPSP(write_compsp,nzin,outfile,mass_ssp,&
      !   IF (sftrunc.GT.powtime(i).AND.pset%sfh.EQ.5)  sftrunc_i = tmax
      !ENDIF
       
-     write(*,'(2I4,8F10.4)') i,indsft,powtime(i)/1E9,tmax/1E9,maxtime/1E9,-&
-          1.0/pset%sf_slope+sftrunc/1E9
+     write(*,'(2I4,8F10.4)') i,indsft,powtime(i)/1E9,tmax/1E9,&
+          maxtime/1E9,sftrunc/1E9,sftrunc_i/1E9
 
       !Set up tabulated SFH
       IF (pset%sfh.EQ.2.OR.pset%sfh.EQ.3) THEN
@@ -453,27 +453,30 @@ SUBROUTINE COMPSP(write_compsp,nzin,outfile,mass_ssp,&
               pset%igm_factor)
       ENDIF
 
-      !compute spectral indices
-      IF (write_compsp.EQ.4) THEN
-         CALL GETINDX(spec_lambda,spec_csp,indx)
-      ELSE
-         indx=0.0
-      ENDIF
-
-      !redshift spectrum; calculate mags
-      IF (redshift_colors.EQ.0) THEN
-         CALL GETMAGS(pset%zred,spec_csp,mags,pset%mag_compute)
-      ELSE
-         !here we compute the redshift at the corresponding age
-         zred = MIN(MAX(linterp(cosmospl(:,2),cosmospl(:,1),&
-              powtime(i)/1E9),0.0),20.0)
-         CALL GETMAGS(zred,spec_csp,mags,pset%mag_compute)
-      ENDIF
-
+ 
       !only save results if computing all ages
       IF (imax-imin.GT.1.OR.pset%tage.EQ.-99.0) THEN
+
+         !compute spectral indices
+         IF (write_compsp.EQ.4) THEN
+            CALL GETINDX(spec_lambda,spec_csp,indx)
+         ELSE
+            indx=0.0
+         ENDIF
+         
+         !redshift spectrum; calculate mags
+         IF (redshift_colors.EQ.0) THEN
+            CALL GETMAGS(pset%zred,spec_csp,mags,pset%mag_compute)
+         ELSE
+            !here we compute the redshift at the corresponding age
+            zred = MIN(MAX(linterp(cosmospl(:,2),cosmospl(:,1),&
+                 powtime(i)/1E9),0.0),20.0)
+            CALL GETMAGS(zred,spec_csp,mags,pset%mag_compute)
+         ENDIF
+
          CALL SAVE_COMPSP(write_compsp,ocompsp(i),time_full(i),&
               mass_csp,lbol_csp,tsfr(i),mags,spec_csp,mdust,indx)
+
       ELSE
          !save results temporarily for later interpolation
          ocompsp(i)%mass_csp = mass_csp
@@ -488,28 +491,37 @@ SUBROUTINE COMPSP(write_compsp,nzin,outfile,mass_ssp,&
 
    !interpolate to maxtime, if tage is set
    IF (imax-imin.EQ.1) THEN
+
       dt = (LOG10(maxtime)-time_full(imin))/&
            (time_full(imax)-time_full(imin))
       mass_csp = (1-dt)*ocompsp(imin)%mass_csp + &
            dt*ocompsp(imax)%mass_csp
       lbol_csp = (1-dt)*ocompsp(imin)%lbol_csp + &
            dt*ocompsp(imax)%lbol_csp
-      !sfr_ipol = (1-dt)*ocompsp(imin)%sfr + &
-      !     dt*ocompsp(imax)%sfr
-      sfr_ipol = tsfr_tage
-      DO i=1,nbands
-         mags(i) = (1-dt)*ocompsp(imin)%mags(i) + &
-              dt*ocompsp(imax)%mags(i)
-      ENDDO
-      DO i=1,nindx
-         indx(i) = (1-dt)*ocompsp(imin)%indx(i) + &
-              dt*ocompsp(imax)%indx(i)
-      ENDDO
       spec_csp = 10**((1-dt)*LOG10(ocompsp(imin)%spec) + &
            dt*LOG10(ocompsp(imax)%spec))
+
+      !compute spectral indices
+      IF (write_compsp.EQ.4) THEN
+         CALL GETINDX(spec_lambda,spec_csp,indx)
+      ELSE
+         indx=0.0
+      ENDIF
+ 
+      !compute mags
+      IF (redshift_colors.EQ.0) THEN
+         CALL GETMAGS(pset%zred,spec_csp,mags,pset%mag_compute)
+      ELSE
+         !here we compute the redshift at the corresponding age
+         zred = MIN(MAX(linterp(cosmospl(:,2),cosmospl(:,1),&
+              powtime(i)/1E9),0.0),20.0)
+         CALL GETMAGS(zred,spec_csp,mags,pset%mag_compute)
+      ENDIF
+
       CALL SAVE_COMPSP(write_compsp,ocompsp(1),&
-           LOG10(maxtime),mass_csp,lbol_csp,sfr_ipol,mags,&
+           LOG10(maxtime),mass_csp,lbol_csp,tsfr_tage,mags,&
            spec_csp,mdust,indx)
+
    ENDIF
 
    IF (write_compsp.EQ.1.OR.write_compsp.EQ.3) CLOSE(10)
