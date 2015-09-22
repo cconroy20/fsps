@@ -66,14 +66,14 @@ FUNCTION INTSFR(sfh,tau,const,sftrunc,sfstart,sfslope,tmax,t1,t2,tweight)
      !add the normalization due to the linearly declining comp.
      norm = norm + sft*(tmax-sftrunc)*(1-sfslope*sftrunc/1e9)+&
           sft/1E9*sfslope*0.5*(tmax**2-sftrunc**2)
-
+  
      IF ((t1+sfstart).LE.sftrunc) THEN
         intsfr = (EXP(-t2/tau/1E9)*(1+t2/tau/1E9) - &
              EXP(-t1/tau/1E9)*(1+t1/tau/1E9))
      ELSE IF ((t1+sfstart).GT.sftrunc.AND.(t1+sfstart).LE.tmax) THEN
         IF ((t2+sfstart).GT.sftrunc) THEN
            !both t1 and t2 are >sftrunc
-           intsfr = sft*(t1-t2)*(1-sfslope*tmax/1e9)+&
+           intsfr = sft*(t1-t2)*(1-sfslope*sftrunc/1e9)+&
                 sft/1E9*sfslope*0.5*((t1+sfstart)**2-(t2+sfstart)**2)
         ELSE
            !in this case t1>sftrunc but t2<sftrunc, so break integral in two
@@ -85,6 +85,8 @@ FUNCTION INTSFR(sfh,tau,const,sftrunc,sfstart,sfslope,tmax,t1,t2,tweight)
      ELSE
         intsfr = 0.0
      ENDIF
+
+     write(*,*) t1/1E9,t2/1E9,intsfr,sftrunc/1E9,tmax/1E9
 
      intsfr = MAX(intsfr/norm,0.0)
 

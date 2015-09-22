@@ -104,7 +104,8 @@ SUBROUTINE INTSPEC(pset,nti,spec_ssp,csp,mass_ssp,lbol_ssp,&
         ENDIF
      ENDIF
 
-     !write(*,'(5F10.4,I5)') time(nti)/1E9,(time(nti)-time(indsf))/1E9,&
+     !for testing purposes:
+     !WRITE(*,'(5F10.4,I5)') time(nti)/1E9,(time(nti)-time(indsf))/1E9,&
      !     sftrunc/1E9,tmax/1E9,SUM(isfr(1:indsf)),indsf
 
      !compute weighted mass and lbol

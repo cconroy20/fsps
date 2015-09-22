@@ -332,15 +332,19 @@ SUBROUTINE COMPSP(write_compsp,nzin,outfile,mass_ssp,&
      !that trunc be set each time to the i-th age.
      !changes made 9/17/15
      sftrunc_i = sftrunc
-     IF (sftrunc.EQ.maxtime.AND.(imax-imin).EQ.1) sftrunc_i = powtime(i)
-   !  IF (sftrunc.GT.tmax.AND.(imax-imin).EQ.1) sftrunc_i = tmax
+     IF (sftrunc.EQ.maxtime.AND.(imax-imin).EQ.1) THEN
+        sftrunc_i = powtime(i)
+        tmax      = powtime(i)
+     ENDIF
 
+   !  IF (sftrunc.GT.tmax.AND.(imax-imin).EQ.1) sftrunc_i = tmax
      !IF (pset%tage.GT.tiny_number) THEN
      !   IF (sftrunc.GT.maxtime.AND.pset%sfh.NE.5) sftrunc_i = powtime(i)
      !   IF (sftrunc.GT.powtime(i).AND.pset%sfh.EQ.5)  sftrunc_i = tmax
      !ENDIF
       
-   !  write(*,'(2I4,8F8.4)') i,indsft,powtime(i)/1E9,tmax/1E9,maxtime/1E9,sftrunc/1E9,sftrunc_i/1E9
+     write(*,'(2I4,8F10.4)') i,indsft,powtime(i)/1E9,tmax/1E9,maxtime/1E9,-&
+          1.0/pset%sf_slope+sftrunc/1E9
 
       !Set up tabulated SFH
       IF (pset%sfh.EQ.2.OR.pset%sfh.EQ.3) THEN
