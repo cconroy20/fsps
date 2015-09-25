@@ -70,7 +70,7 @@ SUBROUTINE INTSPEC(pset,nti,spec_ssp,csp,mass_ssp,lbol_ssp,&
      !set up the integrated SFR array
      DO i=1,indsf
 
-        t1   = time(nti)-sfstart-time(i)+time(1)
+        t1 = time(nti)-sfstart-time(i)+time(1)
         IF (t1.GT.(tmptrunc-sfstart)) t1 = tmptrunc-sfstart
         IF (i.EQ.indsf) t2 = 0.0
         IF (i.NE.indsf) t2 = time(nti)-sfstart-time(i+1)+time(1)
@@ -85,6 +85,8 @@ SUBROUTINE INTSPEC(pset,nti,spec_ssp,csp,mass_ssp,lbol_ssp,&
         ENDIF
 
      ENDDO
+
+     !why isn't imax=wtesc?
 
      IF (indsf.EQ.1) THEN
         csp1 = isfr(1)*spec_ssp(:,1)
