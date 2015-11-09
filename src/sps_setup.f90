@@ -79,6 +79,14 @@ SUBROUTINE SPS_SETUP(zin)
   n_isoc        = 0
   m             = 1
 
+  !this is necessary because Geneva does not extend below 1.0 Msun
+  !see imf_weight.f90 for details
+  IF (isoc_type.EQ.'gnva') THEN
+     imf_lower_bound = 0.95
+  ELSE
+     imf_lower_bound = imf_lower_limit
+  ENDIF
+
   !----------------------------------------------------------------!
   !--------------Confirm that variables are properly set-----------!
   !----------------------------------------------------------------!
@@ -107,6 +115,9 @@ SUBROUTINE SPS_SETUP(zin)
           '.dat',STATUS='OLD',iostat=stat,ACTION='READ')
   ELSE IF (isoc_type.EQ.'mist') THEN
      OPEN(90,FILE=TRIM(SPS_HOME)//'/ISOCHRONES/MIST/zlegend'//&
+          '.dat',STATUS='OLD',iostat=stat,ACTION='READ')
+  ELSE IF (isoc_type.EQ.'gnva') THEN
+     OPEN(90,FILE=TRIM(SPS_HOME)//'/ISOCHRONES/Geneva/zlegend'//&
           '.dat',STATUS='OLD',iostat=stat,ACTION='READ')
   ENDIF
   IF (stat.NE.0) THEN
@@ -511,6 +522,11 @@ SUBROUTINE SPS_SETUP(zin)
           OPEN(97,FILE=TRIM(SPS_HOME)//&
           '/ISOCHRONES/BaSTI/isoc_z'//zstype//'.dat',STATUS='OLD',&
           IOSTAT=stat,ACTION='READ')
+     !open Geneva isochrones
+     IF (isoc_type.EQ.'gnva') &
+          OPEN(97,FILE=TRIM(SPS_HOME)//&
+          '/ISOCHRONES/Geneva/isoc_z'//zstype//'.dat',STATUS='OLD',&
+          IOSTAT=stat,ACTION='READ')
 
      IF (stat.NE.0) THEN
         WRITE(*,*) 'SPS_SETUP ERROR: isochrone files cannot be opened'
@@ -529,7 +545,7 @@ SUBROUTINE SPS_SETUP(zin)
            IF (m.EQ.1) n_isoc = n_isoc+1
            BACKSPACE(97)
            IF (m.GT.nm) THEN
-              WRITE(*,*) 'SPS_SETUP ERROR: number of mass points GT nm: ',m
+              WRITE(*,*) 'SPS_SETUP ERROR: number of mass points GT nm'
               STOP
            ENDIF
            IF (use_isoc_mdot.EQ.1) THEN

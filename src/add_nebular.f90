@@ -32,7 +32,7 @@ SUBROUTINE ADD_NEBULAR(pset,sspi,sspo)
   du = MAX(MIN(du,1.0),0.0) !no extrapolations
 
   !set up a "master" array of normalized Gaussians
-  !this makes the code run *much* faster
+  !this makes the code much faster
   DO i=1,nemline
      IF (smooth_velocity.EQ.1) THEN
         !smoothing variable is km/s

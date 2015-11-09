@@ -14,7 +14,7 @@ MODULE SPS_VARS
 !------set the isochrone library------!
 #define PADOVA 1
 #define BASTI 0
-! "MIST" currently under development.  do not use!
+#define GENEVA 0
 #define MIST 0
 
   !--------------------------------------------------------------!
@@ -141,6 +141,10 @@ MODULE SPS_VARS
   CHARACTER(4), PARAMETER :: isoc_type = 'bsti'
   INTEGER, PARAMETER :: nt=94
   INTEGER, PARAMETER :: nz=10
+#elif (GENEVA)
+  CHARACTER(4), PARAMETER :: isoc_type = 'gnva'
+  INTEGER, PARAMETER :: nt=51
+  INTEGER, PARAMETER :: nz=5
 #elif (MIST)
   CHARACTER(4), PARAMETER :: isoc_type = 'mist'
   INTEGER, PARAMETER :: nt=107
@@ -216,6 +220,7 @@ MODULE SPS_VARS
   REAL(SP) :: salp_ind= 2.35
   !min/max masses for the IMF
   REAL(SP) :: imf_lower_limit = 0.08, imf_upper_limit=120.
+  REAL(SP) :: imf_lower_bound
   !Chabrier 2003 IMF parameters
   REAL(SP), PARAMETER :: chab_mc=0.08, chab_sigma2=0.69*0.69,&
        chab_ind=1.3

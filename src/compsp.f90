@@ -343,8 +343,8 @@ SUBROUTINE COMPSP(write_compsp,nzin,outfile,mass_ssp,&
      !   IF (sftrunc.GT.powtime(i).AND.pset%sfh.EQ.5)  sftrunc_i = tmax
      !ENDIF
       
-     write(*,'(2I4,8F10.4)') i,indsft,powtime(i)/1E9,tmax/1E9,&
-          maxtime/1E9,sftrunc/1E9,sftrunc_i/1E9
+     !write(*,'(2I4,8F10.4)') i,indsft,powtime(i)/1E9,tmax/1E9,&
+     !     maxtime/1E9,sftrunc/1E9,sftrunc_i/1E9
 
       !Set up tabulated SFH
       IF (pset%sfh.EQ.2.OR.pset%sfh.EQ.3) THEN

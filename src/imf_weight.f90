@@ -30,7 +30,9 @@ SUBROUTINE IMF_WEIGHT(mini,wght,nmass)
           mini(i).GT.imf_upper_limit) CYCLE
 
      IF (i.EQ.1) THEN
-        m1 = imf_lower_limit
+        !note that this is not equal to imf_lower_limit
+        !only for the Geneva models, which do not extend below 1.0 Msun
+        m1 = imf_lower_bound
      ELSE
         m1 = mini(i) - 0.5*(mini(i)-mini(i-1))
      ENDIF
@@ -51,7 +53,7 @@ SUBROUTINE IMF_WEIGHT(mini,wght,nmass)
 
   ENDDO
 
-  !normalize the weights
+  !normalize the weights as an integral from lower to upper limits
   imf_type = imf_type + 10
   wght = wght / funcint(imf,imf_lower_limit,imf_upper_limit)
   imf_type = imf_type - 10
