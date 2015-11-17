@@ -5,12 +5,7 @@ When using this code please cite the following papers:
 Conroy, Gunn, & White 2009, ApJ, 699, 486
 Conroy & Gunn 2010, ApJ, 712, 833
 
-You should not need to update the git repository until an update is
-announced (which is why you need to be on the mailing list).  When an
-update is announced, you will need to simply type "git pull" in the
-root fsps directory.  If you have made your own edits to the fsps
-files, git will attempt to gracefully merge your local version with
-the repository version.
+You should not need to update the git repository until an update is announced (which is why you need to be on the mailing list - see doc/INSTALL).  When an update is announced, you will need to simply type "git pull" in the root fsps directory.  If you have made your own edits to the fsps files, git will attempt to gracefully merge your local version with the repository version.
 
 Below is a brief description of the contents of the directories in the
 fsps root directory:

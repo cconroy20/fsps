@@ -144,10 +144,10 @@ SUBROUTINE GETSPEC(pset,mact,logt,lbol,logg,phase,ffco,lmdot,wght,spec)
              pset%zmet,logt,loggi,INT(phase),LOG10(wght*lbol)
 
         !this is a very crude hack.  just pick one of the spectra
-        IF (test1.GT.tiny_number) ispec = speclib(:,pset%zmet,jlo,klo)
-        IF (test2.GT.tiny_number) ispec = speclib(:,pset%zmet,jlo+1,klo)
-        IF (test3.GT.tiny_number) ispec = speclib(:,pset%zmet,jlo,klo+1)
-        IF (test4.GT.tiny_number) ispec = speclib(:,pset%zmet,jlo+1,klo+1)
+        IF (test1.GT.tiny30) ispec = speclib(:,pset%zmet,jlo,klo)
+        IF (test2.GT.tiny30) ispec = speclib(:,pset%zmet,jlo+1,klo)
+        IF (test3.GT.tiny30) ispec = speclib(:,pset%zmet,jlo,klo+1)
+        IF (test4.GT.tiny30) ispec = speclib(:,pset%zmet,jlo+1,klo+1)
 
      ELSE
 

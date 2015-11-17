@@ -79,14 +79,7 @@ SUBROUTINE SPS_SETUP(zin)
   n_isoc        = 0
   m             = 1
 
-  !this is necessary because Geneva does not extend below 1.0 Msun
-  !see imf_weight.f90 for details
-  IF (isoc_type.EQ.'gnva') THEN
-     imf_lower_bound = 0.95
-  ELSE
-     imf_lower_bound = imf_lower_limit
-  ENDIF
-
+ 
   !----------------------------------------------------------------!
   !--------------Confirm that variables are properly set-----------!
   !----------------------------------------------------------------!
@@ -582,6 +575,15 @@ SUBROUTINE SPS_SETUP(zin)
      ENDIF
 
   ENDDO
+
+  !this is necessary because Geneva does not extend below 1.0 Msun
+  !see imf_weight.f90 for details
+  IF (isoc_type.EQ.'gnva') THEN
+     imf_lower_bound = MINVAL(mini_isoc(zmin,1,1:nmass_isoc(zmin,1)))*0.99
+  ELSE
+     imf_lower_bound = imf_lower_limit
+  ENDIF
+
 
   !----------------------------------------------------------------!
   !--------Read in dust emission spectra from Draine & Li----------!
