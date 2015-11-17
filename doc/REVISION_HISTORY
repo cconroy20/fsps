@@ -98,7 +98,7 @@
    then you will notice no change except the increased number of
    available filters.
 
-XX/XX/14
+4/17/14
 
  - Release of v2.5
  - Many updates to the internal workings of the code to increase performance
@@ -123,3 +123,10 @@ XX/XX/14
  - Added the sf_trunc variable to work for all parameterized SFHs
  - Added the distance modulus and a missing -2.5log(1+z) factor to the 
    computed magnitudes in the case where a non-zero redshift is specified
+
+11/17/15
+
+ - Release of v2.6
+ - Geneva isochrone database added (these are older Geneva models)
+ - added additional photometric filters
+ - fixed various bugs related to star formation truncation options
