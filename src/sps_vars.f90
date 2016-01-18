@@ -148,7 +148,7 @@ MODULE SPS_VARS
 #elif (MIST)
   CHARACTER(4), PARAMETER :: isoc_type = 'mist'
   INTEGER, PARAMETER :: nt=107
-  INTEGER, PARAMETER :: nz=6
+  INTEGER, PARAMETER :: nz=8
 #else
   CHARACTER(4), PARAMETER :: isoc_type = 'pdva'
   INTEGER, PARAMETER :: nt=94
@@ -190,7 +190,7 @@ MODULE SPS_VARS
   !unless you are changing the libraries
 
   !max dimension of array for each isochrone
-  INTEGER, PARAMETER :: nm=2000
+  INTEGER, PARAMETER :: nm=2000  !10000
   !max number of lines to read in
   INTEGER, PARAMETER ::  nlines=1000000
   !max number of lines in tabulated SFH
