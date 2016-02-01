@@ -4,7 +4,8 @@ SUBROUTINE WRITE_ISOCHRONE(outfile,pset)
   !note that the output age grid is the native spacing, not boosted
   !by the parameter time_res_incr
 
-  USE sps_vars; USE sps_utils, ONLY : getmags,getspec,imf_weight
+  USE sps_vars
+  USE sps_utils, ONLY : getmags,getspec,imf_weight,mod_hb,mod_gb,add_bs
   IMPLICIT NONE
 
   INTEGER :: i,tt,zz
@@ -50,7 +51,7 @@ SUBROUTINE WRITE_ISOCHRONE(outfile,pset)
 
      !compute IMF-based weights
      CALL IMF_WEIGHT(mini(tt,:),wght,nmass(tt))
-     
+
      !modify the horizontal branch
      !need the hb weight for the blue stragglers too
      IF (pset%fbhb.GT.0.0.OR.pset%sbss.GT.1E-3) &
@@ -66,7 +67,9 @@ SUBROUTINE WRITE_ISOCHRONE(outfile,pset)
      CALL MOD_GB(zz,tt,timestep_isoc(zz,:),pset%delt,&
           pset%dell,pset%pagb,pset%redgb,nmass(tt),logl,logt,phase,wght)
 
-     DO i=1,nmass_isoc(zz,tt)
+     !change made here 2/1/16 otherwise isochrone additions not included
+     !DO i=1,nmass_isoc(zz,tt)
+     DO i=1,nmass(tt)
         
         !get the spectrum
         CALL GETSPEC(pset,mact(tt,i),logt(tt,i),10**logl(tt,i),&

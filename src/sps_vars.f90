@@ -44,7 +44,7 @@ MODULE SPS_VARS
   INTEGER :: tpagb_norm_type=2
 
   !turn-on time for BHB and SBS phases, time is in log(yrs)
-  REAL(SP), PARAMETER :: bhb_sbs_time=9.3
+  REAL(SP), PARAMETER :: bhb_sbs_time=9.5
   
   !turn on/off convolution of SSP with P(Z) (pz_convol.f90)
   !NB: pz_convol.f90 has not been tested in some time, use with caution
