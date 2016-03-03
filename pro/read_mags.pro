@@ -150,7 +150,23 @@ FUNCTION READ_MAGS1, file, allow_old=allow_old
          jwst_f200w:0.0,$
          jwst_f277w:0.0,$
          jwst_f356w:0.0,$
-         jwst_f444w:0.0}
+         jwst_f444w:0.0,$
+         newfirm_j1:0.0,$
+         newfirm_j2:0.0,$
+         newfirm_j3:0.0,$
+         newfirm_h1:0.0,$
+         newfirm_h2:0.0,$
+         newfirm_k:0.0,$
+         vista_y:0.0,$
+         vista_j:0.0,$
+         vista_h:0.0,$
+         vista_k:0.0,$
+         suprimecam_b:0.0,$
+         suprimecam_g:0.0,$
+         suprimecam_v:0.0,$
+         suprimecam_r:0.0,$
+         suprimecam_i:0.0,$
+         suprimecam_z:0.0  }
 
 
   str = replicate(str,nn)

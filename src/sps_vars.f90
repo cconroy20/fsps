@@ -12,10 +12,10 @@ MODULE SPS_VARS
 #define CKC14 0
 
 !------set the isochrone library------!
+#define MIST 0
 #define PADOVA 1
 #define BASTI 0
 #define GENEVA 0
-#define MIST 0
 
   !--------------------------------------------------------------!
   !--------------------------------------------------------------!
@@ -29,9 +29,6 @@ MODULE SPS_VARS
   !setup cosmology (WMAP7).  Used only for z(t) relation.
   REAL(SP) :: om0=0.27, ol0=0.73, H0=72.
 
-  !define solar metallicity
-  REAL(SP), PARAMETER :: zsol=0.0190 
-  
   !controls the level of output
   !0 = minimal output to screen.
   !1 = lots of output to screen.  useful for debugging.
@@ -138,18 +135,22 @@ MODULE SPS_VARS
   !flag indicating type of isochrones to use
   !and number of metallicities in the set
 #if (BASTI)
+  REAL(SP), PARAMETER :: zsol = 0.020
   CHARACTER(4), PARAMETER :: isoc_type = 'bsti'
   INTEGER, PARAMETER :: nt=94
   INTEGER, PARAMETER :: nz=10
 #elif (GENEVA)
+  REAL(SP), PARAMETER :: zsol = 0.020
   CHARACTER(4), PARAMETER :: isoc_type = 'gnva'
   INTEGER, PARAMETER :: nt=51
   INTEGER, PARAMETER :: nz=5
 #elif (MIST)
+  REAL(SP), PARAMETER :: zsol = 0.0142
   CHARACTER(4), PARAMETER :: isoc_type = 'mist'
   INTEGER, PARAMETER :: nt=107
-  INTEGER, PARAMETER :: nz=8
+  INTEGER, PARAMETER :: nz=11
 #else
+  REAL(SP), PARAMETER :: zsol = 0.019
   CHARACTER(4), PARAMETER :: isoc_type = 'pdva'
   INTEGER, PARAMETER :: nt=94
   INTEGER, PARAMETER :: nz=22
@@ -158,14 +159,17 @@ MODULE SPS_VARS
   !flag indicating type of spectral library to use
   !and number of elements per stellar spectrum
 #if (MILES)
+  REAL(SP), PARAMETER :: zsol_spec = 0.019
   CHARACTER(5), PARAMETER :: spec_type = 'miles'
   INTEGER, PARAMETER :: nzinit=5
   INTEGER, PARAMETER :: nspec=5994
 #elif (CKC14)
+  REAL(SP), PARAMETER :: zsol_spec = 0.0134
   CHARACTER(5), PARAMETER :: spec_type = 'ckc14'
   INTEGER, PARAMETER :: nzinit=6
   INTEGER, PARAMETER :: nspec=10000   ! 47378, 26500
 #elif (BASEL)
+  REAL(SP), PARAMETER :: zsol_spec = 0.020
   CHARACTER(5), PARAMETER :: spec_type = 'basel'
   INTEGER, PARAMETER :: nzinit=6
   INTEGER, PARAMETER :: nspec=1963
@@ -181,8 +185,7 @@ MODULE SPS_VARS
 
   !You must change the number of bands here if
   !filters are added to allfilters.dat
-  !kr06=61, kr02,kr03,kr04=101, kr01,kr11=102, normal=122
-  INTEGER, PARAMETER :: nbands=122
+  INTEGER, PARAMETER :: nbands=138
   !number of indices defined in allindices.dat
   INTEGER, PARAMETER :: nindx=30
   
@@ -404,7 +407,7 @@ MODULE SPS_VARS
           const=0.,tage=0.,fburst=0.,tburst=11.0,dust1=0.,dust2=0.,&
           logzsol=0.,zred=0.,pmetals=0.02,imf1=1.3,imf2=2.3,imf3=2.3,&
           vdmc=0.08,dust_clumps=-99.,frac_nodust=0.,dust_index=-0.7,&
-          dust_tesc=7.0,frac_obrun=0.,uvb=1.0,mwr=3.1,redgb=1.0,&
+          dust_tesc=7.0,frac_obrun=0.,uvb=1.0,mwr=3.1,redgb=1.0,agb=1.0,&
           dust1_index=-1.0,mdave=0.5,sf_start=0.,sf_trunc=0.,sf_slope=0.,&
           duste_gamma=0.01,duste_umin=1.0,duste_qpah=3.5,fcstar=1.0,&
           masscut=150.0,sigma_smooth=0.,agb_dust=1.0,min_wave_smooth=1E3,&
