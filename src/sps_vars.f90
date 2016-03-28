@@ -12,8 +12,10 @@ MODULE SPS_VARS
 #define CKC14 0
 
 !------set the isochrone library------!
-#define MIST 0
-#define PADOVA 1
+#define MIST 1
+!Padova models circa 2008
+#define PADOVA 0
+#define PARSEC 0
 #define BASTI 0
 #define GENEVA 0
 
@@ -149,7 +151,12 @@ MODULE SPS_VARS
   CHARACTER(4), PARAMETER :: isoc_type = 'mist'
   INTEGER, PARAMETER :: nt=107
   INTEGER, PARAMETER :: nz=11
-#else
+#elif (PARSEC)
+  REAL(SP), PARAMETER :: zsol = 0.01524
+  CHARACTER(4), PARAMETER :: isoc_type = 'prsc'
+  INTEGER, PARAMETER :: nt=92
+  INTEGER, PARAMETER :: nz=15
+#elif (PADOVA)
   REAL(SP), PARAMETER :: zsol = 0.019
   CHARACTER(4), PARAMETER :: isoc_type = 'pdva'
   INTEGER, PARAMETER :: nt=94

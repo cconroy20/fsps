@@ -66,11 +66,11 @@ SUBROUTINE MOD_HB(f_bhb,t,mini,mact,logl,logt,logg,phase, &
            ENDIF
         
            IF (flip.EQ.1) THEN
-           
+
               !modify the HB
               !once lum increases by 0.1 dex we've left the HB
               IF (ABS(logl(t,j)-hblum).LT.0.1) THEN 
-                 
+
                  !keep track of total HB weight
                  hb_wght  = hb_wght+wght(j)
                  
@@ -97,7 +97,6 @@ SUBROUTINE MOD_HB(f_bhb,t,mini,mact,logl,logt,logg,phase, &
                     wght(j)   = wght(j) * (1-f_bhb)                 
                     !update number of stars in the isochrone
                     nmass(t) = nmass(t)+nhb
-                    
                  ENDIF
 
               ELSE 

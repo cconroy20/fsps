@@ -18,7 +18,9 @@ SUBROUTINE SPS_SETUP(zin)
   INTEGER :: n_isoc,z,zmin,zmax,nlam
   CHARACTER(1) :: char,sqpah
   CHARACTER(6) :: zstype
+  CHARACTER(5) :: zstype5
   REAL(SP) :: dumr1,d1,d2,logage,x,a,zero=0.0,d,one=1.0,dz
+  CHARACTER(5), DIMENSION(nz) :: zlegend_str=''
   REAL(SP), DIMENSION(nspec) :: tspec=0.
   REAL(SP), DIMENSION(ntlam) :: tvega_lam=0.,tvega_spec=0.
   REAL(SP), DIMENSION(ntlam) :: tsun_lam=0.,tsun_spec=0.
@@ -103,6 +105,9 @@ SUBROUTINE SPS_SETUP(zin)
   IF (isoc_type.EQ.'pdva') THEN
      OPEN(90,FILE=TRIM(SPS_HOME)//'/ISOCHRONES/Padova/Padova2007/zlegend'//&
           '.dat',STATUS='OLD',iostat=stat,ACTION='READ')
+  ELSE IF (isoc_type.EQ.'prsc') THEN
+     OPEN(90,FILE=TRIM(SPS_HOME)//'/ISOCHRONES/PARSEC/zlegend'//&
+          '.dat',STATUS='OLD',iostat=stat,ACTION='READ')
   ELSE IF (isoc_type.EQ.'bsti') THEN
      OPEN(90,FILE=TRIM(SPS_HOME)//'/ISOCHRONES/BaSTI/zlegend'//&
           '.dat',STATUS='OLD',iostat=stat,ACTION='READ')
@@ -116,10 +121,25 @@ SUBROUTINE SPS_SETUP(zin)
   IF (stat.NE.0) THEN
      WRITE(*,*) 'SPS_SETUP ERROR: zlegend.dat cannot be opened'
      STOP 
-  END IF
-  DO z=1,nz
-     READ(90,'(F6.4)') zlegend(z)
-  ENDDO
+  ENDIF
+
+  IF (isoc_type.EQ.'mist') THEN
+     DO z=1,nz
+        READ(90,'(A5)') zlegend_str(z)
+        zstype5 = zlegend_str(z)
+        READ(zstype5(2:5),'(F4.2)') zlegend(z)
+        IF (zstype5(1:1).EQ.'m') THEN
+           zlegend(z) = 10**(-1*zlegend(z)) * zsol
+        ELSE
+           zlegend(z) = 10**(1*zlegend(z)) * zsol
+        ENDIF
+     ENDDO
+  ELSE
+     DO z=1,nz
+        READ(90,'(F6.4)') zlegend(z)
+     ENDDO
+  ENDIF
+
   CLOSE(90)
 
   !IF (spec_type(1:5).EQ.'ckc14'.AND.isoc_type.NE.'mist') THEN
@@ -222,11 +242,15 @@ SUBROUTINE SPS_SETUP(zin)
   CLOSE(93)
 
   !interpolate the input spectral library to the isochrone grid
+  !notice that we're interpolating at fixed Z/Zsol even in cases
+  !where the isochrones and spectra might have different Zsol. This might in fact
+  !be the best thing to do.  Either way, its not ideal.
   DO z=1,nz
 
-     i1 = MIN(MAX(locate(LOG10(zlegendinit),LOG10(zlegend(z))),1),nzinit-1)
-     dz = (LOG10(zlegend(z))-LOG10(zlegendinit(i1))) / &
-          (LOG10(zlegendinit(i1+1))-LOG10(zlegendinit(i1)))
+     i1 = MIN(MAX(locate(LOG10(zlegendinit/zsol_spec),&
+          LOG10(zlegend(z)/zsol)),1),nzinit-1)
+     dz = (LOG10(zlegend(z)/zsol)-LOG10(zlegendinit(i1)/zsol_spec)) / &
+          (LOG10(zlegendinit(i1+1)/zsol_spec)-LOG10(zlegendinit(i1)/zsol_spec))
 
      speclib(:,z,:,:) = (1-dz)*speclibinit(:,i1,:,:) + &
           dz*speclibinit(:,i1+1,:,:)
@@ -253,8 +277,8 @@ SUBROUTINE SPS_SETUP(zin)
 
   !now interpolate the master Teff array to the particular Z array
   DO i=1,nz
-     i1 = MIN(MAX(locate(tagb_logz_o,LOG10(zlegend(i)/zsol)),1),22-1)
-     dz = (LOG10(zlegend(i)/zsol)-tagb_logz_o(i1)) / &
+     i1 = MIN(MAX(locate(tagb_logz_o,LOG10(zlegend(i)/zsol_spec)),1),22-1)
+     dz = (LOG10(zlegend(i)/zsol_spec)-tagb_logz_o(i1)) / &
           (tagb_logz_o(i1+1)-tagb_logz_o(i1))
      agb_logt_o(i,:) = (1-dz)*tagb_logt_o(i1,:)+dz*tagb_logt_o(i1+1,:)
 
@@ -444,12 +468,12 @@ SUBROUTINE SPS_SETUP(zin)
      ENDDO
   ENDDO
   CLOSE(97)
-  twrzmet = LOG10(twrzmet/zsol)
+  twrzmet = LOG10(twrzmet/zsol_spec)
   
   !interpolate to the main array
   DO j=1,nz
-     i1 = MIN(MAX(locate(twrzmet,LOG10(zlegend(j)/zsol)),1),SIZE(twrzmet)-1)
-     dz = (LOG10(zlegend(j)/zsol)-twrzmet(i1))/(twrzmet(i1+1)-twrzmet(i1))
+     i1 = MIN(MAX(locate(twrzmet,LOG10(zlegend(j)/zsol_spec)),1),SIZE(twrzmet)-1)
+     dz = (LOG10(zlegend(j)/zsol_spec)-twrzmet(i1))/(twrzmet(i1+1)-twrzmet(i1))
      dz = MIN(MAX(dz,-1.),1.)
      DO i=1,ndim_wr
         tspecwr = (1-dz)*LOG10(twrn(:,i,i1)+tiny_number) + &
@@ -475,12 +499,12 @@ SUBROUTINE SPS_SETUP(zin)
      ENDDO
   ENDDO
   CLOSE(97)
-  twrzmet = LOG10(twrzmet/zsol)
+  twrzmet = LOG10(twrzmet/zsol_spec)
 
   !interpolate to the main array
   DO j=1,nz
-     i1 = MIN(MAX(locate(twrzmet,LOG10(zlegend(j)/zsol)),1),SIZE(twrzmet)-1)
-     dz = (LOG10(zlegend(j)/zsol)-twrzmet(i1))/(twrzmet(i1+1)-twrzmet(i1))
+     i1 = MIN(MAX(locate(twrzmet,LOG10(zlegend(j)/zsol_spec)),1),SIZE(twrzmet)-1)
+     dz = (LOG10(zlegend(j)/zsol_spec)-twrzmet(i1))/(twrzmet(i1+1)-twrzmet(i1))
      dz = MIN(MAX(dz,-1.),1.)
      DO i=1,ndim_wr
         tspecwr = (1-dz)*LOG10(twrc(:,i,i1)+tiny_number) + &
@@ -501,23 +525,23 @@ SUBROUTINE SPS_SETUP(zin)
      WRITE(zstype,'(F6.4)') zlegend(z)
 
      !open Padova isochrones
-     IF (isoc_type.EQ.'pdva') &
-          OPEN(97,FILE=TRIM(SPS_HOME)//&
+     IF (isoc_type.EQ.'pdva') OPEN(97,FILE=TRIM(SPS_HOME)//&
           '/ISOCHRONES/Padova/Padova2007/isoc_z'//&
           zstype//'.dat',STATUS='OLD', IOSTAT=stat,ACTION='READ')
+     !open PARSEC isochrones
+     IF (isoc_type.EQ.'prsc') OPEN(97,FILE=TRIM(SPS_HOME)//&
+          '/ISOCHRONES/PARSEC/isoc_z'//&
+          zstype//'.dat',STATUS='OLD', IOSTAT=stat,ACTION='READ')
      !open MIST isochrones
-     IF (isoc_type.EQ.'mist') &
-          OPEN(97,FILE=TRIM(SPS_HOME)//&
-          '/ISOCHRONES/MIST/isoc_z'//zstype//'.dat',STATUS='OLD',&
+     IF (isoc_type.EQ.'mist') OPEN(97,FILE=TRIM(SPS_HOME)//&
+          '/ISOCHRONES/MIST/isoc_z'//zlegend_str(z)//'.dat',STATUS='OLD',&
           IOSTAT=stat,ACTION='READ')
      !open BaSTI isochrones
-     IF (isoc_type.EQ.'bsti') &
-          OPEN(97,FILE=TRIM(SPS_HOME)//&
+     IF (isoc_type.EQ.'bsti') OPEN(97,FILE=TRIM(SPS_HOME)//&
           '/ISOCHRONES/BaSTI/isoc_z'//zstype//'.dat',STATUS='OLD',&
           IOSTAT=stat,ACTION='READ')
      !open Geneva isochrones
-     IF (isoc_type.EQ.'gnva') &
-          OPEN(97,FILE=TRIM(SPS_HOME)//&
+     IF (isoc_type.EQ.'gnva') OPEN(97,FILE=TRIM(SPS_HOME)//&
           '/ISOCHRONES/Geneva/isoc_z'//zstype//'.dat',STATUS='OLD',&
           IOSTAT=stat,ACTION='READ')
 

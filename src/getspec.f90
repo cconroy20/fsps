@@ -34,7 +34,7 @@ SUBROUTINE GETSPEC(pset,mact,logt,lbol,logg,phase,ffco,lmdot,wght,spec)
   !this library has two Zs, Solar and 0.1Solar, simply use one or the other
   IF (phase.EQ.6.0.AND.logt.GE.4.699) THEN
     
-     flag = 1
+     flag = flag+1
      jlo = MIN(MAX(locate(pagb_logt,logt),1),ndim_pagb-1)
      t   = (logt-pagb_logt(jlo)) / &
           (pagb_logt(jlo+1)-pagb_logt(jlo))
@@ -52,7 +52,7 @@ SUBROUTINE GETSPEC(pset,mact,logt,lbol,logg,phase,ffco,lmdot,wght,spec)
   ELSE IF (((phase.EQ.9.0.AND.ffco.LT.10).OR.&
        (phase.NE.6.0.AND.logt.GE.4.699))) THEN
      
-     flag = 1
+     flag = flag+1
      jlo  = MIN(MAX(locate(wrn_logt,logt),1),ndim_wr-1)
      t    = (logt-wrn_logt(jlo)) / (wrn_logt(jlo+1)-wrn_logt(jlo))
      t    = MIN(MAX(t,-1.0),1.0) !no extrapolation
@@ -63,7 +63,7 @@ SUBROUTINE GETSPEC(pset,mact,logt,lbol,logg,phase,ffco,lmdot,wght,spec)
   !WC WR stars (C-rich), from Smith et al. 2002
   ELSE IF (phase.EQ.9.0.AND.ffco.GE.10) THEN
      
-     flag = 1
+     flag = flag+1
      jlo  = MIN(MAX(locate(wrc_logt,logt),1),ndim_wr-1)
      t    = (logt-wrc_logt(jlo)) / (wrc_logt(jlo+1)-wrc_logt(jlo))
      t    = MIN(MAX(t,-1.0),1.0) !no extrapolation
@@ -74,7 +74,7 @@ SUBROUTINE GETSPEC(pset,mact,logt,lbol,logg,phase,ffco,lmdot,wght,spec)
   !O-rich TP-AGB spectra, from Lancon & Mouhcine 2002
   ELSE IF (phase.EQ.5.0.AND.logt.LT.3.6.AND.ffco.LE.1.0) THEN
      
-     flag = 1
+     flag = flag+1
      jlo  = MAX(MIN(locate(agb_logt_o(pset%zmet,:),logt),n_agb_o-1),1)
      t    = (logt - agb_logt_o(pset%zmet,jlo)) / &
           (agb_logt_o(pset%zmet,jlo+1)-agb_logt_o(pset%zmet,jlo))
@@ -88,7 +88,7 @@ SUBROUTINE GETSPEC(pset,mact,logt,lbol,logg,phase,ffco,lmdot,wght,spec)
   !C-rich TP-AGB spectra
   ELSE IF (phase.EQ.5.0.AND.logt.LT.3.6.AND.ffco.GT.1.0) THEN
      
-     flag = 1
+     flag = flag+1
 
      !use Aringer et al. (2009) synthetic spectra
      IF (cstar_aringer.EQ.1) THEN 
@@ -114,7 +114,8 @@ SUBROUTINE GETSPEC(pset,mact,logt,lbol,logg,phase,ffco,lmdot,wght,spec)
   !use the primary library for the rest of the isochrone
   ELSE IF (logt.LT.4.699) THEN
 
-     flag = 1
+     flag = flag+1
+
      !find the subgrid containing point i 
      jlo = MIN(MAX(locate(speclib_logt,logt),1),ndim_logt-1)
      klo = MIN(MAX(locate(speclib_logg,loggi),1),ndim_logg-1)
