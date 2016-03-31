@@ -12,9 +12,9 @@ MODULE SPS_VARS
 #define CKC14 0
 
 !------set the isochrone library------!
-#define MIST 1
+#define MIST 0
 !Padova models circa 2008
-#define PADOVA 0
+#define PADOVA 1
 #define PARSEC 0
 #define BASTI 0
 #define GENEVA 0
