@@ -1,539 +1,191 @@
-!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-!  Program to compute magnitudes and spectra for a composite !    
-!  stellar population.  Returns a file with the following    !
-!  info: age, mass, Lbol, mags in various filters.  SFR      !
-!  units are Msun/yr.                                        !
-!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+SUBROUTINE COMPSP(write_compsp, nzin, outfile,&
+                  mass_ssp, lbol_ssp, tspec_ssp,&
+                  pset, ocompsp)
+  !
+  !
+  !N.B. variables not otherwise defined come from sps_vars.f90
+  use sps_vars
+  use sps_utils, only: write_isochrone, add_nebular, add_dust, &
+                       csp_gen, sfhinfo, &
+                       smoothspec, igm_absorb, getindx, getmags, &
+                       linterp
+  implicit none
 
-SUBROUTINE COMPSP(write_compsp,nzin,outfile,mass_ssp,&
-     lbol_ssp,tspec_ssp,pset,ocompsp)
-
-  !sfh=1: tau model
-  !sfh=2: tabulated SFH (from file)
-  !sfh=3: tabulated SFH (stored in sfhtab arr)
-  !sfh=4: delayed tau model
-  !sfh=5: custom SFH (see Simha et al. 2013)
-
-  !for sfh=1 or 4:
-  !If tage >0  -> run only one integration to t=tage
-  !If tage<=0  -> produce outputs from tmin<t<maxtime
-
-  USE sps_vars
-  USE sps_utils, ONLY : getmags,add_dust,linterp,intspec,&
-       smoothspec,locate,getindx,write_isochrone,vactoair,igm_absorb,&
-       intspec
-  IMPLICIT NONE
- 
-  !write_compsp = 1->write mags, 2->write spectra
-  !               3->write mags+spec, 4->write indices
-  !               5->write CMDs  
   INTEGER, INTENT(in) :: write_compsp,nzin
-  REAL(SP), INTENT(in), DIMENSION(ntfull,nzin) :: lbol_ssp,mass_ssp
-  REAL(SP), INTENT(in), DIMENSION(nspec,ntfull,nzin) :: tspec_ssp
-  REAL(SP), DIMENSION(nspec,ntfull,nzin) :: spec_ssp
   CHARACTER(100), INTENT(in) :: outfile
+  REAL(SP), INTENT(in), DIMENSION(ntfull, nzin) :: lbol_ssp,mass_ssp
+  REAL(SP), INTENT(in), DIMENSION(nspec, ntfull, nzin) :: tspec_ssp
+  TYPE(PARAMS), intent(in) :: pset
 
-  INTEGER  :: i,j,n,k,stat,klo,jlo,ilo,imin,imax,indsf,indsft
-  REAL(SP) :: tau,const,maxtime,psfr,sft,sfstart,zhist,tsfr_tage
-  REAL(SP) :: mass_csp,lbol_csp,dtb,dt,dz,zred=0.,t1,t2
-  REAL(SP) :: mdust,norm,tmax=0.0,sftrunc,sftrunc_i
-  REAL(SP) :: mass_burst=0.0,lbol_burst=0.0,delt_burst=0.0,zero=0.0
-  REAL(SP), DIMENSION(nbands)  :: mags
-  REAL(SP), DIMENSION(nindx)   :: indx
-  REAL(SP), DIMENSION(nspec,ntfull) :: ispec
-  REAL(SP), DIMENSION(nspec)   :: spec_burst=0.0,csp1,csp2,spec1,spec_csp
-  REAL(SP), DIMENSION(ntfull)  :: imass,ilbol,powtime
-  REAL(SP), DIMENSION(ntfull)  :: sfr,tsfr
-  REAL(SP), DIMENSION(ntabmax) :: tlb
-  TYPE(PARAMS), INTENT(in) :: pset
   TYPE(COMPSPOUT), INTENT(inout), DIMENSION(ntfull) :: ocompsp
 
-  !-------------------------------------------------------------!
-  !-------------------------------------------------------------!
+  real(SP), DIMENSION(nspec, ntfull, nzin) :: spec_ssp
+  real(SP), dimension(ntfull) :: mdust_ssp
+  REAL(SP) :: lbol_csp, mass_csp, mdust_csp
+  real(SP) :: age, mdust, mass_frac, tsfr, zred, frac_linear, maxtime
+  REAL(SP), DIMENSION(nspec) :: csp1, csp2, spec_dusty, spec_csp
+  REAL(SP), DIMENSION(nbands)  :: mags
+  REAL(SP), DIMENSION(nindx)   :: indx
+  integer :: i, nage
 
-  !dump the input SSPs into a temporary array so that we can
-  !edit the SSPs (this is necessary in order to add nebular em)
-  spec_ssp = tspec_ssp
+  ! ------ Various checks and setup ------
 
   IF (check_sps_setup.EQ.0) THEN
      WRITE(*,*) 'COMPSP ERROR: '//&
           'SPS_SETUP must be run before calling COMPSP. '
      STOP
   ENDIF
+  !make sure various variables are set correctly
+  IF (pset%tage.GT.tiny_number) THEN
+     maxtime = pset%tage * 1e9
+  else
+     maxtime = 10**time_full(ntfull)
+  endif
+  
+  CALL COMPSP_WARNING(maxtime, pset, nzin, write_compsp)
 
-  !if sf_start > sf_trunc then return
-  IF ((pset%sf_start.GE.pset%sf_trunc.AND.&
-       pset%sf_start.GT.tiny_number.AND.&
-       pset%sf_trunc.GT.tiny_number).OR.&
-       (pset%tage.LE.pset%sf_start.AND.&
-       pset%tage.GT.tiny_number)) THEN
-     DO i=1,ntfull
-        ocompsp(i)%age      = 0.0
-        ocompsp(i)%mass_csp = 0.0
-        ocompsp(i)%lbol_csp = 0.0
-        ocompsp(i)%sfr      = 0.0
-        ocompsp(i)%mags     = 0.0
-        ocompsp(i)%spec     = 0.0
-        ocompsp(i)%mdust    = 0.0
-        ocompsp(i)%indx     = 0.0
-     ENDDO
-     IF (verbose.EQ.1) &
-          WRITE(*,*) 'COMPSP WARNING: sf_start>=sf_trunc or '//&
-          'tage<sf_start, returning'
-     RETURN
-  ENDIF
+  !setup output files
+  if (pset%tage.gt.0) then
+     nage = 1
+  else
+     nage = ntfull
+  endif
+  IF (write_compsp.GT.0) &
+       CALL COMPSP_SETUP_OUTPUT(write_compsp, pset, outfile, 1, nage)
 
-  !-------------------------------------------------------------!
-  !-----------------Write the CMDs and exit---------------------!
-  !-------------------------------------------------------------!
-
+  ! Isochrone case just writes the CMDs and exits
   IF (write_compsp.EQ.5) THEN
-     CALL WRITE_ISOCHRONE(outfile,pset)
+     CALL WRITE_ISOCHRONE(outfile, pset)
      RETURN
   ENDIF
 
-  !-------------------------------------------------------------!
-  !---------------------Add Nebular Emission--------------------!
-  !-------------------------------------------------------------!
+  ! ------ Prepare SSPs ------
+  ! Dust attenuation + emission, nebular emission etc.
+  ! We should probably only do this for ages up to tage, if it is set.
+  ! Also we will operate on copies of the spectra
 
-  IF (add_neb_emission.EQ.1) THEN
-     IF (nzin.GT.1) THEN
+  spec_ssp = tspec_ssp
+
+  ! Add nebular emission
+  if (add_neb_emission.EQ.1) then
+     if (nzin.GT.1) then
         WRITE(*,*) 'COMPSP ERROR: cannot handle both nebular '//&
              'emission and mult-metallicity SSPs in compsp'
         STOP
-     ENDIF
-     CALL ADD_NEBULAR(pset,tspec_ssp(:,:,1),spec_ssp(:,:,1))
-  ENDIF
+     endif
+     call add_nebular(pset, tspec_ssp(:,:,1), spec_ssp(:,:,1))
+  endif
 
+  ! Add dust emission
+  !
+  ! This is a wierd way to do this. Also not strictly correct, since the age
+  ! bin older than dust_tesc will include some contribution from young star
+  ! dust due to the interpolation, and changing dust_tesc by values smaller
+  ! than the ssp age grid will have no effect on the output.
+  !
+  ! The correct way is seprately calculate csp_spectra for the t<tesc and t >
+  ! tesc portions and feed to add_dust as intended.  However, this requires
+  ! significant extra logic (basically messing around with the integration
+  ! limits in sfh_weight) for probably little gain in accuracy.
+  !
+  ! We could probably also do a little better by attenuating up to the SSP
+  ! *nearest* in age to dust_tesc, instead of the oldest SSP still younger than
+  ! dust_tesc
+  !
+  ! Also do we really need to loop over *all* SSPs?
+  if ((pset%dust1.gt.tiny_number).or.(pset%dust2.gt.tiny_number)) then
+     do i=1, ntfull
+        csp1 = 0.0
+        csp2 = 0.0
+        if (time_full(i).LT.pset%dust_tesc) then
+           csp1 = spec_ssp(:,i,1)
+        else
+           csp2 = spec_ssp(:,i,1)
+        endif
+        !add dust and combine young and old csp
+        call add_dust(pset,csp1,csp2,spec_dusty,mdust)
+        spec_ssp(:,i,1) = spec_dusty
+        mdust_ssp(i) = mdust
+     enddo
+  endif
 
-  !-------------------------------------------------------------!
-  !---------------------Basic CSP Setup-------------------------!
-  !-------------------------------------------------------------!
-
-  dtb        = 0.0
-  spec_burst = 0.0
-  mass_burst = 0.0
-  lbol_burst = 0.0
-  sfstart    = 0.0
-  powtime = 10**time_full
-
-  !SFH-specific setup
-  IF (pset%sfh.EQ.2) THEN
-
-     IF (TRIM(pset%sfh_filename).EQ.'') THEN
-        OPEN(3,FILE=TRIM(SPS_HOME)//'/data/sfh.dat',ACTION='READ',STATUS='OLD')
-     ELSE
-        OPEN(3,FILE=TRIM(SPS_HOME)//'/data/'//TRIM(pset%sfh_filename),&
-             ACTION='READ',STATUS='OLD')
-     ENDIF
-     DO n=1,ntabmax
-        IF (nzin.EQ.nz) THEN
-           READ(3,*,IOSTAT=stat) sfh_tab(1,n),sfh_tab(2,n),sfh_tab(3,n)
-        ELSE
-           READ(3,*,IOSTAT=stat) sfh_tab(1,n),sfh_tab(2,n)
-           sfh_tab(3,n)=0.0
-        ENDIF
-        IF (stat.NE.0) GOTO 29
-     ENDDO
-     WRITE(*,*) 'COMPSP ERROR: didnt finish reading in the sfh file,'
-     WRITE(*,*) '     increase ntabmax variable in sps_vars.f90 file'
-     STOP
-29   CONTINUE
-     CLOSE(3)
-     ntabsfh = n-1
-     sfh_tab(1,1:ntabsfh) = sfh_tab(1,1:ntabsfh)*1E9 !convert to yrs
-
-     maxtime = powtime(ntfull)
-     tmax    = maxtime
-     imin    = 1
-     imax    = ntfull
-     indsft  = ntfull
-     sftrunc = maxtime
-     !special switch to compute only the last time output
-     !in the tabulated file
-     IF (pset%tage.EQ.-99.) imin=imax
-
-  ELSE IF (pset%sfh.EQ.3) THEN 
-
-     !sfh_tab array is supposed to already be filled in, check that it is
-     IF (ntabsfh.EQ.0) THEN 
-        WRITE(*,*) 'COMPSP ERROR: sfh=3 but sfh_tab array not initialized!'
-        STOP
-     ENDIF
-
-  ELSE
-
-     !set up maxtime variable
-     !if tage > 0 then only output one age=tage,
-     !otherwise output ages from 0<t<maxtime
-     IF (pset%tage.GT.tiny_number) THEN
-        maxtime = pset%tage*1E9
-        imin    = MIN(MAX(locate(powtime,maxtime),1),ntfull-1)
-        imax    = imin+1
-     ELSE
-        maxtime = powtime(ntfull)
-        imin    = 1
-        imax    = ntfull
-     ENDIF
-
-     !find sf_start in the time grid
-     !indsf only used for tsfr
-     IF (pset%sf_start.GT.tiny_number) THEN
-        sfstart = pset%sf_start*1E9 !convert to yrs
-        indsf   = MIN(MAX(locate(powtime,sfstart),1),ntfull-1)
-     ELSE
-        indsf   = 1
-        sfstart = 0.0
-     ENDIF
-
-     !always force sftrunc<=maxtime (CC: 6/19/15)
-     IF (pset%sf_trunc.GT.tiny_number.AND.pset%sf_trunc.LT.maxtime/1E9) THEN
-        sftrunc = pset%sf_trunc*1E9 !convert to yrs
-     ELSE
-        sftrunc = maxtime
-     ENDIF
-     !find sf_trunc in the time grid
-     !indsft only used for the tsfr array
-     indsft  = MIN(MAX(locate(powtime,sftrunc),1),ntfull)
-        
-     !set limits on the parameters tau and const
-     tau   = MIN(MAX(pset%tau,0.1),100.) !tau in Gyr
-     const = MIN(MAX(pset%const,0.0),1.0)
-
-  ENDIF
-
-  !make sure various variables are set correctly
-  CALL COMPSP_WARNING(maxtime,pset,nzin,write_compsp)
-
-  !setup output files
-  IF (write_compsp.GT.0) &
-       CALL COMPSP_SETUP_OUTPUT(write_compsp,pset,outfile,imin,imax)
-
-
-  !-----------Compute SFR(t), only used for writing to file------------!
-
-  tsfr      = 0.0
-  tsfr_tage = 0.0
-
-  IF (pset%sfh.EQ.0) THEN
-     
-     tsfr = 0.0
-
-  ELSE IF (pset%sfh.EQ.2.OR.pset%sfh.EQ.3) THEN
-
-     !linearly interpolate the tabulated SFH to the internal time grid
-     DO j=1,ntfull
-        IF (powtime(j).LT.sfh_tab(1,1)) THEN
-           tsfr(j)   = 0.0
-        ELSE
-           jlo    = MAX(MIN(locate(LOG10(sfh_tab(1,1:ntabsfh)),&
-                time_full(j)),ntabsfh-1),1)
-           dt = (powtime(j)-(sfh_tab(1,jlo))) / &
-                (sfh_tab(1,jlo+1)-sfh_tab(1,jlo))
-           tsfr(j)   = (1-dt)*sfh_tab(2,jlo)+dt*sfh_tab(2,jlo+1)
-        ENDIF
-     ENDDO
-
-  ELSE IF (pset%sfh.EQ.1) THEN
-
-     tsfr(indsf:indsft)  = EXP(-(powtime(indsf:indsft)-sfstart)/tau/1E9 )/&
-          tau/1E9 / (1-EXP(-(sftrunc-sfstart)/1E9/tau))
-     tsfr(indsf:indsft) = tsfr(indsf:indsft)*(1-const) + const/(sftrunc-sfstart)
-
-     IF (pset%tage.GT.tiny_number) &
-          tsfr_tage = EXP(-(pset%tage*1E9-sfstart)/tau/1E9 )/&
-          tau/1E9 / (1-EXP(-(sftrunc-sfstart)/1E9/tau))*(1-const) + &
-          const/(sftrunc-sfstart)
-
-  ELSE IF (pset%sfh.EQ.4.OR.pset%sfh.EQ.99) THEN
-
-     tsfr(indsf:indsft)  = ((powtime(indsf:indsft)-sfstart)/tau/1E9)*&
-          EXP(-(powtime(indsf:indsft)-sfstart)/tau/1E9 )/tau/1E9 / &
-          (1-EXP(-(sftrunc-sfstart)/1E9/tau)*((sftrunc-sfstart)/1E9/tau+1))
-     tsfr(indsf:indsft) = tsfr(indsf:indsft)*(1-const) + const/(sftrunc-sfstart)
-
-     IF (pset%tage.GT.tiny_number) &
-          tsfr_tage = ((pset%tage*1E9-sfstart)/tau/1E9)*&
-          EXP(-(pset%tage*1E9-sfstart)/tau/1E9 )/tau/1E9 / &
-          (1-EXP(-(sftrunc-sfstart)/1E9/tau)*((sftrunc-sfstart)/1E9/tau+1))*(1-const)+&
-          const/(sftrunc-sfstart)
-     
-  ELSE IF (pset%sfh.EQ.5) THEN
-
-     !integral of the delayed tau model
-     norm = (1-EXP(-(sftrunc-sfstart)/1E9/tau)*((sftrunc-sfstart)/1E9/tau+1))
-     tsfr(indsf:indsft)  = ((powtime(indsf:indsft)-sfstart)/tau/1E9)*&
-          EXP(-(powtime(indsf:indsft)-sfstart)/tau/1E9 )/tau/1E9
-
-     IF (pset%tage.GT.tiny_number.AND.indsft.GT.ntfull) &
-          tsfr_tage = ((pset%tage*1E9-sfstart)/tau/1E9)*&
-          EXP(-(pset%tage*1E9-sfstart)/tau/1E9 )/tau/1E9 / norm
-
-     !the stuff below only happens if sf_trunc < maxtime
-     IF (indsft.LT.ntfull) THEN
-        !SFR at the transition time
-        sft = ((sftrunc-sfstart)/tau/1E9)*&
-             EXP(-(sftrunc-sfstart)/tau/1E9 )/tau/1E9
-        !age where SFR=0.0 (or maxtime)
-        IF (pset%sf_slope.LT.0.0) THEN
-           tmax = MIN(-1.0/pset%sf_slope*1E9+sftrunc,maxtime)
-        ELSE
-           tmax = maxtime
-        ENDIF
-
-        !add the normalization due to the linearly declining comp.
-        norm = norm + sft*(tmax-sftrunc)*(1-pset%sf_slope*sftrunc/1e9)+&
-             sft/1E9*pset%sf_slope*0.5*(tmax**2-sftrunc**2)
-        tsfr(indsft+1:) = sft*(1+pset%sf_slope*(powtime(indsft+1:)-sftrunc)/1e9)
-
-        IF (pset%tage.GT.tiny_number) &
-             tsfr_tage = MAX(sft*(1+pset%sf_slope*(pset%tage*1E9-sftrunc)/1e9)/norm,0.0)
-
-     ELSE
-        tmax = maxtime
-     ENDIF
-     tsfr = MAX(tsfr/norm,0.0) ! set SFR=0.0 if SFR<0
-
-  ENDIF
-
-
-  !-------------------------------------------------------------!
-  !-------------Generate composite spectra and mags-------------!
-  !-------------------------------------------------------------!
+  ! --- Get CSP spectra -------
   
-  !calculate mags at each time step
-  DO i=imin,imax
+  ! loop over output ages
+  do i=1,ntfull
+     if (pset%tage.gt.0) then
+        ! A specific age was asked for, so we will only compute one spectrum at
+        ! that age.
+        age = pset%tage
+     else
+        ! Otherwise we will calculate composite spectra for every SSP age.
+        age = 10**(time_full(i)-9.)
+     endif
+
+     ! -----
+     ! Get the spectrum for this age.  Note this is always normalized to one
+     ! solar mass formed, so we actually need to renormalize if computing all
+     ! ages, which is done using info from `sfhinfo`
+     call csp_gen(mass_ssp,lbol_ssp,spec_ssp,mdust_ssp,&
+                  pset,age,&
+                  mass_csp,lbol_csp,spec_csp,mdust_csp)
+
+     if (pset%tage.le.0) then
+        call sfhinfo(pset, age, mass_frac, tsfr, frac_linear)
+        mass_csp = mass_csp * mass_frac
+        lbol_csp = lbol_csp * mass_frac
+        spec_csp = spec_csp * mass_frac
+        mdust_csp = mdust_csp * mass_frac
+     else
+        tsfr = 1.0
+        mass_frac = 1.0
+     endif     
      
-     !age where SFR=0.0.  Must be set here for the same reasons
-     !as sftrunc below.
-     IF (pset%sfh.EQ.5) THEN
-        IF (pset%tage.GT.tiny_number) THEN
-           IF (indsft.LT.ntfull) THEN
-              IF (pset%sf_slope.LT.0.0) THEN
-                 tmax = MIN(-1.0/pset%sf_slope*1E9+sftrunc,powtime(i))
-              ELSE
-                 tmax = powtime(i)
-              ENDIF
-           ELSE
-              tmax = sftrunc
-           ENDIF
-        ELSE
-           IF (pset%sf_slope.LT.0.0) THEN
-              tmax = MIN(-1.0/pset%sf_slope*1E9+sftrunc,maxtime)
-           ELSE
-              tmax = maxtime
-           ENDIF
-        ENDIF
-     ENDIF
-     
-     !SF truncation is limited by the age of the model when
-     !the age is specifically set.  This piece of code is important
-     !b/c the interpolation between imin and imax requires
-     !that trunc be set each time to the i-th age.
-     !changes made 9/17/15
-     sftrunc_i = sftrunc
-     IF (sftrunc.EQ.maxtime.AND.(imax-imin).EQ.1) THEN
-        sftrunc_i = powtime(i)
-        tmax      = powtime(i)
-     ENDIF
+     ! -------
+     ! Now do a bunch of stuff with the spectrum
+     ! Smooth the spectrum
+     if (pset%sigma_smooth.GT.0.0) then
+        call smoothspec(spec_lambda,spec_csp,pset%sigma_smooth,&
+                        pset%min_wave_smooth,pset%max_wave_smooth)
+     endif
+     ! Add IGM absorption
+     if (add_igm_absorption.EQ.1.AND.pset%zred.GT.tiny_number) then
+        spec_csp = igm_absorb(spec_lambda,spec_csp,pset%zred,&
+                              pset%igm_factor)
+     endif
+     ! Compute spectral indices
+     if (write_compsp.EQ.4) then
+        call getindx(spec_lambda,spec_csp,indx)
+     else
+        indx = 0.0
+     endif
+     ! Compute mags
+     if (redshift_colors.EQ.0) then
+        call getmags(pset%zred,spec_csp,mags,pset%mag_compute)
+     else
+        ! here we compute the redshift at the corresponding age
+        zred = min(max(linterp(cosmospl(:,2),cosmospl(:,1),&
+                       10**time_full(i)/1E9), 0.0), 20.0)
+        call getmags(zred,spec_csp,mags,pset%mag_compute)
+     endif
 
-   !  IF (sftrunc.GT.tmax.AND.(imax-imin).EQ.1) sftrunc_i = tmax
-     !IF (pset%tage.GT.tiny_number) THEN
-     !   IF (sftrunc.GT.maxtime.AND.pset%sfh.NE.5) sftrunc_i = powtime(i)
-     !   IF (sftrunc.GT.powtime(i).AND.pset%sfh.EQ.5)  sftrunc_i = tmax
-     !ENDIF
-      
-     !write(*,'(2I4,8F10.4)') i,indsft,powtime(i)/1E9,tmax/1E9,&
-     !     maxtime/1E9,sftrunc/1E9,sftrunc_i/1E9
+     ! ---------
+     ! Store the spectrum and write....
+     call save_compsp(write_compsp, ocompsp(i), log10(age)+9,&
+                      mass_csp, lbol_csp, tsfr, mags, spec_csp, mdust_csp, indx)
 
-      !Set up tabulated SFH
-      IF (pset%sfh.EQ.2.OR.pset%sfh.EQ.3) THEN
-         
-         IF (nzin.EQ.nz) THEN
+     ! Terminate the loop if a single specific tage was requested
+     if (pset%tage.gt.0) then
+        exit
+     endif
 
-            ilbol = 0.0
-            imass = 0.0
-            ispec = 0.0
-            tlb   = 0.0
-            ilo = MAX(MIN(locate(LOG10(sfh_tab(1,1:ntabsfh)),&
-                 time_full(i)),ntabsfh-1),1)
-            tlb(1:ilo) = LOG10(sfh_tab(1,ilo) - sfh_tab(1,1:ilo) + powtime(1))
+  enddo
 
-            DO j=1,i
-               !interpolation in time (in logarithmic units)
-               jlo = MAX(MIN(locate(tlb(1:ilo),time_full(j)),ilo-1),1)
-               dt  = (time_full(j)-tlb(jlo+1)) / (tlb(jlo)-tlb(jlo+1))
-               dt  = MAX(MIN(dt,1.0),-1.0) !no extrapolation
-               zhist = (1-dt)*sfh_tab(3,jlo+1)+dt*sfh_tab(3,jlo)
-               !interpolation over zhist
-               klo = MAX(MIN(locate(zlegend,zhist),nz-1),1)
-               dz  = (LOG10(zhist)-LOG10(zlegend(klo))) / &
-                  (LOG10(zlegend(klo+1))-LOG10(zlegend(klo)))
-               dz = MAX(MIN(dz,1.0),-1.0) !don't extrapolate
-               ispec(:,j) = (1-dz)*spec_ssp(:,j,klo)+dz*spec_ssp(:,j,klo+1)
-               ilbol(j)   = (1-dz)*lbol_ssp(j,klo)  +dz*lbol_ssp(j,klo+1)
-               imass(j)   = (1-dz)*mass_ssp(j,klo)  +dz*mass_ssp(j,klo+1)
-            ENDDO
+  if (write_compsp.EQ.1.OR.write_compsp.EQ.3) CLOSE(10)
+  if (write_compsp.EQ.2.OR.write_compsp.EQ.3) CLOSE(20)
 
-         ELSE
-            ispec = spec_ssp(:,:,1)
-            ilbol = lbol_ssp(:,1)
-            imass = mass_ssp(:,1)
-         ENDIF
+end subroutine compsp
 
-      ENDIF
-
-      !set up an instantaneous burst
-      IF ((pset%sfh.EQ.1.OR.pset%sfh.EQ.4).AND.&
-           pset%fburst.GT.tiny_number) THEN
-
-         IF ((powtime(i)-pset%tburst*1E9).GT.tiny_number) THEN
-            delt_burst = powtime(i)-pset%tburst*1E9
-            klo = MAX(MIN(locate(time_full,LOG10(delt_burst)),ntfull-1),1)
-            dtb = (LOG10(delt_burst)-time_full(klo))/&
-                 (time_full(klo+1)-time_full(klo))
-            spec_burst = (1-dtb)*spec_ssp(:,klo,1)+dtb*spec_ssp(:,klo+1,1)
-            mass_burst = (1-dtb)*mass_ssp(klo,1)  +dtb*mass_ssp(klo+1,1)
-            lbol_burst = (1-dtb)*lbol_ssp(klo,1)  +dtb*lbol_ssp(klo+1,1)
-         ENDIF
-
-      ENDIF
-
-      !compute composite spectra, mass, lbol
-      IF (pset%sfh.EQ.0) THEN
-
-         csp1 = 0.0
-         csp2 = 0.0
-         IF (time_full(i).LT.pset%dust_tesc) THEN
-            csp1 = spec_ssp(:,i,1)
-         ELSE
-            csp2 = spec_ssp(:,i,1)
-         ENDIF
-         !add dust and combine young and old csp
-         CALL ADD_DUST(pset,csp1,csp2,spec_csp,mdust)
-         mass_csp = mass_ssp(i,1)
-         lbol_csp = lbol_ssp(i,1)
-
-      ELSE IF (pset%sfh.EQ.1.OR.pset%sfh.EQ.4.OR.pset%sfh.EQ.5) THEN
-
-         CALL INTSPEC(pset,i,spec_ssp,csp1,mass_ssp,lbol_ssp,&
-              mass_csp,lbol_csp,spec_burst,mass_burst,&
-              lbol_burst,delt_burst,sfstart,tau,const,sftrunc_i,tmax,mdust)
-         IF (compute_light_ages.EQ.1) THEN
-            CALL INTSPEC(pset,i,spec_ssp,csp2,mass_ssp,lbol_ssp,&
-                 mass_csp,lbol_csp,spec_burst,mass_burst,&
-                 lbol_burst,delt_burst,sfstart,tau,const,sftrunc_i,tmax,mdust,1)
-            spec_csp = 10**time_full(i)/1E9 - csp2/csp1 - sfstart/1E9
-         ELSE
-            spec_csp = csp1
-         ENDIF
-
-      ELSE IF (pset%sfh.EQ.2.OR.pset%sfh.EQ.3) THEN
-
-         CALL INTSPEC(pset,i,ispec,spec_csp,imass,ilbol,mass_csp,&
-              lbol_csp,spec_burst,mass_burst,lbol_burst,&
-              delt_burst,sfstart,tau,const,sftrunc_i,tmax,mdust)
-
-      ELSE IF (pset%sfh.EQ.99) THEN
-
-         !CALL COMPSP_GRID(pset,i,spec_csp)
-         WRITE(*,*) 'COMPSP ERROR: SFH=99 no longer supported'
-
-      ENDIF
-
-      !smooth the spectrum
-      IF (pset%sigma_smooth.GT.0.0) THEN
-         CALL SMOOTHSPEC(spec_lambda,spec_csp,pset%sigma_smooth,&
-              pset%min_wave_smooth,pset%max_wave_smooth)
-      ENDIF
-
-      !add IGM absorption
-      IF (add_igm_absorption.EQ.1.AND.pset%zred.GT.tiny_number) THEN
-         spec_csp = igm_absorb(spec_lambda,spec_csp,pset%zred,&
-              pset%igm_factor)
-      ENDIF
-
- 
-      !only save results if computing all ages
-      IF (imax-imin.GT.1.OR.pset%tage.EQ.-99.0) THEN
-
-         !compute spectral indices
-         IF (write_compsp.EQ.4) THEN
-            CALL GETINDX(spec_lambda,spec_csp,indx)
-         ELSE
-            indx=0.0
-         ENDIF
-         
-         !redshift spectrum; calculate mags
-         IF (redshift_colors.EQ.0) THEN
-            CALL GETMAGS(pset%zred,spec_csp,mags,pset%mag_compute)
-         ELSE
-            !here we compute the redshift at the corresponding age
-            zred = MIN(MAX(linterp(cosmospl(:,2),cosmospl(:,1),&
-                 powtime(i)/1E9),0.0),20.0)
-            CALL GETMAGS(zred,spec_csp,mags,pset%mag_compute)
-         ENDIF
-
-         CALL SAVE_COMPSP(write_compsp,ocompsp(i),time_full(i),&
-              mass_csp,lbol_csp,tsfr(i),mags,spec_csp,mdust,indx)
-
-      ELSE
-         !save results temporarily for later interpolation
-         ocompsp(i)%mass_csp = mass_csp
-         ocompsp(i)%lbol_csp = lbol_csp
-         ocompsp(i)%mags     = mags
-         ocompsp(i)%indx     = indx
-         ocompsp(i)%spec     = spec_csp
-         ocompsp(i)%sfr      = tsfr(i)
-      ENDIF
-
-   ENDDO
-
-   !interpolate to maxtime, if tage is set
-   IF (imax-imin.EQ.1) THEN
-
-      dt = (LOG10(maxtime)-time_full(imin))/&
-           (time_full(imax)-time_full(imin))
-      mass_csp = (1-dt)*ocompsp(imin)%mass_csp + &
-           dt*ocompsp(imax)%mass_csp
-      lbol_csp = (1-dt)*ocompsp(imin)%lbol_csp + &
-           dt*ocompsp(imax)%lbol_csp
-      spec_csp = 10**((1-dt)*LOG10(ocompsp(imin)%spec) + &
-           dt*LOG10(ocompsp(imax)%spec))
-
-      !compute spectral indices
-      IF (write_compsp.EQ.4) THEN
-         CALL GETINDX(spec_lambda,spec_csp,indx)
-      ELSE
-         indx=0.0
-      ENDIF
- 
-      !compute mags
-      IF (redshift_colors.EQ.0) THEN
-         CALL GETMAGS(pset%zred,spec_csp,mags,pset%mag_compute)
-      ELSE
-         !here we compute the redshift at the corresponding age
-         zred = MIN(MAX(linterp(cosmospl(:,2),cosmospl(:,1),&
-              powtime(i)/1E9),0.0),20.0)
-         CALL GETMAGS(zred,spec_csp,mags,pset%mag_compute)
-      ENDIF
-
-      CALL SAVE_COMPSP(write_compsp,ocompsp(1),&
-           LOG10(maxtime),mass_csp,lbol_csp,tsfr_tage,mags,&
-           spec_csp,mdust,indx)
-
-   ENDIF
-
-   IF (write_compsp.EQ.1.OR.write_compsp.EQ.3) CLOSE(10)
-   IF (write_compsp.EQ.2.OR.write_compsp.EQ.3) CLOSE(20)
-   
-
-END SUBROUTINE COMPSP
-
-!-------------------------------------------------------------------!
-!-------------------------------------------------------------------!
-!-------------------------------------------------------------------!
- 
 SUBROUTINE COMPSP_WARNING(maxtime,pset,nzin,write_compsp)
 
   !check that variables are properly set

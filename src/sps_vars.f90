@@ -6,8 +6,8 @@ MODULE SPS_VARS
   SAVE
 
 !-------set the spectral library------!
-#define BASEL 1
-#define MILES 0
+#define BASEL 0
+#define MILES 1
 ! "CKC14" currently under development.  do not use!
 #define CKC14 0
 
@@ -50,7 +50,14 @@ MODULE SPS_VARS
   INTEGER :: pzcon=0
   
   !the factor by which we increase the time array
-  INTEGER, PARAMETER :: time_res_incr=2
+  INTEGER, PARAMETER :: time_res_incr=1
+
+  !whether to interpolate the SSPs in logt (0) or t (1)
+  integer :: interpolation_type = 0
+
+  !The minimum age to use when computing CSPs.  The spectrum for this age is
+  !taken from the youngest available SSP
+  real(SP) :: tiny_logt = -3
 
   !Use Aringer et al. (2009) Carbon star library if set
   !otherwise use Lancon & Wood (2002) empirical spectra
@@ -420,7 +427,7 @@ MODULE SPS_VARS
           masscut=150.0,sigma_smooth=0.,agb_dust=1.0,min_wave_smooth=1E3,&
           max_wave_smooth=1E4,gas_logu=-2.0,gas_logz=0.,igm_factor=1.0
      INTEGER :: zmet=1,sfh=0,wgp1=1,wgp2=1,wgp3=1,evtype=-1
-     INTEGER, DIMENSION(nbands) :: mag_compute=1
+     INTEGER, DIMENSION(nbands) :: mag_compute=0
      INTEGER, DIMENSION(nt) :: ssp_gen_age=1
      CHARACTER(50) :: imf_filename='', sfh_filename=''
   END TYPE PARAMS
@@ -432,7 +439,13 @@ MODULE SPS_VARS
      REAL(SP), DIMENSION(nspec)  :: spec=0.
      REAL(SP), DIMENSION(nindx)  :: indx=0.
   END TYPE COMPSPOUT
-  
+
+  ! A structure to hold SFH params converted to intrinsic units
+  TYPE SFHPARAMS
+     REAL(SP) :: tau=1.0, tage=0., tburst=0., sf_trunc=0., sf_slope=0., tq=0., t0=0., tb=0.
+     INTEGER :: type=0, use_simha_limits=0
+  END TYPE SFHPARAMS
+
   !-----the following structures are not used in the public code-----!
   !--they are included here because some users of FSPS utilize them--!
 
