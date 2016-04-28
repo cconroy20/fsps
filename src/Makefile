@@ -51,7 +51,7 @@ sps_setup.o pz_convol.o get_tuniv.o intsfwght.o imf.o imf_weight.o add_dust.o ge
 add_bs.o mod_hb.o add_remnants.o getindx.o smoothspec.o mod_gb.o add_nebular.o \
 write_isochrone.o sfhstat.o linterp.o tsum.o add_agb_dust.o linterparr.o \
 ztinterp.o vacairconv.o igm_absorb.o get_lumdist.o attn_curve.o \
-sfh_weight.o sfhlimit.o sfhinfo.o
+sfh_weight.o sfhlimit.o sfhinfo.o setup_tabular_sfh.o
 
 
 all : $(PROGS)

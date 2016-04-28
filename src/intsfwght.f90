@@ -215,26 +215,32 @@ FUNCTION expi(arg)
   
   INTEGER, PARAMETER :: maxit=1000
   REAL(SP) :: expi, arg
-  REAL(SP), PARAMETER :: eps=6.e-8, eul=.57721566, fmin=1.e-30
+  REAL(SP), PARAMETER :: eps=6.e-8, eul=.57721566, fmin=1.d-70
   INTEGER :: k
   REAL(SP) :: fact,prev,sum,term
   
   if (arg.le.0.) then
-     write(*,*) "expi: arg < 0"
+     write(*,*) "EXPI: arg < 0"
      STOP
   endif
   
   ! Special case: avoid failure of convergence test because of underflow.
   if (arg.lt.fmin) then   
      expi = log(arg) + eul
-  else if (arg.le.-log(eps)) then ! Use power series.
+  !else if (arg.le.-log(eps)) then ! Use power series.
+  else if (.true.) then ! always use power series....
      sum = 0.
      fact = 1.
      do k=1, maxit
         fact = fact * arg / k
         term = fact / k
         sum = sum + term
-        if (term.lt.(eps*sum)) continue
+        if (term.lt.(eps*sum)) then
+           continue
+        else if (k.eq.maxit) then
+           write(*,*) 'EXPI: Series failed to converge.'
+           STOP
+        endif
      enddo
      expi = sum + log(arg) + eul
   else ! Use asymptotic series.

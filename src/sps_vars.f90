@@ -6,8 +6,8 @@ MODULE SPS_VARS
   SAVE
 
 !-------set the spectral library------!
-#define BASEL 0
-#define MILES 1
+#define BASEL 1
+#define MILES 0
 ! "CKC14" currently under development.  do not use!
 #define CKC14 0
 
@@ -57,7 +57,7 @@ MODULE SPS_VARS
 
   !The minimum age to use when computing CSPs.  The spectrum for this age is
   !taken from the youngest available SSP
-  real(SP) :: tiny_logt = -3
+  real(SP) :: tiny_logt = 5.49
 
   !Use Aringer et al. (2009) Carbon star library if set
   !otherwise use Lancon & Wood (2002) empirical spectra

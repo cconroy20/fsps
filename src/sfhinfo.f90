@@ -9,7 +9,7 @@ subroutine sfhinfo(pset, age, mfrac, sfr, frac_linear)
   !   A `PARAMS` structure containing the SFH parameters
   !
   ! age:
-  !   The age (in Gyr) at which to calculate the SFR and mass fractions
+  !   The age (in forward Gyr) at which to calculate the SFR and mass fractions
   !
   ! Outputs:
   ! ----------
@@ -71,7 +71,7 @@ subroutine sfhinfo(pset, age, mfrac, sfr, frac_linear)
      total_mass_tau = pset%tau * gammainc(power, Tmax/pset%tau)
      mass_tau = pset%tau * gammainc(power, Tprime/pset%tau)
      ! The SFR at Tprime (unnormalized)
-     sfr_tau = (Tprime/pset%tau)**(power-1.) * exp(Tprime/pset%tau)
+     sfr_tau = (Tprime/pset%tau)**(power-1.) * exp(-Tprime/pset%tau)
   endif
   
   ! Add the constant and burst portions, for SFH=1,4.
@@ -124,7 +124,7 @@ subroutine sfhinfo(pset, age, mfrac, sfr, frac_linear)
      else
         ! Truncation does occur, integrate linear to zero crossing or Tmax.
         Thi = min(Tz, Tmax)
-        sfr_trunc = (Ttrunc/pset%tau) * exp(Ttrunc/pset%tau) / total_mass_tau
+        sfr_trunc = (Ttrunc/pset%tau) * exp(-Ttrunc/pset%tau)
         total_mass_linear = sfr_trunc * ((Thi - Ttrunc) - m/2.*(Thi**2 + Ttrunc**2) + &
                                          m * Thi * Ttrunc)
 
@@ -137,7 +137,7 @@ subroutine sfhinfo(pset, age, mfrac, sfr, frac_linear)
            Thi = min(Tz, Tprime)
            mass_linear = sfr_trunc * ((Thi - Ttrunc) - m/2.*(Thi**2 + Ttrunc**2) + &
                                       m * Thi * Ttrunc)
-           sfr = max(sfr_trunc * (1 - m * (Tprime - Ttrunc)), 0.)
+           sfr = max(sfr_trunc * (1 - m * (Tprime - Ttrunc)), 0.) / total_mass_tau
         endif
         
      endif
@@ -146,7 +146,7 @@ subroutine sfhinfo(pset, age, mfrac, sfr, frac_linear)
      mfrac = (mass_tau + mass_linear) / (total_mass_tau + total_mass_linear)
      ! Mass fraction of the simha SFH at Tprime that formed in the linear portion.
      frac_linear = mass_linear / (mass_linear + mass_tau)
-     
+     !write(*, *) mass_tau, mass_linear, sfr_trunc, m, total_mass_tau
   endif
 
 end subroutine sfhinfo

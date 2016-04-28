@@ -42,6 +42,11 @@ function sfh_weight(sfh, imin, imax)
   ! Check if this is an SSP.  If so, do simple weights and return.
   if (sfh%type.eq.-1) then
      sfh_weight = 0.
+     ! Check for burst out of valid limits.
+     ! N.B. we allow bursts before sf_start (sfh%tb > sfh%tage)
+     if (sfh%tb.lt.0) then
+        return
+     endif
      log_tb = log10(sfh%tb)
      istart = min(max(locate(time_full, log_tb), 1), ntfull-1)
      dt = delta_time(time_full(istart), time_full(istart+1))

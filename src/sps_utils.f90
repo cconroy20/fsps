@@ -90,10 +90,10 @@ MODULE SPS_UTILS
   END INTERFACE
 
   INTERFACE
-     SUBROUTINE CSP_GEN(mass_ssp, lbol_ssp, spec_ssp, mdust_ssp, pset, tage,&
+     SUBROUTINE CSP_GEN(mass_ssp, lbol_ssp, spec_ssp, pset, tage,&
                         mass_csp, lbol_csp, spec_csp, mdust_csp)
        USE sps_vars
-       REAL(SP), DIMENSION(ntfull), INTENT(in) :: mass_ssp, lbol_ssp, mdust_ssp
+       REAL(SP), DIMENSION(ntfull), INTENT(in) :: mass_ssp, lbol_ssp
        REAL(SP), DIMENSION(nspec, ntfull), INTENT(in) :: spec_ssp
        TYPE(PARAMS), intent(in) :: pset
        REAL(SP), INTENT(in)  :: tage
@@ -274,6 +274,14 @@ MODULE SPS_UTILS
        CHARACTER(100), INTENT(in) :: outfile
        TYPE(PARAMS), INTENT(in)    :: pset
      END SUBROUTINE SBF
+  END INTERFACE
+
+  INTERFACE
+     SUBROUTINE SETUP_TABULAR_SFH(pset, nzin)
+       USE sps_vars
+       TYPE(PARAMS), INTENT(in) :: pset
+       INTEGER, INTENT(in) :: nzin
+     END SUBROUTINE SETUP_TABULAR_SFH
   END INTERFACE
 
   INTERFACE
