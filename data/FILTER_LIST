@@ -87,8 +87,8 @@
 87  UVOT_W2		UVOT W2 (from Erik Hoversten, 2011)
 88  UVOT_M2		UVOT M2 (from Erik Hoversten, 2011)
 89  UVOT_W1		UVOT W1 (from Erik Hoversten, 2011)
-90  MPIS_24		Spitzer MIPS 24um
-91  MPIS_70		Spitzer MIPS 70um
+90  MIPS_24		Spitzer MIPS 24um
+91  MIPS_70		Spitzer MIPS 70um
 92  MIPS_160		Spitzer MIPS 160um
 93  SCUBA_450WB		SCUBA 450WB (www.jach.hawaii.edu/JCMT/continuum/background/background.html)
 94  SCUBA_850WB		SCUBA 850WB (www.jach.hawaii.edu/JCMT/continuum/background/background.html)
