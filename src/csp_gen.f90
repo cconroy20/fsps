@@ -54,10 +54,9 @@ subroutine csp_gen(mass_ssp, lbol_ssp, spec_ssp, &
   ! (plus the next couple, to bracket and be safe).
   imin = 0
   imax = min(max(locate(time_full, log10(sfhpars%tage)) + 2, 1), ntfull)
-  
+
   ! ----- Get SFH weights -----
 
-  
   ! SSP.
   if (pset%sfh.eq.0) then
      ! Make sure to use SSP weighting scheme
@@ -221,6 +220,8 @@ subroutine csp_gen(mass_ssp, lbol_ssp, spec_ssp, &
      mdust_csp = 0.0
   endif
 
+  !write(*,*) 'csp_gen: ', sum(total_weights), minval(total_weights), total_weights(1), &
+  !     total_weights(2), imin, imax, minloc(total_weights)
   mass_csp = sum(mass_ssp * total_weights)
   lbol_csp = log10(sum(10**lbol_ssp * total_weights))
 

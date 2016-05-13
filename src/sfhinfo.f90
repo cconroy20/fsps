@@ -88,6 +88,8 @@ subroutine sfhinfo(pset, age, mfrac, sfr, frac_linear)
      mfrac = (1. - pset%const - pset%fburst) * mass_tau / total_mass_tau + &
           pset%const * Tprime / Tmax + &
           pset%fburst * mfrac_burst
+     !write(*,*) 'sfhinfo: ', total_mass_tau, mass_tau, Tprime, Tmax, mfrac_burst
+
      ! N.B. for Tprime = tburst, sfr is infinite, but we ignore that case.
      ! For constant SFR=1, total_mass_const = Tmax
      if (Tprime.eq.Ttrunc) then
@@ -133,7 +135,7 @@ subroutine sfhinfo(pset, age, mfrac, sfr, frac_linear)
            mass_linear = 0.0
            sfr = sfr_tau / total_mass_tau
         else
-           ! Tprime is past truncation how much mass formed?
+           ! Tprime is past truncation, how much mass formed?
            Thi = min(Tz, Tprime)
            mass_linear = sfr_trunc * ((Thi - Ttrunc) - m/2.*(Thi**2 + Ttrunc**2) + &
                                       m * Thi * Ttrunc)
@@ -149,6 +151,9 @@ subroutine sfhinfo(pset, age, mfrac, sfr, frac_linear)
      !write(*, *) mass_tau, mass_linear, sfr_trunc, m, total_mass_tau
   endif
 
+  ! Convert SFR from per Gyr to per year
+  sfr = sfr / 1e9
+  
 end subroutine sfhinfo
 
 function gammainc(power, arg)

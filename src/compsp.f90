@@ -107,11 +107,12 @@ SUBROUTINE COMPSP(write_compsp, nzin, outfile,&
      ! solar mass formed, so we actually need to renormalize if computing all
      ! ages, which is done using info from `sfhinfo`
      call csp_gen(mass_ssp, lbol_ssp, spec_ssp, &
-                  pset,age, &
+                  pset, age, &
                   mass_csp, lbol_csp, spec_csp, mdust_csp)
 
      if (pset%tage.le.0) then
         call sfhinfo(pset, age, mass_frac, tsfr, frac_linear)
+        !write(*,*) 'compsp: ', age, mass_csp, mass_frac, tsfr
         mass_csp = mass_csp * mass_frac
         lbol_csp = log10(10**lbol_csp * mass_frac)
         spec_csp = spec_csp * mass_frac
