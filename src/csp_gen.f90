@@ -46,6 +46,8 @@ subroutine csp_gen(mass_ssp, lbol_ssp, spec_ssp, &
   real(SP) :: m1, m2, frac_linear, mfrac, sfr, fburst
   real(SP) :: t1, t2, dt  ! for tabular calculations
 
+  ! ------- Setup ----------
+
   ! Build a structure containing useful units, numbers, and switches for the
   ! weight calculations. The units of the parameters in the `sfhparams`
   ! structure are years of lookback time.
@@ -93,7 +95,7 @@ subroutine csp_gen(mass_ssp, lbol_ssp, spec_ssp, &
      w1 = sfh_weight(sfhpars, imin, imax)
      m1 = sum(w1(1:imax))
      ! Burst.  These weights come pre-normalized to 1 Msun.
-     ! If burst happens after age of system, we kill it entirely.
+     ! If burst happens after age of system then we kill it entirely.
      sfhpars%type = -1
      if (sfhpars%tb.lt.0) then
         w2 = 0.
@@ -162,17 +164,17 @@ subroutine csp_gen(mass_ssp, lbol_ssp, spec_ssp, &
            cycle
         endif
         
-        ! Linear slope.  Positive is sfr decreasing in time since big bang
-        sfhpars%sf_slope = -(sfh_tab(2, j+1) - sfh_tab(2, j)) / (t2 - t1)
+        ! Linear slope.  Positive should be sfr *decreasing* in time since big bang.
+        sfhpars%sf_slope = -(sfh_tab(2, j+1) - sfh_tab(2, j)) / (t2 - t1) / sfh_tab(2, j+1)
         ! Set integration limits using bin edges clipped to valid times.
         ! That is, don't include any portion of a bin that goes to negative
         ! time, or beyond the oldest isochrone.
         sfhpars%tq = min(max(t1, 10**tiny_logt), 10**time_full(ntfull))  ! lower limit (in lookback time)
         sfhpars%tage = min(max(t2, 10**tiny_logt), 10**time_full(ntfull)) ! upper limit
-        ! Mass that formed within these valid times
+        sfhpars%sf_trunc = sfhpars%tage - sfhpars%tq
+        ! Mass that formed within these valid times.
         dt = (sfhpars%tage - sfhpars%tq)
-        m2 = (2 * sfh_tab(2, j+1) - sfhpars%sf_slope * dt) * dt
-
+        m2 = sfh_tab(2, j+1) * (1 - sfhpars%sf_slope/2. * (sfhpars%tage + sfhpars%tq - 2*t1)) * dt
         ! min and max ssps to consider, being conservative.
         imin = min(max(locate(time_full, log10(t1)) - 1, 0), ntfull)
         imax = min(max(locate(time_full, log10(t2)) + 2, 0), ntfull)
@@ -191,7 +193,7 @@ subroutine csp_gen(mass_ssp, lbol_ssp, spec_ssp, &
      imax = ntfull
   endif
 
-
+  ! ----- Combine SSPs with dust -------
   ! Now weight each SSP by `total_weight`, assign to young or old, and feed to
   ! add_dust, which does the final sum as well as attenuating.
   ! This matrix multiply could probably be optimized!!!!
@@ -220,8 +222,6 @@ subroutine csp_gen(mass_ssp, lbol_ssp, spec_ssp, &
      mdust_csp = 0.0
   endif
 
-  !write(*,*) 'csp_gen: ', sum(total_weights), minval(total_weights), total_weights(1), &
-  !     total_weights(2), imin, imax, minloc(total_weights)
   mass_csp = sum(mass_ssp * total_weights)
   lbol_csp = log10(sum(10**lbol_ssp * total_weights))
 

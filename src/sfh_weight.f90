@@ -101,12 +101,9 @@ function sfh_weight(sfh, imin, imax)
      if (tlim(1).ne.tlim(2)) then
         dt = delta_time(tiny_logt, time_full(1))
         ! Contribution of i=1 to younger bin.
-        !write(*,*) 'sfh_weight: in :', tmp_wght(1), tmp_wght(2), dt
         tmp_wght(1) = tmp_wght(1) - intsfwght(0, tlim, sfh) / dt
         ! Contribution of i=0 to older bin
         tmp_wght(1) = tmp_wght(1) + intsfwght(1, tlim, sfh) / dt
-        !junk = intsfwght(0, tlim, sfh) / dt
-        !write(*,*) 'sfh_weight: out :', junk!, intsfwght(1, tlim, sfh) / dt
      endif
   endif
 

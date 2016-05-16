@@ -55,9 +55,9 @@ MODULE SPS_VARS
   !whether to interpolate the SSPs in logt (0) or t (1)
   integer :: interpolation_type = 0
 
-  !The minimum age to use when computing CSPs.  The spectrum for this age is
-  !taken from the youngest available SSP
-  real(SP) :: tiny_logt = 5.49
+  !The log of the minimum age to use when computing CSPs.  The spectrum for
+  !this age is taken from the youngest available SSP.  Should be less than ~3
+  real(SP) :: tiny_logt = 0.0
 
   !Use Aringer et al. (2009) Carbon star library if set
   !otherwise use Lancon & Wood (2002) empirical spectra

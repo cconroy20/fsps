@@ -113,12 +113,7 @@ function sfwght_log(sspind, logt, sfh)
      a = (10**logt - sfh%tage - sfh%tau) * (logt - logage)
      b = sfh%tau * loge
      c = (sfh%tage + sfh%tau) * loge
-     
      sfwght_log = (a - b) * exp(tprime) + c * ei(tprime)
-
-!     if (log10(sfh%tage).lt.5.8) then
-!        print *, 'sfwght_log: ', loge, logt, logage, tprime, d, a, b, c, (a-b), sfwght_log
-!     endif
      
   else if (sfh%type.eq.5) then
      !SFR = linear ~ (1 - sf_slope * (T - T_trunc)), T > T_trunc
@@ -169,9 +164,7 @@ function sfwght_lin(sspind, t, sfh)
   real(SP) :: sfwght_lin
   
   real(SP) :: age, tprime
-  real(SP) :: loge, a
-
-  loge = log10(exp(1.0))
+  real(SP) :: a
 
   ! Convert from log(age_ssp) to age_ssp,
   ! accounting for the case sspind=0 (where age~0)
