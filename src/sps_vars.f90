@@ -70,6 +70,9 @@ MODULE SPS_VARS
   !turn on/off the Draine & Li 2007 dust emission model 
   INTEGER :: add_dust_emission=1
 
+  !turn on/off the Nenkova et al. 2008 AGN torus dust model
+  INTEGER :: add_agn_dust=1
+
   !turn on/off the AGB circumstellar dust model
   !see Villaume et al. (2014) for details
   INTEGER :: add_agb_dust_model=1
@@ -230,6 +233,10 @@ MODULE SPS_VARS
   INTEGER, PARAMETER :: nemline=108, nlam_nebcont=1963
   !number of metallicity, age, and ionization parameter points
   INTEGER, PARAMETER :: nebnz=7, nebnage=12, nebnip=7
+  !number of optical depths for AGN dust models
+  INTEGER, PARAMETER :: nagndust=9
+  !number of spectral points in the input library
+  INTEGER, PARAMETER :: nagndust_spec=125
 
   !------------IMF-related Constants--------------!
   
@@ -395,6 +402,10 @@ MODULE SPS_VARS
   !on the resolution of the spectral libraries.
   REAL(SP), DIMENSION(nspec)   :: neb_res_min=0.0
 
+  !arrays for AGN dust
+  REAL(SP), DIMENSION(nagndust)       :: agndust_tau=0.
+  REAL(SP), DIMENSION(nspec,nagndust) :: agndust_spec=0.
+
   !arrays for the isochrone data
   REAL(SP), DIMENSION(nz,nt,nm) :: mact_isoc=0.,logl_isoc=0.,&
        logt_isoc=0.,logg_isoc=0.,ffco_isoc=0.,phase_isoc=0.,&
@@ -425,7 +436,8 @@ MODULE SPS_VARS
           dust1_index=-1.0,mdave=0.5,sf_start=0.,sf_trunc=0.,sf_slope=0.,&
           duste_gamma=0.01,duste_umin=1.0,duste_qpah=3.5,fcstar=1.0,&
           masscut=150.0,sigma_smooth=0.,agb_dust=1.0,min_wave_smooth=1E3,&
-          max_wave_smooth=1E4,gas_logu=-2.0,gas_logz=0.,igm_factor=1.0
+          max_wave_smooth=1E4,gas_logu=-2.0,gas_logz=0.,igm_factor=1.0,&
+          fagn=0.0,agn_tau=10.0
      INTEGER :: zmet=1,sfh=0,wgp1=1,wgp2=1,wgp3=1,evtype=-1
      INTEGER, DIMENSION(nbands) :: mag_compute=0
      INTEGER, DIMENSION(nt) :: ssp_gen_age=1

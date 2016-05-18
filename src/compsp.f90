@@ -6,9 +6,9 @@ SUBROUTINE COMPSP(write_compsp, nzin, outfile,&
   !N.B. variables not otherwise defined come from sps_vars.f90
   use sps_vars
   use sps_utils, only: write_isochrone, add_nebular, setup_tabular_sfh, &
-                       csp_gen, sfhinfo, &
-                       smoothspec, igm_absorb, getindx, getmags, &
-                       linterp
+                       csp_gen, sfhinfo, linterp, agn_dust, &
+                       smoothspec, igm_absorb, getindx, getmags
+                       
   implicit none
 
   INTEGER, INTENT(in) :: write_compsp,nzin
@@ -135,6 +135,10 @@ SUBROUTINE COMPSP(write_compsp, nzin, outfile,&
         spec_csp = igm_absorb(spec_lambda,spec_csp,pset%zred,&
                               pset%igm_factor)
      endif
+     !add AGN dust
+     IF (add_agn_dust.EQ.1.AND.pset%fagn.GT.tiny_number) THEN
+        spec_csp = agn_dust(spec_lambda,spec_csp,pset,lbol_csp)
+     ENDIF
      ! Compute spectral indices
      if (write_compsp.EQ.4) then
         call getindx(spec_lambda,spec_csp,indx)

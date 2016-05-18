@@ -38,7 +38,7 @@ SUBROUTINE GETSPEC(pset,mact,logt,lbol,logg,phase,ffco,lmdot,wght,spec)
      jlo = MIN(MAX(locate(pagb_logt,logt),1),ndim_pagb-1)
      t   = (logt-pagb_logt(jlo)) / &
           (pagb_logt(jlo+1)-pagb_logt(jlo))
-     t = MIN(MAX(t,-1.0),1.0) !no extrapolation
+     t = MIN(MAX(t,0.0),1.0) !no extrapolation
      klo = 1
      IF (zlegend(pset%zmet)/zsol.GT.0.5) klo=2 
      !the post-agb library is normalized to unity
@@ -55,7 +55,7 @@ SUBROUTINE GETSPEC(pset,mact,logt,lbol,logg,phase,ffco,lmdot,wght,spec)
      flag = flag+1
      jlo  = MIN(MAX(locate(wrn_logt,logt),1),ndim_wr-1)
      t    = (logt-wrn_logt(jlo)) / (wrn_logt(jlo+1)-wrn_logt(jlo))
-     t    = MIN(MAX(t,-1.0),1.0) !no extrapolation
+     t    = MIN(MAX(t,0.0),1.0) !no extrapolation
      !the WR library is normalized to unity
      spec = lbol*((1-t)*wrn_spec(:,jlo,pset%zmet)+&
           t*wrn_spec(:,jlo+1,pset%zmet))
@@ -66,7 +66,7 @@ SUBROUTINE GETSPEC(pset,mact,logt,lbol,logg,phase,ffco,lmdot,wght,spec)
      flag = flag+1
      jlo  = MIN(MAX(locate(wrc_logt,logt),1),ndim_wr-1)
      t    = (logt-wrc_logt(jlo)) / (wrc_logt(jlo+1)-wrc_logt(jlo))
-     t    = MIN(MAX(t,-1.0),1.0) !no extrapolation
+     t    = MIN(MAX(t,0.0),1.0) !no extrapolation
      !the WR library is normalized to unity
      spec = lbol*((1-t)*wrc_spec(:,jlo,pset%zmet)+&
           t*wrc_spec(:,jlo+1,pset%zmet))
@@ -78,7 +78,7 @@ SUBROUTINE GETSPEC(pset,mact,logt,lbol,logg,phase,ffco,lmdot,wght,spec)
      jlo  = MAX(MIN(locate(agb_logt_o(pset%zmet,:),logt),n_agb_o-1),1)
      t    = (logt - agb_logt_o(pset%zmet,jlo)) / &
           (agb_logt_o(pset%zmet,jlo+1)-agb_logt_o(pset%zmet,jlo))
-     t    = MIN(MAX(t,0.0),1.0)
+     t    = MIN(MAX(t,0.0),1.0) !no extrapolation
 
      !The spectra are Fdlambda, need to convert to Fdnu and 
      !interpolate in Teff.
@@ -95,7 +95,7 @@ SUBROUTINE GETSPEC(pset,mact,logt,lbol,logg,phase,ffco,lmdot,wght,spec)
         jlo  = MAX(MIN(locate(agb_logt_car,logt),n_agb_car-1),1)
         t    = (logt - agb_logt_car(jlo)) / &
              (agb_logt_car(jlo+1)-agb_logt_car(jlo))
-        t    = MIN(MAX(t,0.0),1.0)
+        t    = MIN(MAX(t,0.0),1.0) !no extrapolation
         !The spectra are Fnu/Lbol
         spec = lbol*( (1-t)*agb_spec_car(:,jlo) + t*(agb_spec_car(:,jlo+1)) )
 

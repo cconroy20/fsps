@@ -57,8 +57,8 @@ SUBROUTINE SMOOTHSPEC(lambda,spec,sigma,minl,maxl)
         ENDDO
 
      !compute smoothing the correct (and somewhat slower) way
-     !NB: the accuracy of this approach depends on the min/max wavelength
-     !parameters through the density of the lnlam grid
+     !NB: the accuracy of this approach depends strongly on the 
+     !min/max wavelength parameters through the density of the lnlam grid
      ELSE
         
         dlstep = (LOG(maxl)-LOG(minl))/nspec

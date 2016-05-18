@@ -43,6 +43,8 @@ SUBROUTINE SPS_SETUP(zin)
   REAL(SP), DIMENSION(nspec_agb,n_agb_o) :: agb_specinit_o=0.
   REAL(SP), DIMENSION(nspec_agb,n_agb_c) :: agb_specinit_c=0.
   REAL(SP), DIMENSION(nspec_aringer,n_agb_car) :: aringer_specinit=0.
+  REAL(SP), DIMENSION(nagndust_spec)           :: agndust_lam=0.
+  REAL(SP), DIMENSION(nagndust_spec,nagndust)  :: agndust_specinit=0.
   REAL(KIND(1.0)), DIMENSION(nspec,nzinit,ndim_logt,ndim_logg) :: speclibinit=0.
  
   !---------------------------------------------------------------!
@@ -708,6 +710,38 @@ SUBROUTINE SPS_SETUP(zin)
      ENDDO
   ENDDO
   CLOSE(99)
+
+  !----------------------------------------------------------------!
+  !--------------------Set up AGN dust model-----------------------!
+  !----------------------------------------------------------------!
+
+  !models from Nenkova et al. 2008
+
+  OPEN(99,FILE=TRIM(SPS_HOME)//'/dust/Nenkova08_y010_torusg_n10_q2.0.dat',&
+       STATUS='OLD',iostat=stat,ACTION='READ')
+  IF (stat.NE.0) THEN 
+     WRITE(*,*) 'SPS_SETUP ERROR: error opening AGN dust models'
+     STOP
+  ENDIF
+
+  !burn the header
+  DO i=1,3
+     READ(99,*)
+  ENDDO
+
+  !read in the optical depths
+  READ(99,*) agndust_tau
+
+  DO i=1,nagndust_spec
+     READ(99,*) agndust_lam(i),agndust_specinit(i,:)
+  ENDDO
+
+  i1 = locate(spec_lambda,agndust_lam(1))
+  i2 = locate(spec_lambda,agndust_lam(nagndust_spec))
+  DO i=1,nagndust
+     agndust_spec(i1:i2,i) = 10**linterparr(LOG10(agndust_lam),&
+          LOG10(agndust_specinit(:,i)),LOG10(spec_lambda(i1:i2)))
+  ENDDO
 
 
   !----------------------------------------------------------------!
