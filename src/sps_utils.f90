@@ -90,6 +90,19 @@ MODULE SPS_UTILS
   END INTERFACE
 
   INTERFACE
+     SUBROUTINE CSP_GEN(mass_ssp, lbol_ssp, spec_ssp, pset, tage,&
+                        mass_csp, lbol_csp, spec_csp, mdust_csp)
+       USE sps_vars
+       REAL(SP), DIMENSION(ntfull), INTENT(in) :: mass_ssp, lbol_ssp
+       REAL(SP), DIMENSION(nspec, ntfull), INTENT(in) :: spec_ssp
+       TYPE(PARAMS), intent(in) :: pset
+       REAL(SP), INTENT(in)  :: tage
+       REAL(SP), INTENT(out) :: mass_csp, lbol_csp, mdust_csp
+       REAL(SP), INTENT(out), DIMENSION(nspec) :: spec_csp
+     END SUBROUTINE CSP_GEN
+  END INTERFACE
+
+  INTERFACE
      FUNCTION FUNCINT(func,a,b)
        USE sps_vars
        REAL(SP), INTENT(IN) :: a,b
@@ -174,31 +187,13 @@ MODULE SPS_UTILS
   END INTERFACE
 
   INTERFACE
-     FUNCTION INTSFR(sfh,tau,const,maxtime,sfstart,sfslope,tmax,t1,t2,tweight)
+     FUNCTION INTSFWGHT(sspind, logt, sfh)
        USE sps_vars
-       INTEGER, INTENT(in)  :: sfh
-       REAL(SP), INTENT(in) :: t1,t2,tau,const,maxtime,sfstart,sfslope,tmax
-       REAL(SP) :: intsfr
-       INTEGER, intent(in), optional :: tweight
-     END FUNCTION INTSFR
-  END INTERFACE
-
-  INTERFACE
-     SUBROUTINE INTSPEC(pset,nti,spec_ssp,csp,mass_ssp,lbol_ssp,&
-          mass,lbol,specb,massb,lbolb,deltb,sfstart,tau,const,sftrunc,&
-          tmax,mdust,tweight)
-       USE sps_vars
-       INTEGER, intent(in), optional :: tweight
-       INTEGER,  INTENT(in)    :: nti
-       REAL(SP), INTENT(in)    :: massb,lbolb,deltb,sfstart,tau,const,sftrunc,tmax
-       REAL(SP), INTENT(inout) :: mass, lbol, mdust
-       REAL(SP), INTENT(in), DIMENSION(ntfull) :: mass_ssp,lbol_ssp
-       REAL(SP), INTENT(in), DIMENSION(nspec,ntfull) :: spec_ssp
-       REAL(SP), INTENT(in), DIMENSION(nspec)    :: specb
-       REAL(SP), INTENT(inout), DIMENSION(nspec) :: csp
-       REAL(SP), DIMENSION(nspec)  :: csp1,csp2
-       TYPE(PARAMS), INTENT(in)    :: pset
-     END SUBROUTINE INTSPEC
+       TYPE(SFHPARAMS), INTENT(in) :: sfh
+       INTEGER, INTENT(in) :: sspind
+       REAL(SP), DIMENSION(2), INTENT(in) :: logt
+       REAL(SP) :: intsfwght
+     END FUNCTION INTSFWGHT
   END INTERFACE
 
   INTERFACE
@@ -279,6 +274,41 @@ MODULE SPS_UTILS
        CHARACTER(100), INTENT(in) :: outfile
        TYPE(PARAMS), INTENT(in)    :: pset
      END SUBROUTINE SBF
+  END INTERFACE
+
+  INTERFACE
+     SUBROUTINE SETUP_TABULAR_SFH(pset, nzin)
+       USE sps_vars
+       TYPE(PARAMS), INTENT(in) :: pset
+       INTEGER, INTENT(in) :: nzin
+     END SUBROUTINE SETUP_TABULAR_SFH
+  END INTERFACE
+
+  INTERFACE
+     SUBROUTINE SFHINFO(pset, age, mfrac, sfr, frac_linear)
+       USE sps_vars
+       TYPE(PARAMS), INTENT(in) :: pset
+       REAL(SP), INTENT(in) :: age
+       REAL(SP), INTENT(out) :: mfrac, sfr, frac_linear
+     END SUBROUTINE SFHINFO
+  END INTERFACE
+
+  INTERFACE
+     FUNCTION SFHLIMIT(tlim, sfh)
+       USE sps_vars
+       TYPE(SFHPARAMS), INTENT(in) :: sfh
+       REAL(SP), INTENT(in) :: tlim
+       REAL(SP) :: sfhlimit
+     END FUNCTION SFHLIMIT
+  END INTERFACE
+
+  INTERFACE
+     FUNCTION SFH_WEIGHT(sfh, imin, imax)
+       USE sps_vars
+       TYPE(SFHPARAMS), INTENT(in) :: sfh
+       INTEGER, INTENT(in) :: imin, imax
+       REAL(SP), DIMENSION(ntfull) :: sfh_weight
+     END FUNCTION SFH_WEIGHT
   END INTERFACE
 
   INTERFACE

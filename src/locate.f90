@@ -1,4 +1,7 @@
 FUNCTION LOCATE(xx,x)
+  ! Returns the index of the sorted array `xx` that is closest to but below `x`.
+  !
+  ! That is, the element of `xx` that won The Price is Right.
 
   USE sps_vars
   IMPLICIT NONE
@@ -7,12 +10,12 @@ FUNCTION LOCATE(xx,x)
   INTEGER :: locate
   INTEGER :: n,jl,jm,ju
   LOGICAL :: ascnd
-  
+
   n = SIZE(xx)
   ascnd = (xx(n) >= xx(1))
   jl=0
   ju=n+1
-  
+
   DO
      IF (ju-jl <= 1) EXIT
      jm=(ju+jl)/2
