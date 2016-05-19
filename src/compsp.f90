@@ -111,15 +111,16 @@ SUBROUTINE COMPSP(write_compsp, nzin, outfile,&
      call csp_gen(mass_ssp, lbol_ssp, spec_ssp, &
                   pset, age, &
                   mass_csp, lbol_csp, spec_csp, mdust_csp)
-
-     if (pset%tage.le.0) then
-        call sfhinfo(pset, age, mass_frac, tsfr, frac_linear)
+     
+     call sfhinfo(pset, age, mass_frac, tsfr, frac_linear)
+     if (pset%tage.le.0) then   
         mass_csp = mass_csp * mass_frac
         lbol_csp = log10(10**lbol_csp * mass_frac)
         spec_csp = spec_csp * mass_frac
         mdust_csp = mdust_csp * mass_frac
      else
-        tsfr = 0.0
+        ! Renormalize the SFR to be appropriate for one solar mass formed.
+        tsfr = tsfr / mass_frac
         mass_frac = 1.0
      endif
 
