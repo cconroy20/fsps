@@ -160,7 +160,7 @@ MODULE SPS_VARS
   REAL(SP), PARAMETER :: zsol = 0.0142
   CHARACTER(4), PARAMETER :: isoc_type = 'mist'
   INTEGER, PARAMETER :: nt=107
-  INTEGER, PARAMETER :: nz=11
+  INTEGER, PARAMETER :: nz=12
 #elif (PARSEC)
   REAL(SP), PARAMETER :: zsol = 0.01524
   CHARACTER(4), PARAMETER :: isoc_type = 'prsc'
