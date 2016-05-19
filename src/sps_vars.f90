@@ -439,7 +439,7 @@ MODULE SPS_VARS
           max_wave_smooth=1E4,gas_logu=-2.0,gas_logz=0.,igm_factor=1.0,&
           fagn=0.0,agn_tau=10.0
      INTEGER :: zmet=1,sfh=0,wgp1=1,wgp2=1,wgp3=1,evtype=-1
-     INTEGER, DIMENSION(nbands) :: mag_compute=0
+     INTEGER, DIMENSION(nbands) :: mag_compute=1
      INTEGER, DIMENSION(nt) :: ssp_gen_age=1
      CHARACTER(50) :: imf_filename='', sfh_filename=''
   END TYPE PARAMS
