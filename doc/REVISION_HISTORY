@@ -130,3 +130,13 @@
  - Geneva isochrone database added (these are older Geneva models)
  - added additional photometric filters
  - fixed various bugs related to star formation truncation options
+
+XX/XX/XX
+
+ - Release of v3.0
+ - MIST and PARSEC isochrones added
+ - New version of compsp routine that is much faster and more accurate.
+   This obviates the need for the time_res_incr parameter
+ - AGN dust models of Nenkova et al. 2008 added
+ - Added additional filters, including NEWFIRM, Suprime-Cam, VISTA-VIRCAM
+ - Fixed a minor bug in the write_isochrone routine related to BHB and BS stars
