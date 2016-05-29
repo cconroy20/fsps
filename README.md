@@ -1,6 +1,6 @@
 FSPS: Flexible Stellar Population Synthesis
 =====
-version 2.6
+version 3.0
 
 References
 ---------
