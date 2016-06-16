@@ -31,9 +31,9 @@ F90 = gfortran
 #  (Uncomment only one)
 #========================
 # GNU (version < 4.3.0)
-F90FLAGS = -O -cpp
+#F90FLAGS = -O -cpp
 # GNU (version >= 4.3.0)
-#F90FLAGS = -O3 -march=native -cpp
+F90FLAGS = -O3 -march=native -cpp -fPIC
 #---------------------
 # Intel (Itanium 2 processor)
 #F90FLAGS = -O3 -mcpu=itanium2 -cpp
