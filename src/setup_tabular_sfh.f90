@@ -7,12 +7,14 @@
 ! are correct), but it is up to the user to ensure that the tabulated sfh is
 ! well-sampled so that the outputs are stable. Obviously, highly oscillatory
 ! data require dense sampling.
+!
+! SFRs are clipped to a minimum value of 1e-30 to avoid divide by zero errors.
 
 
 subroutine setup_tabular_sfh(pset, nzin)
 
   use sps_vars, only: sfh_tab, ntabsfh, ntabmax, nz, &
-                      tiny_number, PARAMS, SPS_HOME
+                      tiny_number, tiny30, PARAMS, SPS_HOME
   implicit none
   type(PARAMS), intent(in) :: pset
   integer, intent(in) :: nzin
@@ -49,8 +51,8 @@ subroutine setup_tabular_sfh(pset, nzin)
 
      
      ntabsfh = n-1
-     sfh_tab(1,1:ntabsfh) = sfh_tab(1,1:ntabsfh)*1E9 !convert to yrs
-
+     sfh_tab(1,1:ntabsfh) = sfh_tab(1,1:ntabsfh)*1E9 !convert to yrs        
+     
      !special switch to compute only the last time output
      !in the tabulated file
      ! IF (pset%tage.EQ.-99.) imin=imax
@@ -65,4 +67,11 @@ subroutine setup_tabular_sfh(pset, nzin)
 
   ENDIF
 
+  ! clip SFR to a minimum of 1e-30
+  if (minval(sfh_tab(2, 1:ntabsfh)).lt.tiny30) then
+     do i=1, ntabsfh
+        sfh_tab(2, i) = max(sfh_tab(2, i), tiny30)
+     enddo
+  endif        
+  
 end subroutine setup_tabular_sfh
