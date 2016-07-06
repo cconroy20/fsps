@@ -68,10 +68,8 @@ subroutine setup_tabular_sfh(pset, nzin)
   ENDIF
 
   ! clip SFR to a minimum of 1e-30
-  if (minval(sfh_tab(2, 1:ntabsfh)).lt.tiny30) then
-     do i=1, ntabsfh
-        sfh_tab(2, i) = max(sfh_tab(2, i), tiny30)
-     enddo
-  endif        
+  do n=1, ntabsfh
+     sfh_tab(2, n) = max(sfh_tab(2, n), tiny30)
+  enddo
   
 end subroutine setup_tabular_sfh
