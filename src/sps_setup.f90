@@ -46,7 +46,8 @@ SUBROUTINE SPS_SETUP(zin)
   REAL(SP), DIMENSION(nagndust_spec)           :: agndust_lam=0.
   REAL(SP), DIMENSION(nagndust_spec,nagndust)  :: agndust_specinit=0.
   REAL(KIND(1.0)), DIMENSION(nspec,nzinit,ndim_logt,ndim_logg) :: speclibinit=0.
- 
+  REAL(SP), DIMENSION(ntabmax) :: lsflam=0.,lsfsig=0.
+
   !---------------------------------------------------------------!
   !---------------------------------------------------------------!
 
@@ -245,8 +246,8 @@ SUBROUTINE SPS_SETUP(zin)
 
   !interpolate the input spectral library to the isochrone grid
   !notice that we're interpolating at fixed Z/Zsol even in cases
-  !where the isochrones and spectra might have different Zsol. This might in fact
-  !be the best thing to do.  Either way, its not ideal.
+  !where the isochrones and spectra might have different Zsol. This might 
+  !in fact be the best thing to do.  Either way, its not ideal.
   DO z=1,nz
 
      i1 = MIN(MAX(locate(LOG10(zlegendinit/zsol_spec),&
@@ -304,8 +305,7 @@ SUBROUTINE SPS_SETUP(zin)
   agb_logt_c = LOG10(agb_logt_c)
   
   !read in TP-AGB O-rich spectra
-  OPEN(95,FILE=TRIM(SPS_HOME)//&
-       '/SPECTRA/AGB_spectra/Orich.spec',&
+  OPEN(95,FILE=TRIM(SPS_HOME)//'/SPECTRA/AGB_spectra/Orich.spec',&
        STATUS='OLD',iostat=stat,ACTION='READ')
   IF (stat.NE.0) THEN
      WRITE(*,*) 'SPS_SETUP ERROR: /AGB_spectra/'//&
@@ -323,8 +323,7 @@ SUBROUTINE SPS_SETUP(zin)
   ENDDO
 
   !read in TP-AGB C-rich spectra
-  OPEN(96,FILE=TRIM(SPS_HOME)//&
-       '/SPECTRA/AGB_spectra/Crich.spec',&
+  OPEN(96,FILE=TRIM(SPS_HOME)//'/SPECTRA/AGB_spectra/Crich.spec',&
        STATUS='OLD',iostat=stat,ACTION='READ')
   IF (stat.NE.0) THEN
      WRITE(*,*) 'SPS_SETUP ERROR: /AGB_spectra/'//&
@@ -900,8 +899,8 @@ SUBROUTINE SPS_SETUP(zin)
 
 909  CONTINUE
 
-     IF (j.EQ.50000) THEN
-        WRITE(*,*) 'SPS_SETUP ERROR: did not finish reading in filters!'
+     IF (j.GE.50000) THEN
+        WRITE(*,*) 'SPS_SETUP ERROR: did not finish reading in filter ',i
         STOP
      ENDIF
      IF (jj.EQ.0) THEN
@@ -1101,6 +1100,44 @@ SUBROUTINE SPS_SETUP(zin)
         time_full(i) = time_full(i-1)+d1
      ENDIF
   ENDDO
+
+  !----------------------------------------------------------------!
+  !------------------------set up the LSF--------------------------!
+  !----------------------------------------------------------------!
+
+  IF (smooth_lsf.EQ.1) THEN
+
+     OPEN(99,FILE=TRIM(SPS_HOME)//'/data/lsf.dat',&
+       STATUS='OLD',iostat=stat,ACTION='READ')
+     IF (stat.NE.0) THEN
+        WRITE(*,*) 'SPS_SETUP ERROR: lsf.dat cannot be opened'
+        STOP 
+     ENDIF
+
+     DO i=1,ntabmax
+        READ(99,*,iostat=stat) lsflam(i),lsfsig(i)
+        IF (stat.NE.0) GOTO 910
+        IF (i.EQ.1) lsfinfo%minlam=lsflam(i)
+     ENDDO
+
+     WRITE(*,*) 'SPS_SETUP ERROR: read to end of lsf.dat file'
+     STOP
+
+910  CONTINUE
+     
+     lsfinfo%maxlam = lsflam(i-1)
+
+     !interpolate onto the main wavelength array
+     DO n=1,nspec
+        IF (spec_lambda(n).GE.lsfinfo%minlam.AND.&
+             spec_lambda(n).LE.lsfinfo%maxlam) THEN
+           lsfinfo%lsf(n) = linterp(lsflam(1:i-1),lsfsig(1:i-1),&
+                spec_lambda(n))
+        ENDIF
+     ENDDO
+
+  ENDIF
+
 
   !----------------------------------------------------------------!
   !----------------------------------------------------------------!
