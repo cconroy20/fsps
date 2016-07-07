@@ -1,27 +1,24 @@
-SUBROUTINE SMOOTHSPEC(lambda,spec,sigma,minl,maxl,ires)
+SUBROUTINE SMOOTHSPEC(lambda,spec,sigma,minl,maxl)
 
   !routine to compute velocity broadening of an input spectrum
   !this is only approximate b/c we are ignoring the variation
   !in dlambda with lambda within each integration
-  !integration is truncated at +/-4*sigma.
-  !If optional input ires is present, then the spectrum will be
-  !smoothed by a wavelength dependent velocity dispersion.
+  !integration is truncated at +/-4*sigma
 
   USE sps_vars; USE sps_utils, ONLY : locate,linterp,tsum,linterparr
   IMPLICIT NONE
   
   REAL(SP), INTENT(inout), DIMENSION(nspec) :: spec
-  REAL(SP), INTENT(in), DIMENSION(nspec)    :: lambda
-  REAL(SP), INTENT(in), DIMENSION(nspec), OPTIONAL :: ires
+  REAL(SP), INTENT(in), DIMENSION(nspec) :: lambda
   REAL(SP), INTENT(in) :: sigma,minl,maxl
   REAL(SP), DIMENSION(nspec) :: tspec,tnspec,vel,func,gauss,psf,lnlam
-  REAL(SP) :: ckms,cg,xmax,xmin,fwhm,psig,dlstep,sigmal
+  REAL(SP) :: ckms,cg,xmax,xmin,fwhm,psig,dlstep
   INTEGER :: i,j,il,ih,m=4,grange
 
   !---------------------------------------------------------------!
   !---------------------------------------------------------------!
  
-  IF (sigma.LE.tiny_number) RETURN
+  IF (sigma.EQ.0) RETURN
 
   ckms = clight/1E13
 
@@ -42,14 +39,7 @@ SUBROUTINE SMOOTHSPEC(lambda,spec,sigma,minl,maxl,ires)
               CYCLE
            ENDIF
            
-           IF (PRESENT(ires)) THEN
-              sigmal = ires(i)
-              IF (sigmal.LE.tiny_number) CYCLE
-           ELSE
-              sigmal = sigma
-           ENDIF
-
-           xmax = lambda(i)*(m*sigmal/ckms+1)
+           xmax = lambda(i)*(m*sigma/ckms+1)
            ih   = MIN(locate(lambda(1:nspec),xmax),nspec)
            il   = MAX(2*i-ih,1)
            
@@ -57,8 +47,8 @@ SUBROUTINE SMOOTHSPEC(lambda,spec,sigma,minl,maxl,ires)
               spec(i) = tspec(i)
            ELSE
               vel(il:ih)  = (lambda(i)/lambda(il:ih)-1)*ckms
-              func(il:ih) =  1/SQRT(2*mypi)/sigmal * &
-                   EXP(-vel(il:ih)**2/2./sigmal**2)
+              func(il:ih) =  1/SQRT(2*mypi)/sigma * &
+                   EXP(-vel(il:ih)**2/2./sigma**2)
               !normalize the weights to integrate to unity
               func(il:ih) = func(il:ih) / TSUM(vel(il:ih),func(il:ih))
               spec(i) = TSUM(vel(il:ih),func(il:ih)*tspec(il:ih))
@@ -110,7 +100,6 @@ SUBROUTINE SMOOTHSPEC(lambda,spec,sigma,minl,maxl,ires)
   ELSE
      
      DO i=1,nspec
-
         IF (lambda(i).LT.minl.OR.lambda(i).GT.maxl) THEN
            spec(i)=tspec(i)
            CYCLE
@@ -134,8 +123,7 @@ SUBROUTINE SMOOTHSPEC(lambda,spec,sigma,minl,maxl,ires)
         !DO j=1,nspec
         !   spec(i) = spec(i) + gauss(j)*tspec(j)
         !ENDDO
- 
-    ENDDO
+     ENDDO
      
   ENDIF
 

@@ -224,21 +224,9 @@ SUBROUTINE SSP_GEN(pset,mass_ssp,lbol_ssp,spec_ssp)
 
   !add the nebular emission model once at the SSP level
   IF (add_neb_emission.EQ.2) THEN
-     CALL ADD_NEBULAR(pset,spec_ssp,tspec_ssp)
-     spec_ssp = tspec_ssp
-  ENDIF
-
-  !-------------------------------------------------------------!
-  !--------now smooth by an instrumental LSF if provided--------!
-  !-------------------------------------------------------------!
-
-  IF (smooth_lsf.EQ.1) THEN
-     DO j=1,ntfull
-        CALL SMOOTHSPEC(spec_lambda,spec_ssp(:,j),99.d0,lsfinfo%minlam,&
-             lsfinfo%maxlam,lsfinfo%lsf)
-     ENDDO
-  ENDIF
-
+    CALL ADD_NEBULAR(pset,spec_ssp,tspec_ssp)
+    spec_ssp = tspec_ssp
+ ENDIF
 
 END SUBROUTINE SSP_GEN
 
