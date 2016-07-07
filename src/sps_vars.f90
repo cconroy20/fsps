@@ -12,9 +12,9 @@ MODULE SPS_VARS
 #define CKC14 0
 
 !------set the isochrone library------!
-#define MIST 1
+#define MIST 0
 !Padova models circa 2008
-#define PADOVA 0
+#define PADOVA 1
 #define PARSEC 0
 #define BASTI 0
 #define GENEVA 0
@@ -79,7 +79,7 @@ MODULE SPS_VARS
   INTEGER :: add_agb_dust_model=1
 
   !turn on/off a Cloudy-based nebular emission model (cont+lines)
-  INTEGER :: add_neb_emission=1
+  INTEGER :: add_neb_emission=0
   !turn on/off the nebular continuum component (automatically 
   !turned off if the above is set to 0)
   INTEGER  :: add_neb_continuum=1
