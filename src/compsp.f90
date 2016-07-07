@@ -98,7 +98,7 @@ SUBROUTINE COMPSP(write_compsp, nzin, outfile,&
         age = pset%tage
      else if ((pset%tage.eq.-99).and.((pset%sfh.eq.2).or.(pset%sfh.eq.3))) then
         ! Special switch to just do the last time in the tabular file
-        age = maxval(sfh_tab(1, 1:ntabsfh)) / 1E9
+        age = maxval(sfh_tab(1, :))
      else
         ! Otherwise we will calculate composite spectra for every SSP age.
         age = 10**(time_full(i)-9.)
@@ -162,7 +162,7 @@ SUBROUTINE COMPSP(write_compsp, nzin, outfile,&
                       mass_csp, lbol_csp, tsfr, mags, spec_csp, mdust_csp, indx)
 
      ! Terminate the loop if a single specific tage was requested
-     if ((pset%tage.gt.0).or.(pset%tage.eq.-99)) then
+     if (pset%tage.gt.0) then
         exit
      endif
 
