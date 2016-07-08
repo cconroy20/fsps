@@ -3,7 +3,7 @@ PROGRAM SPEC_BIN
   !routine to convert ascii spectral files to binary
   !must be run twice for each value of isoc_type var
 
-  USE sps_vars; USE nr
+  USE sps_vars
   IMPLICIT NONE
   INTEGER  :: z,dumi1,i,j
   REAL(SP) :: dumr1,d2,d3

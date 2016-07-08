@@ -73,7 +73,7 @@ simple.o : sps_vars.o  sps_utils.o
 
 lesssimple.o : sps_vars.o sps_utils.o
 
-spec_bin.o : sps_vars.o nrtype.o nr.o sps_utils.o
+spec_bin.o : sps_vars.o sps_utils.o
 
 sps_utils.o :  sps_vars.o
 
