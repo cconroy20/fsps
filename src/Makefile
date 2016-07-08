@@ -1,5 +1,3 @@
-# Modified 2008-10-24 by Ted Kisner <tskisner@lbl.gov>
-
 # NB: this code is fairly memory intensive.  If you run into memory errors
 # when building this code, you may have to increase the default memory 
 # allocation.
@@ -40,18 +38,17 @@ F90FLAGS = -O -cpp
 # Intel (EM64T/AMD64 processor)
 #F90FLAGS = -O3 -funroll-loops -xP -cpp
 #---------------------
-# PGI
-#F90FLAGS = -O3 -fastsse -Mcache_align -cpp
-#---------------------
 
-PROGS = simple lesssimple autosps 
+PROGS = simple lesssimple autosps spec_bin
 
-COMMON = sps_vars.o sps_utils.o compsp.o csp_gen.o ssp_gen.o getmags.o locate.o funcint.o \
-sps_setup.o pz_convol.o get_tuniv.o intsfwght.o imf.o imf_weight.o add_dust.o getspec.o sbf.o \
-add_bs.o mod_hb.o add_remnants.o getindx.o smoothspec.o mod_gb.o add_nebular.o \
-write_isochrone.o sfhstat.o linterp.o tsum.o add_agb_dust.o linterparr.o \
-ztinterp.o vacairconv.o igm_absorb.o get_lumdist.o attn_curve.o \
-sfh_weight.o sfhlimit.o sfhinfo.o setup_tabular_sfh.o agn_dust.o
+COMMON = sps_vars.o sps_utils.o compsp.o csp_gen.o ssp_gen.o \
+	getmags.o locate.o funcint.o sps_setup.o pz_convol.o \
+	get_tuniv.o intsfwght.o imf.o imf_weight.o add_dust.o \
+	getspec.o sbf.o add_bs.o mod_hb.o add_remnants.o getindx.o \
+	smoothspec.o mod_gb.o add_nebular.o write_isochrone.o \
+	sfhstat.o linterp.o tsum.o add_agb_dust.o linterparr.o \
+	ztinterp.o vacairconv.o igm_absorb.o get_lumdist.o attn_curve.o \
+	sfh_weight.o sfhlimit.o sfhinfo.o setup_tabular_sfh.o agn_dust.o
 
 all : $(PROGS)
 
@@ -67,11 +64,16 @@ simple : simple.o $(COMMON)
 lesssimple : lesssimple.o $(COMMON)
 	$(F90) -o lesssimple.exe lesssimple.o $(COMMON)
 
+spec_bin : spec_bin.o sps_vars.o
+	$(F90) -o spec_bin.exe spec_bin.o sps_vars.o
+
 autosps.o : sps_vars.o sps_utils.o
 
 simple.o : sps_vars.o  sps_utils.o
 
 lesssimple.o : sps_vars.o sps_utils.o
+
+spec_bin.o : sps_vars.o nrtype.o nr.o sps_utils.o
 
 sps_utils.o :  sps_vars.o
 

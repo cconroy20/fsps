@@ -1,3 +1,9 @@
 *.o
 *.mod
 *.exe
+fitting
+CodeToDo.txt
+runsps.f90
+metalml.f90
+colorteff.f90
+bytype.f90

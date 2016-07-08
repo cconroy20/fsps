@@ -31,7 +31,7 @@ SUBROUTINE SMOOTHSPEC(lambda,spec,sigma,minl,maxl,ires)
   IF (smooth_velocity.EQ.1) THEN
 
      !compute smoothing the fast (and slightly less accurate) way
-     IF (smoothspec_fast.EQ.1) THEN
+     IF (smoothspec_fast.EQ.1.OR.PRESENT(ires)) THEN
         
         spec = 0.0
 
