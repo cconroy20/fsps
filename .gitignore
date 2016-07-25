@@ -2,6 +2,7 @@
 *.mod
 *.exe
 nr
+OUTPUTS/*
 CodeToDo.txt
 runsps.f90
 metalml.f90

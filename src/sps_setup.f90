@@ -475,7 +475,7 @@ SUBROUTINE SPS_SETUP(zin)
   DO j=1,nz
      i1 = MIN(MAX(locate(twrzmet,LOG10(zlegend(j)/zsol_spec)),1),SIZE(twrzmet)-1)
      dz = (LOG10(zlegend(j)/zsol_spec)-twrzmet(i1))/(twrzmet(i1+1)-twrzmet(i1))
-     dz = MIN(MAX(dz,-1.),1.)
+     dz = MIN(MAX(dz,0.0),1.)
      DO i=1,ndim_wr
         tspecwr = (1-dz)*LOG10(twrn(:,i,i1)+tiny_number) + &
              dz*LOG10(twrn(:,i,i1+1)+tiny_number)
@@ -506,7 +506,7 @@ SUBROUTINE SPS_SETUP(zin)
   DO j=1,nz
      i1 = MIN(MAX(locate(twrzmet,LOG10(zlegend(j)/zsol_spec)),1),SIZE(twrzmet)-1)
      dz = (LOG10(zlegend(j)/zsol_spec)-twrzmet(i1))/(twrzmet(i1+1)-twrzmet(i1))
-     dz = MIN(MAX(dz,-1.),1.)
+     dz = MIN(MAX(dz,0.0),1.)
      DO i=1,ndim_wr
         tspecwr = (1-dz)*LOG10(twrc(:,i,i1)+tiny_number) + &
              dz*LOG10(twrc(:,i,i1+1)+tiny_number)

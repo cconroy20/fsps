@@ -153,6 +153,7 @@ SUBROUTINE COMPSP(write_compsp, nzin, outfile,&
         ! here we compute the redshift at the corresponding age
         zred = min(max(linterp(cosmospl(:,2),cosmospl(:,1),&
                        10**time_full(i)/1E9), 0.0), 20.0)
+        write(33,*) zred
         call getmags(zred,spec_csp,mags,pset%mag_compute)
      endif
 

@@ -49,8 +49,7 @@ SUBROUTINE GETSPEC(pset,mact,logt,lbol,logg,phase,ffco,lmdot,wght,spec)
   ! post-AGB. Such stars come from the Padova isochrones, for which no 
   ! phase information is available)
   !NB: there is currently no Z or log(g) dependence in the WR spectra
-  ELSE IF (((phase.EQ.9.0.AND.ffco.LT.10).OR.&
-       (phase.NE.6.0.AND.logt.GE.4.699))) THEN
+  ELSE IF (((phase.EQ.9.0.AND.ffco.LT.10))) THEN
      
      flag = flag+1
      jlo  = MIN(MAX(locate(wrn_logt,logt),1),ndim_wr-1)
@@ -170,8 +169,9 @@ SUBROUTINE GETSPEC(pset,mact,logt,lbol,logg,phase,ffco,lmdot,wght,spec)
   spec = MAX(spec,tiny_number)
   
   IF (verbose.EQ.1) THEN
-     IF (flag.EQ.0.AND.(spec_type.EQ.'basel'.OR.spec_type.EQ.'ckc14').AND.&
-          phase.NE.6.AND.phase.NE.9) THEN
+     !IF (flag.EQ.0.AND.(spec_type.EQ.'basel'.OR.spec_type.EQ.'ckc14').AND.&
+     !     phase.NE.6.AND.phase.NE.9) THEN
+     IF (flag.EQ.0.) THEN
         WRITE(*,'(" GETSPEC WARNING: point entirely off the grid: Z=",I2,'//&
              '" logT=",F5.2," logg=",F5.2," phase=",I2," lg IMF*L=",F5.2)') &
             pset%zmet,logt,loggi,INT(phase),LOG10(wght*lbol)
