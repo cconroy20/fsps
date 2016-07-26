@@ -52,7 +52,7 @@ instructions.
 * `dust`: Contains the dust attenuation curves for the Witt & Gordon
 (2000) dust model and the dust emission spectra from the Draine & Li
 2007 grain model.  Also contains the circumstellar dust models from 
-Villaume et al. 2015
+Villaume et al. 2015 and the AGN dusty torus models of Nenkova et al. 2008.
 
 * `nebular`: Contains the Cloudy lookup tables for nebular emission 
 (both continuum and line emission) computed by Nell Byler.

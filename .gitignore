@@ -1,3 +1,11 @@
 *.o
 *.mod
 *.exe
+nr
+OUTPUTS/*
+CodeToDo.txt
+runsps.f90
+metalml.f90
+colorteff.f90
+bytype.f90
+Makefile.prv

@@ -6,15 +6,15 @@ MODULE SPS_VARS
   SAVE
 
 !-------set the spectral library------!
-#define BASEL 1
-#define MILES 0
+#define MILES 1
+#define BASEL 0
 ! "CKC14" currently under development.  do not use!
 #define CKC14 0
 
 !------set the isochrone library------!
-#define MIST 0
+#define MIST 1
 !Padova models circa 2008
-#define PADOVA 1
+#define PADOVA 0
 #define PARSEC 0
 #define BASTI 0
 #define GENEVA 0
@@ -39,7 +39,7 @@ MODULE SPS_VARS
   !flag specifying TP-AGB normalization scheme
   !0 = default Padova 2007 isochrones
   !1 = Conroy & Gunn 2010 normalization
-  !2 = Villaume, Conroy, Johnson 2014 normalization
+  !2 = Villaume, Conroy, Johnson 2015 normalization
   INTEGER :: tpagb_norm_type=2
 
   !turn-on time for BHB and SBS phases, time is in log(yrs)
@@ -50,6 +50,7 @@ MODULE SPS_VARS
   INTEGER :: pzcon=0
   
   !the factor by which we increase the time array
+  !this should no longer need to be set to anything other than 1
   INTEGER, PARAMETER :: time_res_incr=1
 
   !whether to interpolate the SSPs in logt (0) or t (1)
@@ -104,6 +105,10 @@ MODULE SPS_VARS
   !kernel is a sigma, not FWHM)
   INTEGER :: smooth_velocity=1
 
+  !if set, smooth the SSPs within ssp_gen by an instrumental
+  !LSF that is specified in data/lsf.dat
+  INTEGER :: smooth_lsf=0
+
   !set attenuation-law for the diffuse ISM
   !0 = power-law attenuation.  See dust_index variable below
   !1 = MW extinction law, parameterized by Cardelli et al. 1989,
@@ -139,7 +144,7 @@ MODULE SPS_VARS
 
   !flag indicating whether to use the Mdot tabulated in the isochrone
   !files (if available) for the AGB dust model.  Note: only use this
-  !feature in conjunction with isochrone files that include Mdot!
+  !feature with isochrone files that include Mdot (e.g., MIST)!
   INTEGER, PARAMETER :: use_isoc_mdot=0
 
   !------------Pre-compiler defintions------------!
@@ -164,7 +169,7 @@ MODULE SPS_VARS
 #elif (PARSEC)
   REAL(SP), PARAMETER :: zsol = 0.01524
   CHARACTER(4), PARAMETER :: isoc_type = 'prsc'
-  INTEGER, PARAMETER :: nt=92
+  INTEGER, PARAMETER :: nt=93
   INTEGER, PARAMETER :: nz=15
 #elif (PADOVA)
   REAL(SP), PARAMETER :: zsol = 0.019
@@ -213,8 +218,8 @@ MODULE SPS_VARS
   INTEGER, PARAMETER :: nm=2000  !10000
   !max number of lines to read in
   INTEGER, PARAMETER ::  nlines=1000000
-  !max number of lines in tabulated SFH
-  INTEGER, PARAMETER :: ntabmax=10000
+  !max number of lines in tabulated SFH, LSF
+  INTEGER, PARAMETER :: ntabmax=20000
   !dimensions of BaSeL library
   INTEGER, PARAMETER :: ndim_logt=68, ndim_logg=19
   !number of O-rich, C-rich AGB spectra (and Aringer C-rich spec)
@@ -454,9 +459,17 @@ MODULE SPS_VARS
 
   ! A structure to hold SFH params converted to intrinsic units
   TYPE SFHPARAMS
-     REAL(SP) :: tau=1.0, tage=0., tburst=0., sf_trunc=0., sf_slope=0., tq=0., t0=0., tb=0.
-     INTEGER :: type=0, use_simha_limits=0
+     REAL(SP) :: tau=1.0,tage=0.,tburst=0.,sf_trunc=0.,sf_slope=0.,&
+          tq=0.,t0=0.,tb=0.
+     INTEGER :: type=0,use_simha_limits=0
   END TYPE SFHPARAMS
+
+  TYPE TLSF
+     REAL(SP), DIMENSION(nspec) :: lsf=0.
+     REAL(SP) :: minlam=0.,maxlam=0.
+  END TYPE TLSF
+
+  TYPE(TLSF) :: lsfinfo
 
   !-----the following structures are not used in the public code-----!
   !--they are included here because some users of FSPS utilize them--!
