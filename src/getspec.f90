@@ -111,7 +111,7 @@ SUBROUTINE GETSPEC(pset,mact,logt,lbol,logg,phase,ffco,lmdot,wght,spec)
      ENDIF
 
   !use the primary library for the rest of the isochrone
-  ELSE IF (logt.LT.4.699) THEN
+  ELSE
 
      flag = flag+1
 
