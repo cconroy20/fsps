@@ -15,6 +15,12 @@ PROGRAM AUTOSPS
   !---------------------------------------------------------------!
   !---------------------------------------------------------------!
   
+  IF (isoc_type.NE.'pdva') THEN
+     WRITE(*,*) 'ERROR: autosps only works with the "Padova" isochrones'
+     WRITE(*,*) '       edit sps_vars.f90 to turn these isochrones on'
+     RETURN
+  ENDIF
+
   !set IMF
   WRITE(6,*)  'enter IMF [0-5; def:0]:'
   WRITE(6,*) ' (0=Salpeter, 1=Chabrier 2003, 2=Kroupa 2001, '//&
