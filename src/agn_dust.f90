@@ -4,10 +4,9 @@ FUNCTION AGN_DUST(lam,spec,pset,lbol_csp)
   IMPLICIT NONE
 
   REAL(SP), DIMENSION(nspec), INTENT(in) :: lam,spec
-  REAL(SP), INTENT(in) :: lbol_csp
-  TYPE(PARAMS), INTENT(in) :: pset
+  REAL(SP), INTENT(in)       :: lbol_csp
+  TYPE(PARAMS), INTENT(in)   :: pset
   REAL(SP), DIMENSION(nspec) :: agn_dust,agnspeci
-
   INTEGER  :: jlo
   REAL(SP) :: dj
  
@@ -16,9 +15,9 @@ FUNCTION AGN_DUST(lam,spec,pset,lbol_csp)
   !interpolate in tau_agn
   jlo = MIN(MAX(locate(agndust_tau,pset%agn_tau),1),&
        nagndust-1)
-  dj   = (pset%agn_tau-agndust_tau(jlo)) / &
+  dj  = (pset%agn_tau-agndust_tau(jlo)) / &
        (agndust_tau(jlo+1)-agndust_tau(jlo))
-  dj   = MAX(MIN(dj,1.0),0.0) !no extrapolation
+  dj  = MAX(MIN(dj,1.0),0.0) !no extrapolation
 
   agnspeci  = (1-dj)*agndust_spec(:,jlo) + dj*agndust_spec(:,jlo+1)
 

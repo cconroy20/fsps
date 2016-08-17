@@ -739,7 +739,7 @@ SUBROUTINE SPS_SETUP(zin)
   i2 = locate(spec_lambda,agndust_lam(nagndust_spec))
   DO i=1,nagndust
      agndust_spec(i1:i2,i) = 10**linterparr(LOG10(agndust_lam),&
-          LOG10(agndust_specinit(:,i)),LOG10(spec_lambda(i1:i2)))
+          LOG10(agndust_specinit(:,i)+tiny30),LOG10(spec_lambda(i1:i2)))-tiny30
   ENDDO
 
 
