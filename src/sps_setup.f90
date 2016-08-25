@@ -566,7 +566,7 @@ SUBROUTINE SPS_SETUP(zin)
               WRITE(*,*) 'SPS_SETUP ERROR: number of mass points GT nm'
               STOP
            ENDIF
-           IF (use_isoc_mdot.EQ.1) THEN
+           IF (isoc_type.EQ.'mist') THEN
               READ(97,*,IOSTAT=stat) logage,mini_isoc(z,n_isoc,m),&
                    mact_isoc(z,n_isoc,m),logl_isoc(z,n_isoc,m),&
                    logt_isoc(z,n_isoc,m),logg_isoc(z,n_isoc,m),&
