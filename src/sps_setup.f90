@@ -255,8 +255,9 @@ SUBROUTINE SPS_SETUP(zin)
      dz = (LOG10(zlegend(z)/zsol)-LOG10(zlegendinit(i1)/zsol_spec)) / &
           (LOG10(zlegendinit(i1+1)/zsol_spec)-LOG10(zlegendinit(i1)/zsol_spec))
 
-     speclib(:,z,:,:) = (1-dz)*speclibinit(:,i1,:,:) + &
-          dz*speclibinit(:,i1+1,:,:)
+     speclib(:,z,:,:) = (1-dz)*LOG10(speclibinit(:,i1,:,:)+tiny_number) + &
+          dz*LOG10(speclibinit(:,i1+1,:,:)+tiny_number)
+     speclib(:,z,:,:) = 10**speclib(:,z,:,:)
 
   ENDDO
 

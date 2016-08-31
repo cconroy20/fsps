@@ -134,6 +134,7 @@ SUBROUTINE GETSPEC(pset,mact,logt,lbol,logg,phase,ffco,lmdot,wght,spec)
      klo = MIN(MAX(locate(speclib_logg,loggi),1),ndim_logg-1)
      t   = (logt-speclib_logt(jlo)) / &
           (speclib_logt(jlo+1)-speclib_logt(jlo))
+     t   = MIN(MAX(t,0.0),1.0) !no extrapolation (this means >50K -> 50K)
      u   = (loggi-speclib_logg(klo))   / &
           (speclib_logg(klo+1)-speclib_logg(klo))
 
@@ -151,7 +152,7 @@ SUBROUTINE GETSPEC(pset,mact,logt,lbol,logg,phase,ffco,lmdot,wght,spec)
      IF ((test1.LE.tiny30.OR.test2.LE.tiny30.OR.&
           test3.LE.tiny30.OR.test4.LE.tiny30).AND.flag.EQ.1) THEN
 
-        IF (verbose.EQ.1) & 
+        IF (verbose.EQ.99) & 
              WRITE(*,'(" GETSPEC WARNING: Part of the '//&
              'point is off the grid: Z=",I2,'//&
              '" logT=",F5.2," logg=",F5.2," phase=",I2," lg IMF*L=",F5.2)') &
@@ -185,7 +186,7 @@ SUBROUTINE GETSPEC(pset,mact,logt,lbol,logg,phase,ffco,lmdot,wght,spec)
   IF (verbose.EQ.1) THEN
      !IF (flag.EQ.0.AND.(spec_type.EQ.'basel'.OR.spec_type.EQ.'ckc14').AND.&
      !     phase.NE.6.AND.phase.NE.9) THEN
-     IF (flag.EQ.0.) THEN
+     IF (flag.EQ.0..AND.wght.GT.0.0) THEN
         WRITE(*,'(" GETSPEC WARNING: point entirely off the grid: Z=",I2,'//&
              '" logT=",F5.2," logg=",F5.2," phase=",I2," lg IMF*L=",F5.2)') &
             pset%zmet,logt,loggi,INT(phase),LOG10(wght*lbol)
