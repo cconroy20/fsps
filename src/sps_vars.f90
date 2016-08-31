@@ -144,7 +144,7 @@ MODULE SPS_VARS
 
   !flag indicating whether to use the Mdot tabulated in the isochrone
   !files (if available) for the AGB dust model.  Note: only use this
-  !feature with isochrone files that include Mdot (e.g., MIST)!
+  !feature with isochrone files that include Mdot (e.g., MIST)
   INTEGER, PARAMETER :: use_isoc_mdot=0
 
   !------------Pre-compiler defintions------------!

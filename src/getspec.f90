@@ -14,7 +14,7 @@ SUBROUTINE GETSPEC(pset,mact,logt,lbol,logg,phase,ffco,lmdot,wght,spec)
   TYPE(PARAMS), INTENT(in) :: pset
   REAL(SP), INTENT(inout), DIMENSION(nspec) :: spec  
   REAL(SP), DIMENSION(nspec) :: ispec
-  REAL(SP) :: t,u,r2,test1,test2,test3,test4,loggi,teffi
+  REAL(SP) :: t,u,r2,test1,test2,test3,test4,loggi,teffi,rwr,twr
   INTEGER  :: klo,jlo,flag
 
   !---------------------------------------------------------------!
@@ -44,31 +44,45 @@ SUBROUTINE GETSPEC(pset,mact,logt,lbol,logg,phase,ffco,lmdot,wght,spec)
      !the post-agb library is normalized to unity
      spec = lbol*((1-t)*pagb_spec(:,jlo,klo)+t*pagb_spec(:,jlo+1,klo))
 
-  !WN WR stars (N-rich), from Smith et al. 2002
-  ! (Also use this library for very hot stars that are not labeled as 
-  ! post-AGB. Such stars come from the Padova isochrones, for which no 
-  ! phase information is available)
-  !NB: there is currently no Z or log(g) dependence in the WR spectra
-  ELSE IF (((phase.EQ.9.0.AND.ffco.LT.10))) THEN
+  !WR library from Smith et al. 2002
+  !NB: there is currently no log(g) dependence in the WR spectra
+  ELSE IF (phase.EQ.9.0) THEN
      
-     flag = flag+1
-     jlo  = MIN(MAX(locate(wrn_logt,logt),1),ndim_wr-1)
-     t    = (logt-wrn_logt(jlo)) / (wrn_logt(jlo+1)-wrn_logt(jlo))
-     t    = MIN(MAX(t,0.0),1.0) !no extrapolation
-     !the WR library is normalized to unity
-     spec = lbol*((1-t)*wrn_spec(:,jlo,pset%zmet)+&
-          t*wrn_spec(:,jlo+1,pset%zmet))
+     IF (isoc_type.EQ.'mist') THEN
+        !below is from Maeder (1990)
+        !terminal velocity = 3000 km/s = 3E8 cm/s
+        !kappa_es = 0.2*(1+X) cm2/g; assume X=0.73 (Solar)
+        rwr = SQRT(r2)+3*0.2*(1+0.73)*ABS(10**lmdot)/8./mypi/3E8/yr2sc*msun
+        twr = 10**logt*SQRT(SQRT(r2)/rwr)
+        !this is from Smith et al. 2002
+        twr = LOG10( 0.6*10**logt + 0.4*twr )
+     ELSE
+        twr = logt
+     ENDIF
 
-  !WC WR stars (C-rich), from Smith et al. 2002
-  ELSE IF (phase.EQ.9.0.AND.ffco.GE.10) THEN
+     IF (ffco.LT.10) THEN
+
+        !WN spectra
+        flag = flag+1
+        jlo  = MIN(MAX(locate(wrn_logt,twr),1),ndim_wr-1)
+        t    = (twr-wrn_logt(jlo))/(wrn_logt(jlo+1)-wrn_logt(jlo))
+        t    = MIN(MAX(t,0.0),1.0) !no extrapolation
+        !the WR library is normalized to unity
+        spec = lbol*((1-t)*wrn_spec(:,jlo,pset%zmet)+&
+             t*wrn_spec(:,jlo+1,pset%zmet))
+
+     ELSE IF (ffco.GE.10) THEN
      
-     flag = flag+1
-     jlo  = MIN(MAX(locate(wrc_logt,logt),1),ndim_wr-1)
-     t    = (logt-wrc_logt(jlo)) / (wrc_logt(jlo+1)-wrc_logt(jlo))
-     t    = MIN(MAX(t,0.0),1.0) !no extrapolation
-     !the WR library is normalized to unity
-     spec = lbol*((1-t)*wrc_spec(:,jlo,pset%zmet)+&
-          t*wrc_spec(:,jlo+1,pset%zmet))
+        !WC spectra
+        flag = flag+1
+        jlo  = MIN(MAX(locate(wrc_logt,twr),1),ndim_wr-1)
+        t    = (twr-wrc_logt(jlo))/(wrc_logt(jlo+1)-wrc_logt(jlo))
+        t    = MIN(MAX(t,0.0),1.0) !no extrapolation
+        !the WR library is normalized to unity
+        spec = lbol*((1-t)*wrc_spec(:,jlo,pset%zmet)+&
+             t*wrc_spec(:,jlo+1,pset%zmet))
+
+     ENDIF
 
   !O-rich TP-AGB spectra, from Lancon & Mouhcine 2002
   ELSE IF (phase.EQ.5.0.AND.logt.LT.3.6.AND.ffco.LE.1.0) THEN
@@ -111,7 +125,7 @@ SUBROUTINE GETSPEC(pset,mact,logt,lbol,logg,phase,ffco,lmdot,wght,spec)
      ENDIF
 
   !use the primary library for the rest of the isochrone
-  ELSE IF (logt.LT.4.699) THEN
+  ELSE
 
      flag = flag+1
 
@@ -120,6 +134,7 @@ SUBROUTINE GETSPEC(pset,mact,logt,lbol,logg,phase,ffco,lmdot,wght,spec)
      klo = MIN(MAX(locate(speclib_logg,loggi),1),ndim_logg-1)
      t   = (logt-speclib_logt(jlo)) / &
           (speclib_logt(jlo+1)-speclib_logt(jlo))
+     t   = MIN(MAX(t,0.0),1.0) !no extrapolation (this means >50K -> 50K)
      u   = (loggi-speclib_logg(klo))   / &
           (speclib_logg(klo+1)-speclib_logg(klo))
 
@@ -137,7 +152,7 @@ SUBROUTINE GETSPEC(pset,mact,logt,lbol,logg,phase,ffco,lmdot,wght,spec)
      IF ((test1.LE.tiny30.OR.test2.LE.tiny30.OR.&
           test3.LE.tiny30.OR.test4.LE.tiny30).AND.flag.EQ.1) THEN
 
-        IF (verbose.EQ.1) & 
+        IF (verbose.EQ.99) & 
              WRITE(*,'(" GETSPEC WARNING: Part of the '//&
              'point is off the grid: Z=",I2,'//&
              '" logT=",F5.2," logg=",F5.2," phase=",I2," lg IMF*L=",F5.2)') &
@@ -171,7 +186,7 @@ SUBROUTINE GETSPEC(pset,mact,logt,lbol,logg,phase,ffco,lmdot,wght,spec)
   IF (verbose.EQ.1) THEN
      !IF (flag.EQ.0.AND.(spec_type.EQ.'basel'.OR.spec_type.EQ.'ckc14').AND.&
      !     phase.NE.6.AND.phase.NE.9) THEN
-     IF (flag.EQ.0.) THEN
+     IF (flag.EQ.0..AND.wght.GT.0.0) THEN
         WRITE(*,'(" GETSPEC WARNING: point entirely off the grid: Z=",I2,'//&
              '" logT=",F5.2," logg=",F5.2," phase=",I2," lg IMF*L=",F5.2)') &
             pset%zmet,logt,loggi,INT(phase),LOG10(wght*lbol)

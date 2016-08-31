@@ -11,7 +11,7 @@ SUBROUTINE WRITE_ISOCHRONE(outfile,pset)
   INTEGER :: i,tt,zz
   TYPE(PARAMS), INTENT(in) :: pset
   CHARACTER(100), INTENT(in)  :: outfile
-  CHARACTER(51)  :: fmt
+  CHARACTER(60)  :: fmt
   REAL(SP) :: dz=0.0,loggi,hb_wght
   REAL(SP), DIMENSION(nspec)  :: spec
   REAL(SP), DIMENSION(nm)     :: wght
@@ -28,13 +28,13 @@ SUBROUTINE WRITE_ISOCHRONE(outfile,pset)
   wght    = 0.0
   zz      = pset%zmet
 
-  fmt = '(F7.4,1x,F8.4,1x,F14.9,1x,6(F8.4,1x),000(F7.3,1x))'
-  WRITE(fmt(38:40),'(I3,1x,I4)') nbands
+  fmt = '(F7.4,1x,F8.4,1x,F14.9,1x,F14.9,1x,7(F8.4,1x),000(F7.3,1x))'
+  WRITE(fmt(47:49),'(I3,1x,I4)') nbands
 
   OPEN(40,FILE=TRIM(SPS_HOME)//'/OUTPUTS/'//TRIM(outfile)//'.cmd',&
        STATUS='REPLACE')
-  WRITE(40,*) '# age log(Z) mass logl logt logg '//&
-       'phase composition log(weight) mags'
+  WRITE(40,*) '# age log(Z) mini mact logl logt logg '//&
+       'phase composition log(weight) log(mdot) mags'
        
   !transfer isochrones into temporary arrays
   mini  = mini_isoc(zz,:,:)  !initial mass
@@ -67,8 +67,6 @@ SUBROUTINE WRITE_ISOCHRONE(outfile,pset)
      CALL MOD_GB(zz,tt,timestep_isoc(zz,:),pset%delt,&
           pset%dell,pset%pagb,pset%redgb,nmass(tt),logl,logt,phase,wght)
 
-     !change made here 2/1/16 otherwise isochrone additions not included
-     !DO i=1,nmass_isoc(zz,tt)
      DO i=1,nmass(tt)
         
         !get the spectrum
@@ -86,8 +84,8 @@ SUBROUTINE WRITE_ISOCHRONE(outfile,pset)
 
         !write results to file
         WRITE(40,fmt) timestep_isoc(zz,tt),LOG10(zlegend(zz)),&
-             mini(tt,i),logl(tt,i),logt(tt,i),loggi,phase(tt,i),&
-             ffco(tt,i),LOG10(wght(i)),mags
+             mini(tt,i),mact(tt,i),logl(tt,i),logt(tt,i),loggi,phase(tt,i),&
+             ffco(tt,i),LOG10(wght(i)),lmdot(tt,i),mags
         
      ENDDO
 

@@ -255,8 +255,9 @@ SUBROUTINE SPS_SETUP(zin)
      dz = (LOG10(zlegend(z)/zsol)-LOG10(zlegendinit(i1)/zsol_spec)) / &
           (LOG10(zlegendinit(i1+1)/zsol_spec)-LOG10(zlegendinit(i1)/zsol_spec))
 
-     speclib(:,z,:,:) = (1-dz)*speclibinit(:,i1,:,:) + &
-          dz*speclibinit(:,i1+1,:,:)
+     speclib(:,z,:,:) = (1-dz)*LOG10(speclibinit(:,i1,:,:)+tiny_number) + &
+          dz*LOG10(speclibinit(:,i1+1,:,:)+tiny_number)
+     speclib(:,z,:,:) = 10**speclib(:,z,:,:)
 
   ENDDO
 
@@ -566,7 +567,7 @@ SUBROUTINE SPS_SETUP(zin)
               WRITE(*,*) 'SPS_SETUP ERROR: number of mass points GT nm'
               STOP
            ENDIF
-           IF (use_isoc_mdot.EQ.1) THEN
+           IF (isoc_type.EQ.'mist') THEN
               READ(97,*,IOSTAT=stat) logage,mini_isoc(z,n_isoc,m),&
                    mact_isoc(z,n_isoc,m),logl_isoc(z,n_isoc,m),&
                    logt_isoc(z,n_isoc,m),logg_isoc(z,n_isoc,m),&
@@ -739,7 +740,7 @@ SUBROUTINE SPS_SETUP(zin)
   i2 = locate(spec_lambda,agndust_lam(nagndust_spec))
   DO i=1,nagndust
      agndust_spec(i1:i2,i) = 10**linterparr(LOG10(agndust_lam),&
-          LOG10(agndust_specinit(:,i)),LOG10(spec_lambda(i1:i2)))
+          LOG10(agndust_specinit(:,i)+tiny30),LOG10(spec_lambda(i1:i2)))-tiny30
   ENDDO
 
 

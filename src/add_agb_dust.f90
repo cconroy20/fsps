@@ -44,6 +44,10 @@ FUNCTION COMPUTE_TAU1(cstar,mact,logt,logl,logg,zz,lmdot)
 
   !mass-loss rate in Msun/yr
   IF (use_isoc_mdot.EQ.1) THEN
+     IF (isoc_type.NE.'mist') THEN
+        WRITE(*,*) 'ADD_AGB_DUST ERROR: use_isoc_mist=1 but isoc_type NE MIST!'
+        STOP
+     ENDIF
      !use Mdot from the isochrone files
      mdot = MIN(10**lmdot,1E-4)
   ELSE
