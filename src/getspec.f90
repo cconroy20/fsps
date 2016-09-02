@@ -44,7 +44,7 @@ SUBROUTINE GETSPEC(pset,mact,logt,lbol,logg,phase,ffco,lmdot,wght,spec)
      !the post-agb library is normalized to unity
      spec = lbol*((1-t)*pagb_spec(:,jlo,klo)+t*pagb_spec(:,jlo+1,klo))
 
-  !WR library from Smith et al. 2002
+  !WR library from Smith et al. 2002 (CMFGEN)
   !NB: there is currently no log(g) dependence in the WR spectra
   ELSE IF (phase.EQ.9.0) THEN
      
@@ -124,6 +124,25 @@ SUBROUTINE GETSPEC(pset,mact,logt,lbol,logg,phase,ffco,lmdot,wght,spec)
              ( (1-t)*agb_spec_c(:,jlo) + t*(agb_spec_c(:,jlo+1)) )
      ENDIF
 
+  !use WMBasic grid from JJ Eldridge
+  ELSE IF (phase.EQ.0.0.AND.logt.GT.wmb_logt(1)) THEN
+
+     flag = flag+1
+
+     jlo = MIN(MAX(locate(wmb_logt,logt),1),ndim_wmb_logt-1)
+     klo = MIN(MAX(locate(wmb_logg,loggi),1),ndim_wmb_logg-1)
+     t   = (logt-wmb_logt(jlo)) / (wmb_logt(jlo+1)-wmb_logt(jlo))
+     t   = MIN(MAX(t,0.0),1.0) !no extrapolation (this means >50K -> 50K)
+     u   = (loggi-wmb_logg(klo))  / (wmb_logg(klo+1)-wmb_logg(klo))
+     u   = MIN(MAX(u,0.0),1.0) !no extrapolation
+
+     spec = (1-t)*(1-u)*wmb_spec(:,pset%zmet,jlo,klo) + &
+          t*(1-u)*wmb_spec(:,pset%zmet,jlo+1,klo) + &
+          t*u*wmb_spec(:,pset%zmet,jlo+1,klo+1) + &
+          (1-t)*u*wmb_spec(:,pset%zmet,jlo,klo+1)
+     !the WMBasic library is normalized to unity
+     spec = spec*lbol
+
   !use the primary library for the rest of the isochrone
   ELSE
 
@@ -134,9 +153,10 @@ SUBROUTINE GETSPEC(pset,mact,logt,lbol,logg,phase,ffco,lmdot,wght,spec)
      klo = MIN(MAX(locate(speclib_logg,loggi),1),ndim_logg-1)
      t   = (logt-speclib_logt(jlo)) / &
           (speclib_logt(jlo+1)-speclib_logt(jlo))
-     t   = MIN(MAX(t,0.0),1.0) !no extrapolation (this means >50K -> 50K)
+     t   = MIN(MAX(t,0.0),1.0) !no extrapolation
      u   = (loggi-speclib_logg(klo))   / &
           (speclib_logg(klo+1)-speclib_logg(klo))
+     u   = MIN(MAX(u,0.0),1.0) !no extrapolation
 
      test1 = speclib(whlam5000,pset%zmet,jlo,klo)
      test2 = speclib(whlam5000,pset%zmet,jlo+1,klo)
@@ -190,10 +210,11 @@ SUBROUTINE GETSPEC(pset,mact,logt,lbol,logg,phase,ffco,lmdot,wght,spec)
         WRITE(*,'(" GETSPEC WARNING: point entirely off the grid: Z=",I2,'//&
              '" logT=",F5.2," logg=",F5.2," phase=",I2," lg IMF*L=",F5.2)') &
             pset%zmet,logt,loggi,INT(phase),LOG10(wght*lbol)
-
-     ELSE IF (flag.GT.1) THEN
-        WRITE(*,'(" GETSPEC WARNING: isochrone point assigned *two* spectra!")') 
      ENDIF
+  ENDIF
+
+  IF (flag.GT.1) THEN
+     WRITE(*,'(" GETSPEC ERROR: isochrone point assigned *two* spectra!")') 
   ENDIF
 
   !add circumstellar dust around AGB stars

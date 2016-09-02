@@ -15,6 +15,7 @@ SUBROUTINE SPS_SETUP(zin)
   INTEGER :: stat=1,n,i,j,m,jj,k,i1,i2
   INTEGER, PARAMETER :: ntlam=1221,nspec_agb=6146,nspec_aringer=9032
   INTEGER, PARAMETER :: nlamwr=1963,nspec_pagb=9281
+  INTEGER, PARAMETER :: nzwmb=12, nspec_wmb=5508
   INTEGER :: n_isoc,z,zmin,zmax,nlam
   CHARACTER(1) :: char,sqpah
   CHARACTER(6) :: zstype
@@ -46,7 +47,11 @@ SUBROUTINE SPS_SETUP(zin)
   REAL(SP), DIMENSION(nagndust_spec)           :: agndust_lam=0.
   REAL(SP), DIMENSION(nagndust_spec,nagndust)  :: agndust_specinit=0.
   REAL(KIND(1.0)), DIMENSION(nspec,nzinit,ndim_logt,ndim_logg) :: speclibinit=0.
-  REAL(SP), DIMENSION(ntabmax) :: lsflam=0.,lsfsig=0.
+  REAL(SP), DIMENSION(nspec,nzwmb,ndim_wmb_logt,ndim_wmb_logg) :: wmbsi=0.
+  REAL(SP), DIMENSION(nzwmb)     :: zwmb=0.
+  REAL(SP), DIMENSION(nspec_wmb) :: wmb_lam=0.
+  REAL(SP), DIMENSION(nspec_wmb,ndim_wmb_logt,ndim_wmb_logg) :: wmb_specinit=0.
+  REAL(SP), DIMENSION(ntabmax)   :: lsflam=0.,lsfsig=0.
 
   !---------------------------------------------------------------!
   !---------------------------------------------------------------!
@@ -258,6 +263,70 @@ SUBROUTINE SPS_SETUP(zin)
      speclib(:,z,:,:) = (1-dz)*LOG10(speclibinit(:,i1,:,:)+tiny_number) + &
           dz*LOG10(speclibinit(:,i1+1,:,:)+tiny_number)
      speclib(:,z,:,:) = 10**speclib(:,z,:,:)
+
+  ENDDO
+
+  !--------------Read WMBasic Grid from JJ Eldridge----------------;
+
+  !read in Teff array
+  OPEN(93,FILE=TRIM(SPS_HOME)//'/SPECTRA/Hot_spectra/WMBASIC.teff',&
+       STATUS='OLD',iostat=stat,ACTION='READ')
+  IF (stat.NE.0) THEN
+     WRITE(*,*) 'SPS_SETUP ERROR: /SPECTRA/Hot_spectra/'//&
+          'WMBASIC.teff cannot be opened'
+     STOP 
+  ENDIF
+  DO i=1,ndim_wmb_logt
+     READ(93,*) wmb_logt(i)
+  ENDDO
+  CLOSE(93)
+
+  OPEN(93,FILE=TRIM(SPS_HOME)//'/SPECTRA/Hot_spectra/WMBASIC_zlegend.dat',&
+       STATUS='OLD',iostat=stat,ACTION='READ')
+
+  DO z=1,nzwmb
+
+     READ(93,*) zwmb(z)
+     WRITE(zstype,'(F6.4)') zwmb(z)
+
+     OPEN(95,FILE=TRIM(SPS_HOME)//'/SPECTRA/Hot_spectra/WMBASIC_z'//&
+          zstype//'.spec',STATUS='OLD',iostat=stat,ACTION='READ')
+     IF (stat.NE.0) THEN
+        WRITE(*,*) 'SPS_SETUP ERROR: /Hot_spectra/'//&
+          'WMBASIC_z'//zstype//'.spec '//'cannot be opened'
+        STOP 
+     ENDIF
+     DO i=1,nspec_wmb
+        READ(95,*) wmb_lam(i),wmb_specinit(i,:,1),wmb_specinit(i,:,2)
+     ENDDO
+     CLOSE(95)
+
+     !interpolate to the main spectral grid
+     DO i=1,ndim_wmb_logt
+        DO j=1,ndim_wmb_logg
+           wmbsi(:,z,i,j) = MAX(linterparr(wmb_lam,wmb_specinit(:,i,j),&
+                spec_lambda),tiny_number)
+        ENDDO
+     ENDDO
+
+  ENDDO
+
+  CLOSE(93)
+
+  !Now interpolate the input spectral library to the isochrone grid
+  !notice that we're interpolating at fixed Z/Zsol even in cases
+  !where the isochrones and spectra might have different Zsol. This might 
+  !in fact be the best thing to do.  Either way, its not ideal.
+  DO z=1,nz
+
+     i1 = MIN(MAX(locate(LOG10(zwmb/zsol_spec),&
+          LOG10(zlegend(z)/zsol)),1),nzwmb-1)
+     dz = (LOG10(zlegend(z)/zsol)-LOG10(zwmb(i1)/zsol_spec)) / &
+          (LOG10(zwmb(i1+1)/zsol_spec)-LOG10(zwmb(i1)/zsol_spec))
+
+     wmb_spec(:,z,:,:) = (1-dz)*LOG10(wmbsi(:,i1,:,:)+tiny_number) + &
+          dz*LOG10(wmbsi(:,i1+1,:,:)+tiny_number)
+     wmb_spec(:,z,:,:) = 10**wmb_spec(:,z,:,:)
 
   ENDDO
 

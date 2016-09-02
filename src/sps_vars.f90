@@ -8,7 +8,7 @@ MODULE SPS_VARS
 !-------set the spectral library------!
 #define MILES 1
 #define BASEL 0
-! "CKC14" currently under development.  do not use!
+! "CKC14" currently under development.  do not use.
 #define CKC14 0
 
 !------set the isochrone library------!
@@ -228,6 +228,8 @@ MODULE SPS_VARS
   INTEGER, PARAMETER :: ndim_pagb=14
   !number of WR spectra
   INTEGER, PARAMETER :: ndim_wr=12
+  !dimensions of WMBasic grid
+  INTEGER, PARAMETER :: ndim_wmb_logt=11,ndim_wmb_logg=2
   !wavelength dimension of the Draine & Li 2007 dust model
   INTEGER, PARAMETER :: ndim_dl07=1001
   !number of Umin models from Drain & Li 2007 dust model
@@ -368,6 +370,11 @@ MODULE SPS_VARS
   REAL(SP), DIMENSION(ndim_logt) :: speclib_logt=0.
   REAL(SP), DIMENSION(ndim_logg) :: speclib_logg=0.
   REAL(KIND(1.0)), DIMENSION(nspec,nz,ndim_logt,ndim_logg) :: speclib=0.
+ 
+  !arrays for the WMBasic grid
+  REAL(SP), DIMENSION(ndim_wmb_logt) :: wmb_logt=0.
+  REAL(SP), DIMENSION(ndim_wmb_logg) :: wmb_logg=0.
+  REAL(KIND(1.0)), DIMENSION(nspec,nz,ndim_wmb_logt,ndim_wmb_logg) :: wmb_spec=0.
   
   !AGB library (Lancon & Mouhcine 2002)
   REAL(SP), DIMENSION(nspec,n_agb_o) :: agb_spec_o=0.
