@@ -150,9 +150,9 @@ SUBROUTINE SPS_SETUP(zin)
 
   CLOSE(90)
 
-  !IF (spec_type(1:5).EQ.'ckc14'.AND.isoc_type.NE.'mist') THEN
-  !   zlegend = (/0.0190,0.0300/)
-  !ENDIF
+  !C3K hack
+  !zlegend_str(1) = 'm1.00'
+  !zlegend(1) = 0.0013
 
   IF (zin.LE.0) THEN
      zmin = 1
@@ -212,6 +212,7 @@ SUBROUTINE SPS_SETUP(zin)
   DO z=1,nzinit
 
      READ(93,*) zlegendinit(z)
+     !zlegendinit(z) = zlegend(1) !C3K hack
      WRITE(zstype,'(F6.4)') zlegendinit(z)
 
      !read in the spectral library

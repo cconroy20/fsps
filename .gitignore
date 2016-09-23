@@ -2,6 +2,7 @@
 *.mod
 *.exe
 nr
+SPECTRA/CKC14/*
 OUTPUTS/*
 CodeToDo.txt
 runsps.f90

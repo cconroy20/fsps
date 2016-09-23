@@ -36,6 +36,7 @@
   !define the parameter set.  These are the default values, specified 
   !in sps_vars.f90, but are explicitly included here for transparency
   pset%sfh   = 0     !set SFH to "SSP"
+  pset%const = 1.
   pset%zred  = 0.0   !redshift  
   pset%dust1 = 0.0   !dust parameter 1
   pset%dust2 = 0.0   !dust parameter 2

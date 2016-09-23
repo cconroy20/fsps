@@ -124,7 +124,7 @@ SUBROUTINE GETSPEC(pset,mact,logt,lbol,logg,phase,ffco,lmdot,wght,spec)
              ( (1-t)*agb_spec_c(:,jlo) + t*(agb_spec_c(:,jlo+1)) )
      ENDIF
 
-  !use WMBasic grid from JJ Eldridge
+  !use WMBasic grid from JJ Eldridge for T>25,000K MS stars
   ELSE IF (phase.EQ.0.0.AND.logt.GT.wmb_logt(1)) THEN
 
      flag = flag+1
@@ -134,7 +134,7 @@ SUBROUTINE GETSPEC(pset,mact,logt,lbol,logg,phase,ffco,lmdot,wght,spec)
      t   = (logt-wmb_logt(jlo)) / (wmb_logt(jlo+1)-wmb_logt(jlo))
      t   = MIN(MAX(t,0.0),1.0) !no extrapolation (this means >50K -> 50K)
      u   = (loggi-wmb_logg(klo))  / (wmb_logg(klo+1)-wmb_logg(klo))
-     u   = MIN(MAX(u,0.0),1.0) !no extrapolation
+     u   = MIN(MAX(u,0.0),1.0) !no extrapolation in logg
 
      spec = (1-t)*(1-u)*wmb_spec(:,pset%zmet,jlo,klo) + &
           t*(1-u)*wmb_spec(:,pset%zmet,jlo+1,klo) + &
@@ -151,11 +151,9 @@ SUBROUTINE GETSPEC(pset,mact,logt,lbol,logg,phase,ffco,lmdot,wght,spec)
      !find the subgrid containing point i 
      jlo = MIN(MAX(locate(speclib_logt,logt),1),ndim_logt-1)
      klo = MIN(MAX(locate(speclib_logg,loggi),1),ndim_logg-1)
-     t   = (logt-speclib_logt(jlo)) / &
-          (speclib_logt(jlo+1)-speclib_logt(jlo))
+     t   = (logt-speclib_logt(jlo))/(speclib_logt(jlo+1)-speclib_logt(jlo))
      t   = MIN(MAX(t,0.0),1.0) !no extrapolation
-     u   = (loggi-speclib_logg(klo))   / &
-          (speclib_logg(klo+1)-speclib_logg(klo))
+     u   = (loggi-speclib_logg(klo))/(speclib_logg(klo+1)-speclib_logg(klo))
      u   = MIN(MAX(u,0.0),1.0) !no extrapolation
 
      test1 = speclib(whlam5000,pset%zmet,jlo,klo)
