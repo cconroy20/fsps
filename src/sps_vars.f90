@@ -229,7 +229,7 @@ MODULE SPS_VARS
   !number of WR spectra
   INTEGER, PARAMETER :: ndim_wr=12
   !dimensions of WMBasic grid
-  INTEGER, PARAMETER :: ndim_wmb_logt=11,ndim_wmb_logg=2
+  INTEGER, PARAMETER :: ndim_wmb_logt=11,ndim_wmb_logg=3
   !wavelength dimension of the Draine & Li 2007 dust model
   INTEGER, PARAMETER :: ndim_dl07=1001
   !number of Umin models from Drain & Li 2007 dust model

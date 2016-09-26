@@ -284,7 +284,7 @@ SUBROUTINE SPS_SETUP(zin)
   CLOSE(93)
 
   !logg for WMB grid
-  wmb_logg = (/4.0,4.5/)
+  wmb_logg = (/3.5,4.0,4.5/)
 
   OPEN(93,FILE=TRIM(SPS_HOME)//'/SPECTRA/Hot_spectra/WMBASIC_zlegend.dat',&
        STATUS='OLD',iostat=stat,ACTION='READ')
@@ -302,7 +302,8 @@ SUBROUTINE SPS_SETUP(zin)
         STOP 
      ENDIF
      DO i=1,nspec_wmb
-        READ(95,*) wmb_lam(i),wmb_specinit(i,:,1),wmb_specinit(i,:,2)
+        READ(95,*) wmb_lam(i),wmb_specinit(i,:,1),wmb_specinit(i,:,2),&
+             wmb_specinit(i,:,3)
      ENDDO
      CLOSE(95)
 
