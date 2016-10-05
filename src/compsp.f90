@@ -128,33 +128,33 @@ SUBROUTINE COMPSP(write_compsp, nzin, outfile,&
      ! Now do a bunch of stuff with the spectrum
      ! Smooth the spectrum
      if (pset%sigma_smooth.GT.0.0) then
-        call smoothspec(spec_lambda,spec_csp,pset%sigma_smooth,&
-                        pset%min_wave_smooth,pset%max_wave_smooth)
+        call smoothspec(spec_lambda, spec_csp, pset%sigma_smooth,&
+                        pset%min_wave_smooth, pset%max_wave_smooth)
      endif
      ! Add IGM absorption
      if (add_igm_absorption.EQ.1.AND.pset%zred.GT.tiny_number) then
-        spec_csp = igm_absorb(spec_lambda,spec_csp,pset%zred,&
+        spec_csp = igm_absorb(spec_lambda,spec_csp, pset%zred,&
                               pset%igm_factor)
      endif
      !add AGN dust
      IF (add_agn_dust.EQ.1.AND.pset%fagn.GT.tiny_number) THEN
-        spec_csp = agn_dust(spec_lambda,spec_csp,pset,lbol_csp)
+        spec_csp = agn_dust(spec_lambda, spec_csp, pset, lbol_csp)
      ENDIF
      ! Compute spectral indices
      if (write_compsp.EQ.4) then
-        call getindx(spec_lambda,spec_csp,indx)
+        call getindx(spec_lambda, spec_csp, indx)
      else
         indx = 0.0
      endif
      ! Compute mags
      if (redshift_colors.EQ.0) then
-        call getmags(pset%zred,spec_csp,mags,pset%mag_compute)
+        call getmags(pset%zred, spec_csp, mags, pset%mag_compute)
      else
         ! here we compute the redshift at the corresponding age
-        zred = min(max(linterp(cosmospl(:,2),cosmospl(:,1),&
-                       10**time_full(i)/1E9), 0.0), 20.0)
+        zred = min(max(linterp(cosmospl(:,2), cosmospl(:,1), age),&
+                       0.0), 20.0)
         write(33,*) zred
-        call getmags(zred,spec_csp,mags,pset%mag_compute)
+        call getmags(zred, spec_csp, mags, pset%mag_compute)
      endif
 
      ! ---------
