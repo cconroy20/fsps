@@ -458,7 +458,7 @@ MODULE SPS_VARS
   
   !structure for the output of the compsp routine
   TYPE COMPSPOUT
-     REAL(SP) :: age=0.,mass_csp=0.,lbol_csp=0.,sfr=0.,mdust=0.
+     REAL(SP) :: age=0.,mass_csp=0.,lbol_csp=0.,sfr=0.,mdust=0.,mformed=0.
      REAL(SP), DIMENSION(nbands) :: mags=0.
      REAL(SP), DIMENSION(nspec)  :: spec=0.
      REAL(SP), DIMENSION(nindx)  :: indx=0.

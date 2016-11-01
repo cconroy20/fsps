@@ -160,7 +160,8 @@ SUBROUTINE COMPSP(write_compsp, nzin, outfile,&
      ! ---------
      ! Store the spectrum and write....
      call save_compsp(write_compsp, ocompsp(i), log10(age)+9,&
-                      mass_csp, lbol_csp, tsfr, mags, spec_csp, mdust_csp, indx)
+          mass_csp, lbol_csp, tsfr, mags, spec_csp, mdust_csp, mass_frac,&
+          indx)
 
      ! Terminate the loop if a single specific tage was requested
      if ((pset%tage.gt.0).or.(pset%tage.eq.-99)) then
@@ -458,14 +459,14 @@ END SUBROUTINE COMPSP_HEADER
 !------------------------------------------------------------!
 
 SUBROUTINE SAVE_COMPSP(write_compsp,cspo,time,mass,&
-     lbol,sfr,mags,spec,mdust,indx)
+     lbol,sfr,mags,spec,mdust,mformed,indx)
 
   !routine to print and save outputs
 
   USE sps_vars
   IMPLICIT NONE
   INTEGER, INTENT(in) :: write_compsp
-  REAL(SP), INTENT(in)    :: time,mass,lbol,sfr,mdust
+  REAL(SP), INTENT(in)    :: time,mass,lbol,sfr,mdust,mformed
   REAL(SP), DIMENSION(nspec), INTENT(in)  :: spec
   REAL(SP), DIMENSION(nbands), INTENT(in) :: mags
   REAL(SP), DIMENSION(nindx), INTENT(in)  :: indx
@@ -485,6 +486,7 @@ SUBROUTINE SAVE_COMPSP(write_compsp,cspo,time,mass,&
   cspo%mags     = mags
   cspo%spec     = MAX(spec,tiny_number)
   cspo%mdust    = mdust
+  cspo%mformed  = mformed
   cspo%indx     = indx
 
   !write to mags file
