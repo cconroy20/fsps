@@ -289,10 +289,9 @@ SUBROUTINE COMPSP_WARNING(maxtime,pset,nzin,write_compsp)
      STOP
   ENDIF
 
-  IF ((pset%sfh.NE.1.AND.pset%sfh.NE.4).AND.&
-       compute_light_ages.EQ.1) THEN
-     WRITE(*,*) 'COMPSP ERROR: compute_light_ages only works with SFH=1 or 4'
-     STOP
+  if ((pset%dust1.gt.tiny_number).and.(compute_light_ages.eq.1)) then
+     WRITE(*,*) 'COMPSP WARNING: compute_light_ages does not take into'//&
+          ' account age-dependent dust (dust1 > 0)'
   ENDIF
      
 
