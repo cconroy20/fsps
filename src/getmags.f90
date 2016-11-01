@@ -40,19 +40,21 @@ SUBROUTINE GETMAGS(zred,spec,mags,mag_compute)
         tspec(i) = MAX(linterp(spec_lambda*(1+zred),spec,&
         spec_lambda(i)),0.0)
      ENDDO
-     !note that this means the *redshifted* spectrum is returned
-     spec = tspec
 
      !compute additional terms for cosmological mags
      dm    = 5*LOG10(linterp(cosmospl(:,1),cosmospl(:,3),zred)/10.)
      const = dm - 2.5*LOG10(1+zred)
+
+  ELSE
+
+     tspec = spec
 
   ENDIF
 
   !integrate over each filter
   DO i=1,nbands
      IF (magflag(i).EQ.0) CYCLE
-     mags(i) = TSUM(spec_lambda,spec*bands(:,i)/spec_lambda)
+     mags(i) = TSUM(spec_lambda,tspec*bands(:,i)/spec_lambda)
      IF (mags(i).LE.tiny_number) THEN
         mags(i) = 99.0 
      ELSE
