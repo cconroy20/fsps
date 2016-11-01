@@ -1,5 +1,5 @@
 subroutine csp_gen(mass_ssp, lbol_ssp, spec_ssp, &
-                   pset, tage, &
+                   pset, tage, nzin, &
                    mass_csp, lbol_csp, spec_csp, mdust_csp)
   !
   ! Return the spectrum (and mass and lbol) of a composite stellar population.
@@ -26,25 +26,27 @@ subroutine csp_gen(mass_ssp, lbol_ssp, spec_ssp, &
   !   the composite stellar population at tage, normalized to 1 M_sun *formed*.
   
   use sps_vars, only: ntfull, nspec, time_full, tiny_number, tiny_logt, &
-                      sfh_tab, ntabsfh, &
+                      zlegend, nz, sfh_tab, ntabsfh, &
                       SFHPARAMS, PARAMS, SP
   use sps_utils, only: locate, sfh_weight, sfhinfo, add_dust
   implicit none
 
-  real(SP), intent(in), dimension(ntfull) :: mass_ssp, lbol_ssp
-  real(SP), intent(in), dimension(nspec, ntfull) :: spec_ssp
+  real(SP), intent(in), dimension(ntfull, nzin) :: mass_ssp, lbol_ssp
+  real(SP), intent(in), dimension(nspec, ntfull, nzin) :: spec_ssp
   type(PARAMS), intent(in) :: pset
   real(SP), intent(in) :: tage
+  integer, intent(in) :: nzin
   
   real(SP), intent(out) :: mass_csp, lbol_csp, mdust_csp
   real(SP), intent(out), dimension(nspec) :: spec_csp
 
   real(SP), dimension(nspec) :: csp1, csp2 !for add dust
-  real(SP), dimension(ntfull) :: total_weights=0., w1=0., w2=0.
-  integer :: i, j, imin, imax, i_tesc
+  real(SP), dimension(ntfull, nzin) :: total_weights
+  real(SP), dimension(ntfull) :: w1=0., w2=0.
+  integer :: i, j, k, imin, imax, i_tesc
   type(SFHPARAMS) :: sfhpars
   real(SP) :: m1, m2, frac_linear, mfrac, sfr, fburst
-  real(SP) :: t1, t2, dt  ! for tabular calculations
+  real(SP) :: t1, t2, dt, zbin, dz  ! for tabular calculations
 
   ! ------- Setup ----------
 
@@ -59,6 +61,8 @@ subroutine csp_gen(mass_ssp, lbol_ssp, spec_ssp, &
 
   ! ----- Get SFH weights -----
 
+  total_weights = 0.
+
   ! SSP.
   if (pset%sfh.eq.0) then
      ! Make sure to use SSP weighting scheme
@@ -67,10 +71,10 @@ subroutine csp_gen(mass_ssp, lbol_ssp, spec_ssp, &
      sfhpars%tb = sfhpars%tage
      ! Only need weights at two SSP points. Though in practice this doesn't
      ! matter, as the appropriate ages are located within sfh_weight.
-     ! But it speeds up the matrix multiply tater
+     ! But it speeds up the matrix multiply later
      imin = max(imax - 2, 1)
      ! These come pre-normalized to 1 Msun
-     total_weights = sfh_weight(sfhpars, imin, imax)
+     total_weights(:, 1) = sfh_weight(sfhpars, imin, imax)
   endif
 
 
@@ -78,11 +82,11 @@ subroutine csp_gen(mass_ssp, lbol_ssp, spec_ssp, &
   if ((pset%sfh.eq.1).or.(pset%sfh.eq.4)) then
      imin = 0
      sfhpars%type = pset%sfh
-     total_weights = sfh_weight(sfhpars, imin, imax)
+     total_weights(:, 1) = sfh_weight(sfhpars, imin, imax)
      ! Could save some loops by having proper normalization analytically from sfh_weight
-     m1 = sum(total_weights(1:imax))
+     m1 = sum(total_weights(1:imax, 1))
      if (m1.lt.tiny_number) m1 = 1.0
-     total_weights = total_weights / m1
+     total_weights(:, 1) = total_weights(:, 1) / m1
   endif
 
   
@@ -108,9 +112,9 @@ subroutine csp_gen(mass_ssp, lbol_ssp, spec_ssp, &
      endif
      ! Sum with proper relative normalization.  Beware divide by zero.
      if (m1.lt.tiny_number) m1 = 1.0
-     total_weights = (1 - pset%const - fburst) * total_weights + &
-                      pset%const * (w1 / m1) + &
-                      fburst * w2
+     total_weights(:,1) = (1 - pset%const - fburst) * total_weights(:,1) + &
+                          pset%const * (w1 / m1) + &
+                          fburst * w2
   endif
 
   
@@ -139,7 +143,7 @@ subroutine csp_gen(mass_ssp, lbol_ssp, spec_ssp, &
      if (m2.lt.tiny_number) m2 = 1.0
      ! need to get the fraction of the mass formed in the linear portion
      call sfhinfo(pset, tage, mfrac, sfr, frac_linear)
-     total_weights = (w1 / m1) * (1 - frac_linear) + frac_linear * (w2 / m2)
+     total_weights(:, 1) = (w1 / m1) * (1 - frac_linear) + frac_linear * (w2 / m2)
      ! imax = min(max(locate(time_full, log10(sfhpars%tage)) + 2, 1), ntfull)
   endif
 
@@ -149,7 +153,7 @@ subroutine csp_gen(mass_ssp, lbol_ssp, spec_ssp, &
   ! linear SFHs, one for each bin in the table
   if (pset%sfh.eq.2.or.pset%sfh.eq.3) then
      total_weights = 0.
-     
+
      ! Assume linear SFH within the bins
      sfhpars%type = 5
      ! Loop over each bin in the table.
@@ -163,7 +167,9 @@ subroutine csp_gen(mass_ssp, lbol_ssp, spec_ssp, &
            ! Entire bin is in the future, skip
            cycle
         endif
-        
+        ! Metallicity of the bin. Just a straight average.
+        zbin = (sfh_tab(3, j) + sfh_tab(3, j+1)) / 2
+
         ! Linear slope.  Positive should be sfr *decreasing* in time since big bang.
         sfhpars%sf_slope = -(sfh_tab(2, j+1) - sfh_tab(2, j)) / (t2 - t1) / sfh_tab(2, j+1)
         ! Set integration limits using bin edges clipped to valid times.
@@ -185,12 +191,22 @@ subroutine csp_gen(mass_ssp, lbol_ssp, spec_ssp, &
         m1 = sum(w1)
         if (m1.lt.tiny_number) m1 = 1.0
         ! This is where we'd assign to specific metallicities, if taking that
-        ! into account.
-        total_weights = total_weights + w1 * (m2 / m1)
+        ! into account.  This scheme assumes entire bin is at average of the
+        ! two enclosing Z values.
+        if (nzin.gt.1) then
+           k = max(min(locate(zlegend, zbin), nz-1), 1)
+           dz = (log10(zbin) - log10(zlegend(k))) / &
+                (log10(zlegend(k+1)) - log10(zlegend(k)))
+           dz = max(min(dz, 1.0), -1.0) !don't extrapolate
+           total_weights(:, k) = total_weights(:, k) + (1-dz) * w1 * (m2 / m1)
+           total_weights(:, k+1) = total_weights(:, k+1) + dz * w1 * (m2 / m1)
+        else
+           total_weights(:, 1) = total_weights(:, 1) + w1 * (m2 / m1)
+        endif
      enddo
      ! Reset imin and imax for the spectral sum.
      imin = 0
-     imax = ntfull
+     imax = min(max(locate(time_full, log10(sfhpars%tage)) + 2, 1), ntfull)
   endif
 
   ! ----- Combine SSPs with dust -------
@@ -206,13 +222,15 @@ subroutine csp_gen(mass_ssp, lbol_ssp, spec_ssp, &
   ! age grid resolution will have no effect on the output.
   i_tesc = locate(time_full, pset%dust_tesc)
   do i=max(imin, 1), imax
-     if (total_weights(i).gt.tiny_number) then
-        if (i.le.i_tesc) then
-           csp1 = csp1 + total_weights(i) * spec_ssp(:, i)
-        else
-           csp2 = csp2 + total_weights(i) * spec_ssp(:, i)
+     do k=1,nzin
+        if (total_weights(i, k).gt.tiny_number) then
+           if (i.le.i_tesc) then
+              csp1 = csp1 + total_weights(i, k) * spec_ssp(:, i, k)
+           else
+              csp2 = csp2 + total_weights(i, k) * spec_ssp(:, i, k)
+           endif
         endif
-     endif
+     enddo
   enddo
 
   if ((pset%dust1.gt.tiny_number).or.(pset%dust2.gt.tiny_number)) then

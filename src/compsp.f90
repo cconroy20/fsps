@@ -36,15 +36,15 @@ SUBROUTINE COMPSP(write_compsp, nzin, outfile,&
      STOP
   ENDIF
 
-  IF (nzin.GT.1) THEN
+  IF ((nzin.GT.1).and.(pset%sfh.ne.2).and.(pset%sfh.ne.3)) THEN
      WRITE(*,*) 'COMPSP ERROR: '//&
-          'nzin > 1 no longer supported. '
+          'nzin > 1 no longer supported for non-tabular SFH.'
      STOP
   ENDIF
 
   call setup_tabular_sfh(pset, nzin)
 
-  !make sure various variables are set correctly
+  ! Make sure various variables are set correctly
   IF (pset%tage.GT.tiny_number) THEN
      maxtime = pset%tage * 1e9
   else
@@ -53,7 +53,7 @@ SUBROUTINE COMPSP(write_compsp, nzin, outfile,&
   
   CALL COMPSP_WARNING(maxtime, pset, nzin, write_compsp)
 
-  !setup output files
+  ! Setup output files
   if (pset%tage.gt.0) then
      nage = 1
   else
@@ -109,7 +109,7 @@ SUBROUTINE COMPSP(write_compsp, nzin, outfile,&
      ! solar mass formed, so we actually need to renormalize if computing all
      ! ages, which is done using info from `sfhinfo`
      call csp_gen(mass_ssp, lbol_ssp, spec_ssp, &
-                  pset, age, &
+                  pset, age, nzin, &
                   mass_csp, lbol_csp, spec_csp, mdust_csp)
      
      call sfhinfo(pset, age, mass_frac, tsfr, frac_linear)
