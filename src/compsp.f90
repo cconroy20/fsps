@@ -221,7 +221,7 @@ SUBROUTINE COMPSP_WARNING(maxtime,pset,nzin,write_compsp)
      STOP
   ENDIF
 
-  IF (pset%sf_trunc.LT.pset%sf_start) THEN
+  IF ((pset%sf_trunc.LT.pset%sf_start).AND.(pset%sf_trunc.GT.tiny_number)) THEN
      WRITE(*,*) 'COMPSP WARNING: sf_trunc<sf_start....'//&
           ' sf_trunc will be ignored.'
   ENDIF
