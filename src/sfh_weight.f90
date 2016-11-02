@@ -48,6 +48,12 @@ function sfh_weight(sfh, imin, imax)
         return
      endif
      log_tb = log10(sfh%tb)
+     if (log_tb.le.time_full(1)) then
+        ! Just return all weight in the youngest ssp.
+        sfh_weight(1) = 1.0
+        return
+     endif
+
      istart = min(max(locate(time_full, log_tb), 1), ntfull-1)
      dt = delta_time(time_full(istart), time_full(istart+1))
      sfh_weight(istart) = delta_time(log_tb, time_full(istart+1)) / dt
