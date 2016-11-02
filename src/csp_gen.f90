@@ -207,7 +207,7 @@ subroutine csp_gen(mass_ssp, lbol_ssp, spec_ssp, &
      enddo
      ! Reset imin and imax for the spectral sum.
      imin = 0
-     imax = min(max(locate(time_full, log10(sfhpars%tage)) + 2, 1), ntfull)
+     imax = ntfull
   endif
 
   ! ----- Combine SSPs with dust -------
