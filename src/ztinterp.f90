@@ -12,7 +12,7 @@ SUBROUTINE ZTINTERP(zpos,spec,lbol,mass,tpos,zpow)
   REAL(SP),INTENT(in), OPTIONAL :: tpos,zpow
   REAL(SP),INTENT(inout),DIMENSION(:) :: mass, lbol
   REAL(SP),INTENT(inout),DIMENSION(:,:) :: spec
-  INTEGER  :: zlo,tlo,i
+  INTEGER  :: zlo,zhi,tlo,i
   REAL(SP) :: dz,dt,z0,imdf,w1=0.25,w2=0.5,w3=0.25
   REAL(SP), DIMENSION(nz) :: mdf
 
@@ -80,18 +80,21 @@ SUBROUTINE ZTINTERP(zpos,spec,lbol,mass,tpos,zpow)
            mdf(MIN(zlo+2,nz)) = w3*dz
            mdf(zlo)   = mdf(zlo) + w2*(1-dz) + w1*dz
            mdf(zlo+1) = mdf(zlo+1) + w3*(1-dz) + w2*dz
-           
+           zlo = max(zlo-1, 1)
+           zhi = min(zlo+2, nz)
         ELSE
            z0  = 10**zpos*zsol
            !mdf = ds/dlogZ
            mdf = ( zlegend/z0 * EXP(-zlegend/z0) )**zpow
+           zlo = 1
+           zhi = nz
         ENDIF
         mdf = mdf / SUM(mdf)
 
         mass = 0.
         lbol = 0.
         spec = 0.
-        DO i=1,nz
+        DO i=zlo,zhi
            mass = mass + mdf(i)*mass_ssp_zz(:,i)
            lbol = lbol + mdf(i)*lbol_ssp_zz(:,i)
            spec = spec + mdf(i)*spec_ssp_zz(:,:,i)

@@ -36,15 +36,15 @@ SUBROUTINE COMPSP(write_compsp, nzin, outfile,&
      STOP
   ENDIF
 
-  IF (nzin.GT.1) THEN
+  IF ((nzin.GT.1).and.(pset%sfh.ne.2).and.(pset%sfh.ne.3)) THEN
      WRITE(*,*) 'COMPSP ERROR: '//&
-          'nzin > 1 no longer supported. '
+          'nzin > 1 no longer supported for non-tabular SFH.'
      STOP
   ENDIF
 
   call setup_tabular_sfh(pset, nzin)
 
-  !make sure various variables are set correctly
+  ! Make sure various variables are set correctly
   IF (pset%tage.GT.tiny_number) THEN
      maxtime = pset%tage * 1e9
   else
@@ -53,7 +53,7 @@ SUBROUTINE COMPSP(write_compsp, nzin, outfile,&
   
   CALL COMPSP_WARNING(maxtime, pset, nzin, write_compsp)
 
-  !setup output files
+  ! Setup output files
   if (pset%tage.gt.0) then
      nage = 1
   else
@@ -109,7 +109,7 @@ SUBROUTINE COMPSP(write_compsp, nzin, outfile,&
      ! solar mass formed, so we actually need to renormalize if computing all
      ! ages, which is done using info from `sfhinfo`
      call csp_gen(mass_ssp, lbol_ssp, spec_ssp, &
-                  pset, age, &
+                  pset, age, nzin, &
                   mass_csp, lbol_csp, spec_csp, mdust_csp)
      
      call sfhinfo(pset, age, mass_frac, tsfr, frac_linear)
@@ -128,39 +128,40 @@ SUBROUTINE COMPSP(write_compsp, nzin, outfile,&
      ! Now do a bunch of stuff with the spectrum
      ! Smooth the spectrum
      if (pset%sigma_smooth.GT.0.0) then
-        call smoothspec(spec_lambda,spec_csp,pset%sigma_smooth,&
-                        pset%min_wave_smooth,pset%max_wave_smooth)
+        call smoothspec(spec_lambda, spec_csp, pset%sigma_smooth,&
+                        pset%min_wave_smooth, pset%max_wave_smooth)
      endif
      ! Add IGM absorption
      if (add_igm_absorption.EQ.1.AND.pset%zred.GT.tiny_number) then
-        spec_csp = igm_absorb(spec_lambda,spec_csp,pset%zred,&
+        spec_csp = igm_absorb(spec_lambda,spec_csp, pset%zred,&
                               pset%igm_factor)
      endif
      !add AGN dust
      IF (add_agn_dust.EQ.1.AND.pset%fagn.GT.tiny_number) THEN
-        spec_csp = agn_dust(spec_lambda,spec_csp,pset,lbol_csp)
+        spec_csp = agn_dust(spec_lambda, spec_csp, pset, lbol_csp)
      ENDIF
      ! Compute spectral indices
      if (write_compsp.EQ.4) then
-        call getindx(spec_lambda,spec_csp,indx)
+        call getindx(spec_lambda, spec_csp, indx)
      else
         indx = 0.0
      endif
      ! Compute mags
      if (redshift_colors.EQ.0) then
-        call getmags(pset%zred,spec_csp,mags,pset%mag_compute)
+        call getmags(pset%zred, spec_csp, mags, pset%mag_compute)
      else
         ! here we compute the redshift at the corresponding age
-        zred = min(max(linterp(cosmospl(:,2),cosmospl(:,1),&
-                       10**time_full(i)/1E9), 0.0), 20.0)
+        zred = min(max(linterp(cosmospl(:,2), cosmospl(:,1), age),&
+                       0.0), 20.0)
         write(33,*) zred
-        call getmags(zred,spec_csp,mags,pset%mag_compute)
+        call getmags(zred, spec_csp, mags, pset%mag_compute)
      endif
 
      ! ---------
      ! Store the spectrum and write....
      call save_compsp(write_compsp, ocompsp(i), log10(age)+9,&
-                      mass_csp, lbol_csp, tsfr, mags, spec_csp, mdust_csp, indx)
+          mass_csp, lbol_csp, tsfr, mags, spec_csp, mdust_csp, mass_frac,&
+          indx)
 
      ! Terminate the loop if a single specific tage was requested
      if ((pset%tage.gt.0).or.(pset%tage.eq.-99)) then
@@ -221,7 +222,7 @@ SUBROUTINE COMPSP_WARNING(maxtime,pset,nzin,write_compsp)
      STOP
   ENDIF
 
-  IF (pset%sf_trunc.LT.pset%sf_start) THEN
+  IF ((pset%sf_trunc.LT.pset%sf_start).AND.(pset%sf_trunc.GT.tiny_number)) THEN
      WRITE(*,*) 'COMPSP WARNING: sf_trunc<sf_start....'//&
           ' sf_trunc will be ignored.'
   ENDIF
@@ -288,10 +289,9 @@ SUBROUTINE COMPSP_WARNING(maxtime,pset,nzin,write_compsp)
      STOP
   ENDIF
 
-  IF ((pset%sfh.NE.1.AND.pset%sfh.NE.4).AND.&
-       compute_light_ages.EQ.1) THEN
-     WRITE(*,*) 'COMPSP ERROR: compute_light_ages only works with SFH=1 or 4'
-     STOP
+  if ((pset%dust1.gt.tiny_number).and.(compute_light_ages.eq.1)) then
+     WRITE(*,*) 'COMPSP WARNING: compute_light_ages does not take into'//&
+          ' account age-dependent dust (dust1 > 0)'
   ENDIF
      
 
@@ -458,14 +458,14 @@ END SUBROUTINE COMPSP_HEADER
 !------------------------------------------------------------!
 
 SUBROUTINE SAVE_COMPSP(write_compsp,cspo,time,mass,&
-     lbol,sfr,mags,spec,mdust,indx)
+     lbol,sfr,mags,spec,mdust,mformed,indx)
 
   !routine to print and save outputs
 
   USE sps_vars
   IMPLICIT NONE
   INTEGER, INTENT(in) :: write_compsp
-  REAL(SP), INTENT(in)    :: time,mass,lbol,sfr,mdust
+  REAL(SP), INTENT(in)    :: time,mass,lbol,sfr,mdust,mformed
   REAL(SP), DIMENSION(nspec), INTENT(in)  :: spec
   REAL(SP), DIMENSION(nbands), INTENT(in) :: mags
   REAL(SP), DIMENSION(nindx), INTENT(in)  :: indx
@@ -485,6 +485,7 @@ SUBROUTINE SAVE_COMPSP(write_compsp,cspo,time,mass,&
   cspo%mags     = mags
   cspo%spec     = MAX(spec,tiny_number)
   cspo%mdust    = mdust
+  cspo%mformed  = mformed
   cspo%indx     = indx
 
   !write to mags file
