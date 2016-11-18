@@ -239,7 +239,7 @@ MODULE SPS_VARS
   !number of emission lines and continuum emission points
   INTEGER, PARAMETER :: nemline=128, nlam_nebcont=1963
   !number of metallicity, age, and ionization parameter points
-  INTEGER, PARAMETER :: nebnz=10, nebnage=8, nebnip=7
+  INTEGER, PARAMETER :: nebnz=11, nebnage=8, nebnip=7
   !number of optical depths for AGN dust models
   INTEGER, PARAMETER :: nagndust=9
   !number of spectral points in the input library
