@@ -825,14 +825,14 @@ SUBROUTINE SPS_SETUP(zin)
 
   !read in nebular continuum arrays.  Units are Lsun/Hz/Q
   IF (cloudy_dust.EQ.1) THEN
-     OPEN(99,FILE=TRIM(SPS_HOME)//'/nebular/ZAU_WD.cont',&
+     OPEN(99,FILE=TRIM(SPS_HOME)//'/nebular/ZAU_WD_'//isoc_type//'.cont',&
        STATUS='OLD',iostat=stat,ACTION='READ')
   ELSE
-     OPEN(99,FILE=TRIM(SPS_HOME)//'/nebular/ZAU_ND.cont',&
+     OPEN(99,FILE=TRIM(SPS_HOME)//'/nebular/ZAU_ND_'//isoc_type//'.cont',&
        STATUS='OLD',iostat=stat,ACTION='READ')
   ENDIF
   IF (stat.NE.0) THEN
-     WRITE(*,*) 'SPS_SETUP ERROR: nebular cont file cannot be opened'
+     WRITE(*,*) 'SPS_SETUP ERROR: nebular cont file cannot be opened. Only available for Padova or MIST isochrones.'
      STOP
   ENDIF
   !burn the header
@@ -855,14 +855,14 @@ SUBROUTINE SPS_SETUP(zin)
 
   !read in nebular emission line luminosities.  Units are Lsun/Q
   IF (cloudy_dust.EQ.1) THEN
-     OPEN(99,FILE=TRIM(SPS_HOME)//'/nebular/ZAU_WD.lines',&
+     OPEN(99,FILE=TRIM(SPS_HOME)//'/nebular/ZAU_WD_'//isoc_type//'.lines',&
           STATUS='OLD',iostat=stat,ACTION='READ')
   ELSE
-     OPEN(99,FILE=TRIM(SPS_HOME)//'/nebular/ZAU_ND.lines',&
+     OPEN(99,FILE=TRIM(SPS_HOME)//'/nebular/ZAU_ND_'//isoc_type//'.lines',&
           STATUS='OLD',iostat=stat,ACTION='READ')
   ENDIF
   IF (stat.NE.0) THEN
-     WRITE(*,*) 'SPS_SETUP ERROR: nebular line file cannot be opened'
+     WRITE(*,*) 'SPS_SETUP ERROR: nebular line file cannot be opened. Only available for Padova or MIST isochrones.'
      STOP
   ENDIF
   !burn the header
