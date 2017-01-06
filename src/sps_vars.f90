@@ -239,7 +239,7 @@ MODULE SPS_VARS
   !number of emission lines and continuum emission points
   INTEGER, PARAMETER :: nemline=128, nlam_nebcont=1963
   !number of metallicity, age, and ionization parameter points
-  INTEGER, PARAMETER :: nebnz=10, nebnage=8, nebnip=7
+  INTEGER, PARAMETER :: nebnz=11, nebnage=8, nebnip=7
   !number of optical depths for AGN dust models
   INTEGER, PARAMETER :: nagndust=9
   !number of spectral points in the input library
@@ -458,7 +458,7 @@ MODULE SPS_VARS
   
   !structure for the output of the compsp routine
   TYPE COMPSPOUT
-     REAL(SP) :: age=0.,mass_csp=0.,lbol_csp=0.,sfr=0.,mdust=0.
+     REAL(SP) :: age=0.,mass_csp=0.,lbol_csp=0.,sfr=0.,mdust=0.,mformed=0.
      REAL(SP), DIMENSION(nbands) :: mags=0.
      REAL(SP), DIMENSION(nspec)  :: spec=0.
      REAL(SP), DIMENSION(nindx)  :: indx=0.
