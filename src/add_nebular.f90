@@ -42,8 +42,8 @@ SUBROUTINE ADD_NEBULAR(pset,sspi,sspo)
         dlam = pset%sigma_smooth
      ENDIF
      !broaden the line to at least the resolution element 
-     !of the spectrum.  This is approximate.
-     dlam = MAX(dlam,neb_res_min(i))
+     !of the spectrum (x2).
+     dlam = MAX(dlam,neb_res_min(i)*2)
      tmparr(:,i) = 1/SQRT(2*mypi)/dlam*&
           EXP(-(spec_lambda-nebem_line_pos(i))**2/2/dlam**2)  / &
           clight*nebem_line_pos(i)**2

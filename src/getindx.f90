@@ -25,7 +25,7 @@ FUNCTION INTIND(lam,func,lo,hi)
   IF (l1.EQ.l2) THEN
      intind = (f2+f1)/2.*(hi-lo)
   ELSE
-     intind = TSUM(lam(l1:l2),func(l1:l2))
+     intind = TSUM(lam(l1+1:l2),func(l1+1:l2))
      intind = intind + (lam(l1+1)-lo)*(f1+func(l1+1))/2.
      intind = intind + (hi-lam(l2))*(f2+func(l2))/2.
   ENDIF
