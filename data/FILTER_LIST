@@ -136,3 +136,8 @@
 136 SUPRIMECAM_r	Subaru Suprime-Cam r+ (http://www.astro.caltech.edu/~capak/filters/index.html)
 137 SUPRIMECAM_i	Subaru Suprime-Cam i+ (http://www.astro.caltech.edu/~capak/filters/index.html)
 138 SUPRIMECAM_z	Subaru Suprime-Cam z+ (http://www.astro.caltech.edu/~capak/filters/index.html)
+139 PS1_g		Pan-STARRS1 g (http://iopscience.iop.org/0004-637X/750/2/99/suppdata/apj425122t3_mrt.txt)
+140 PS1_r		Pan-STARRS1 r (http://iopscience.iop.org/0004-637X/750/2/99/suppdata/apj425122t3_mrt.txt)
+141 PS1_i		Pan-STARRS1 i (http://iopscience.iop.org/0004-637X/750/2/99/suppdata/apj425122t3_mrt.txt)
+142 PS1_z		Pan-STARRS1 z (http://iopscience.iop.org/0004-637X/750/2/99/suppdata/apj425122t3_mrt.txt)
+143 PS1_y		Pan-STARRS1 y (http://iopscience.iop.org/0004-637X/750/2/99/suppdata/apj425122t3_mrt.txt)
