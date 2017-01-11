@@ -54,7 +54,8 @@ SUBROUTINE COMPSP(write_compsp, nzin, outfile,&
   CALL COMPSP_WARNING(maxtime, pset, nzin, write_compsp)
 
   ! Setup output files
-  if (pset%tage.gt.0) then
+  if ((pset%tage.gt.0).or.&
+      ((pset%tage.eq.-99).and.((pset%sfh.eq.2).or.(pset%sfh.eq.3)))) then
      nage = 1
   else
      nage = ntfull
@@ -164,7 +165,7 @@ SUBROUTINE COMPSP(write_compsp, nzin, outfile,&
           indx)
 
      ! Terminate the loop if a single specific tage was requested
-     if ((pset%tage.gt.0).or.(pset%tage.eq.-99)) then
+     if (nage.eq.1) then
         exit
      endif
 
