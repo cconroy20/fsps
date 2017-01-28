@@ -80,8 +80,9 @@ SUBROUTINE ZTINTERP(zpos,spec,lbol,mass,tpos,zpow)
            mdf(MIN(zlo+2,nz)) = w3*dz
            mdf(zlo)   = mdf(zlo) + w2*(1-dz) + w1*dz
            mdf(zlo+1) = mdf(zlo+1) + w3*(1-dz) + w2*dz
-           zlo = max(zlo-1, 1)
+           ! order matters here
            zhi = min(zlo+2, nz)
+           zlo = max(zlo-1, 1)
         ELSE
            z0  = 10**zpos*zsol
            !mdf = ds/dlogZ
