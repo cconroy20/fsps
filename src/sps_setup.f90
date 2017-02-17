@@ -308,6 +308,8 @@ SUBROUTINE SPS_SETUP(zin)
      CLOSE(95)
 
      !interpolate to the main spectral grid
+     !NB: should be smoothing the models first to the resolution of the
+     !input spectral grid
      DO i=1,ndim_wmb_logt
         DO j=1,ndim_wmb_logg
            wmbsi(:,z,i,j) = MAX(linterparr(wmb_lam,wmb_specinit(:,i,j),&
@@ -826,7 +828,7 @@ SUBROUTINE SPS_SETUP(zin)
   !read in nebular continuum arrays.  Units are Lsun/Hz/Q
   IF (cloudy_dust.EQ.1) THEN
      OPEN(99,FILE=TRIM(SPS_HOME)//'/nebular/ZAU_WD_'//isoc_type//'.cont',&
-       STATUS='OLD',iostat=stat,ACTION='READ')
+          STATUS='OLD',iostat=stat,ACTION='READ')
   ELSE
      OPEN(99,FILE=TRIM(SPS_HOME)//'/nebular/ZAU_ND_'//isoc_type//'.cont',&
        STATUS='OLD',iostat=stat,ACTION='READ')
