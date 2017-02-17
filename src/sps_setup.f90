@@ -20,7 +20,7 @@ SUBROUTINE SPS_SETUP(zin)
   CHARACTER(1) :: char,sqpah
   CHARACTER(6) :: zstype
   CHARACTER(5) :: zstype5
-  REAL(SP) :: dumr1,d1,d2,logage,x,a,zero=0.0,d,one=1.0,dz
+  REAL(SP) :: dumr1,d1,d2,logage,x,a,zero=0.0,d,one=1.0,dz,dlam
   CHARACTER(5), DIMENSION(nz) :: zlegend_str=''
   REAL(SP), DIMENSION(nspec) :: tspec=0.
   REAL(SP), DIMENSION(ntlam) :: tvega_lam=0.,tvega_spec=0.
@@ -892,6 +892,27 @@ SUBROUTINE SPS_SETUP(zin)
      neb_res_min(i) = spec_lambda(j+1)-spec_lambda(j)
   ENDDO
 
+  !set up a "master" array of normalized Gaussians
+  !this makes the code much faster
+  IF (setup_nebular_gaussians.EQ.1) THEN
+     DO i=1,nemline
+        IF (smooth_velocity.EQ.1) THEN
+           !smoothing variable is km/s
+           dlam = nebem_line_pos(i)*nebular_smooth_init/clight*1E13
+        ELSE
+           !smoothing variable is A
+           dlam = nebular_smooth_init
+        ENDIF
+        !broaden the line to at least the resolution element 
+        !of the spectrum (x2).
+        dlam = MAX(dlam,neb_res_min(i)*2)
+        gaussnebarr(:,i) = 1/SQRT(2*mypi)/dlam*&
+             EXP(-(spec_lambda-nebem_line_pos(i))**2/2/dlam**2)  / &
+             clight*nebem_line_pos(i)**2
+     ENDDO
+  ENDIF
+
+ 
   !----------------------------------------------------------------!
   !-------------------Set up magnitude info------------------------!
   !----------------------------------------------------------------!

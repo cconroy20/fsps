@@ -145,8 +145,15 @@ MODULE SPS_VARS
   !flag indicating whether to use the Mdot tabulated in the isochrone
   !files (if available) for the AGB dust model.  Note: only use this
   !feature with isochrone files that include Mdot (e.g., MIST)
-  INTEGER, PARAMETER :: use_isoc_mdot=0
+  INTEGER :: use_isoc_mdot=0
 
+  !flag indicating if the Gaussians used for implementing
+  !nebular emission lines should be set up on initialization
+  INTEGER :: setup_nebular_gaussians=0
+  !Width of Gaussian kernels for initial nebular smoothing
+  !if setup_nebular_gaussians=1 (units=km/s if smooth_velocity=1)
+  REAL(SP) :: nebular_smooth_init=100.
+  
   !------------Pre-compiler defintions------------!
   
   !flag indicating type of isochrones to use
@@ -413,6 +420,7 @@ MODULE SPS_VARS
   !minimum resolution for nebular lines, based 
   !on the resolution of the spectral libraries.
   REAL(SP), DIMENSION(nspec)   :: neb_res_min=0.0
+  REAL(SP), DIMENSION(nspec,nemline) :: gaussnebarr=0.0
 
   !arrays for AGN dust
   REAL(SP), DIMENSION(nagndust)       :: agndust_tau=0.

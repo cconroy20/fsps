@@ -13,7 +13,6 @@ SUBROUTINE ADD_NEBULAR(pset,sspi,sspo)
   REAL(SP), INTENT(inout), DIMENSION(nspec,ntfull) :: sspo
   REAL(SP), DIMENSION(nemline) :: tmpnebline
   REAL(SP), DIMENSION(nspec)   :: tmpnebcont,nu
-  REAL(SP), DIMENSION(nspec,nemline) :: tmparr
 
   !-----------------------------------------------------------!
   !-----------------------------------------------------------!
@@ -33,21 +32,23 @@ SUBROUTINE ADD_NEBULAR(pset,sspi,sspo)
 
   !set up a "master" array of normalized Gaussians
   !this makes the code much faster
-  DO i=1,nemline
-     IF (smooth_velocity.EQ.1) THEN
-        !smoothing variable is km/s
-        dlam = nebem_line_pos(i)*pset%sigma_smooth/clight*1E13
-     ELSE
-        !smoothing variable is A
-        dlam = pset%sigma_smooth
-     ENDIF
-     !broaden the line to at least the resolution element 
-     !of the spectrum (x2).
-     dlam = MAX(dlam,neb_res_min(i)*2)
-     tmparr(:,i) = 1/SQRT(2*mypi)/dlam*&
-          EXP(-(spec_lambda-nebem_line_pos(i))**2/2/dlam**2)  / &
-          clight*nebem_line_pos(i)**2
-  ENDDO
+  IF (setup_nebular_gaussians.EQ.0) THEN
+     DO i=1,nemline
+        IF (smooth_velocity.EQ.1) THEN
+           !smoothing variable is km/s
+           dlam = nebem_line_pos(i)*pset%sigma_smooth/clight*1E13
+        ELSE
+           !smoothing variable is A
+           dlam = pset%sigma_smooth
+        ENDIF
+        !broaden the line to at least the resolution element 
+        !of the spectrum (x2).
+        dlam = MAX(dlam,neb_res_min(i)*2)
+        gaussnebarr(:,i) = 1/SQRT(2*mypi)/dlam*&
+             EXP(-(spec_lambda-nebem_line_pos(i))**2/2/dlam**2)  / &
+             clight*nebem_line_pos(i)**2
+     ENDDO
+  ENDIF
 
   sspo = sspi
 
@@ -94,7 +95,7 @@ SUBROUTINE ADD_NEBULAR(pset,sspi,sspo)
           (dz)*(da)*(du)*       nebem_line(:,z1+1,a1+1,u1+1)
 
      DO i=1,nemline
-        sspo(:,t) = sspo(:,t) + 10**tmpnebline(i)*qq*tmparr(:,i)
+        sspo(:,t) = sspo(:,t) + 10**tmpnebline(i)*qq*gaussnebarr(:,i)
      ENDDO
 
   ENDDO
