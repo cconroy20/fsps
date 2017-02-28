@@ -132,7 +132,7 @@ PROGRAM AUTOSPS
   ELSE
      READ(aux,'(A)') file1
   ENDIF
-  WRITE(6,'(" ---> Output filename:",1x,A100)'),file1
+  WRITE(6,'(" ---> Output filename:",1x,A100)') file1
 
 
   WRITE(6,'(" ---> Running model.......")')
