@@ -44,7 +44,10 @@ SUBROUTINE SMOOTHSPEC(lambda,spec,sigma,minl,maxl,ires)
            
            IF (PRESENT(ires)) THEN
               sigmal = ires(i)
-              IF (sigmal.LE.tiny_number) CYCLE
+              IF (sigmal.LE.tiny_number) THEN
+                 spec(i)=tspec(i)
+                 CYCLE
+              ENDIF
            ELSE
               sigmal = sigma
            ENDIF
