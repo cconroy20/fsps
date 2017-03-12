@@ -13,7 +13,6 @@ MODULE SPS_VARS
 
 !------set the isochrone library------!
 #define MIST 1
-!Padova models circa 2008
 #define PADOVA 0
 #define PARSEC 0
 #define BASTI 0

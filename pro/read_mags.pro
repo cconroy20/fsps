@@ -166,7 +166,12 @@ FUNCTION READ_MAGS1, file, allow_old=allow_old
          suprimecam_v:0.0,$
          suprimecam_r:0.0,$
          suprimecam_i:0.0,$
-         suprimecam_z:0.0  }
+         suprimecam_z:0.0,$
+         ps1_g:0.0,$
+         ps1_r:0.0,$
+         ps1_i:0.0,$
+         ps1_z:0.0,$
+         ps1_y:0.0 }
 
 
   str = replicate(str,nn)

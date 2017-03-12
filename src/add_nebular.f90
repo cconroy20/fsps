@@ -55,7 +55,7 @@ SUBROUTINE ADD_NEBULAR(pset,sspi,sspo)
   DO t=1,nti
 
      !remove ionizing photons from the stellar source
-     sspo(1:whlylim,t) = sspi(1:whlylim,t) * pset%frac_obrun
+     sspo(1:whlylim,t) = sspi(1:whlylim,t)*MAX(MIN(pset%frac_obrun,1.0),0.0)
 
      !the number of ionizing photons is computed here
      !some fraction of the stars are "runaways" which means
