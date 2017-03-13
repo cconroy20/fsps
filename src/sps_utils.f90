@@ -23,21 +23,25 @@ MODULE SPS_UTILS
   END INTERFACE
 
   INTERFACE
-     SUBROUTINE ADD_DUST(pset,csp1,csp2,specdust,mdust)
+     SUBROUTINE ADD_DUST(pset,csp1,csp2,specdust,mdust,ncsp1,ncsp2,nebdust)
        USE sps_vars
        REAL(SP), INTENT(out) :: mdust
        REAL(SP), DIMENSION(nspec), INTENT(in) :: csp1,csp2
        TYPE(PARAMS), INTENT(in) :: pset
        REAL(SP), DIMENSION(nspec), INTENT(out) :: specdust
+       REAL(SP), DIMENSION(nemline), INTENT(in) :: ncsp1,ncsp2
+       REAL(SP), DIMENSION(nemline), INTENT(out) :: nebdust
      END SUBROUTINE ADD_DUST
   END INTERFACE
 
   INTERFACE
-     SUBROUTINE ADD_NEBULAR(pset,sspi,sspo)
+     SUBROUTINE ADD_NEBULAR(pset,sspi,sspo,nebemline)
        USE sps_vars
        TYPE(PARAMS), INTENT(in) :: pset
        REAL(SP), INTENT(in), DIMENSION(nspec,ntfull)    :: sspi
        REAL(SP), INTENT(inout), DIMENSION(nspec,ntfull) :: sspo
+       REAL(SP), INTENT(inout), DIMENSION(nemline,ntfull), OPTIONAL :: nebemline
+
      END SUBROUTINE ADD_NEBULAR
   END INTERFACE
 
@@ -101,7 +105,7 @@ MODULE SPS_UTILS
 
   INTERFACE
      SUBROUTINE CSP_GEN(mass_ssp, lbol_ssp, spec_ssp, pset, tage, nzin,&
-                        mass_csp, lbol_csp, spec_csp, mdust_csp)
+                        mass_csp, lbol_csp, spec_csp, mdust_csp,emlin_ssp,emlin_csp)
        USE sps_vars
        REAL(SP), DIMENSION(ntfull), INTENT(in) :: mass_ssp, lbol_ssp
        REAL(SP), DIMENSION(nspec, ntfull), INTENT(in) :: spec_ssp
@@ -110,6 +114,8 @@ MODULE SPS_UTILS
        INTEGER, INTENT(IN) :: nzin
        REAL(SP), INTENT(out) :: mass_csp, lbol_csp, mdust_csp
        REAL(SP), INTENT(out), DIMENSION(nspec) :: spec_csp
+       REAL(SP), DIMENSION(nemline, ntfull, nzin), intent(in) :: emlin_ssp
+       REAL(SP), DIMENSION(nemline), intent(out) :: emlin_csp
      END SUBROUTINE CSP_GEN
   END INTERFACE
 

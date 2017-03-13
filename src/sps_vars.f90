@@ -78,6 +78,8 @@ MODULE SPS_VARS
   INTEGER :: add_agb_dust_model=1
 
   !turn on/off a Cloudy-based nebular emission model (cont+lines)
+  !if set to 2, then the nebular emission lines are added at the SSP
+  !level, which may be useful if the nebular parameters are fixed
   INTEGER :: add_neb_emission=0
   !turn on/off the nebular continuum component (automatically 
   !turned off if the above is set to 0)
@@ -154,6 +156,9 @@ MODULE SPS_VARS
   !if setup_nebular_gaussians=1 (units=km/s if smooth_velocity=1)
   REAL(SP) :: nebular_smooth_init=100.
 
+  !flag to include emission lines in the spectrum
+  !if not set, the line luminosities are still computed
+  INTEGER :: nebemlineinspec=1
   
   !------------Pre-compiler defintions------------!
   

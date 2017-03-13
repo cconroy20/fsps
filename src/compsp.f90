@@ -19,14 +19,16 @@ SUBROUTINE COMPSP(write_compsp, nzin, outfile,&
 
   TYPE(COMPSPOUT), INTENT(inout), DIMENSION(ntfull) :: ocompsp
 
-  real(SP), DIMENSION(nspec, ntfull, nzin) :: spec_ssp
-  real(SP), dimension(ntfull) :: mdust_ssp
+  REAL(SP), DIMENSION(nspec, ntfull, nzin)   :: spec_ssp
+  REAL(SP), DIMENSION(nemline, ntfull, nzin) :: emlin_ssp
+  REAL(SP), DIMENSION(nemline) :: emlin_csp
+  REAL(SP), dimension(ntfull) :: mdust_ssp
   REAL(SP) :: lbol_csp, mass_csp, mdust_csp
-  real(SP) :: age, mdust, mass_frac, tsfr, zred, frac_linear, maxtime
+  REAL(SP) :: age, mdust, mass_frac, tsfr, zred, frac_linear, maxtime
   REAL(SP), DIMENSION(nspec) :: csp1, csp2, spec_dusty, spec_csp
   REAL(SP), DIMENSION(nbands)  :: mags
   REAL(SP), DIMENSION(nindx)   :: indx
-  integer :: i, nage
+  INTEGER :: i, nage
 
   ! ------ Various checks and setup ------
 
@@ -83,7 +85,9 @@ SUBROUTINE COMPSP(write_compsp, nzin, outfile,&
              'emission and mult-metallicity SSPs in compsp'
         STOP
      endif
-     call add_nebular(pset, tspec_ssp(:,:,1), spec_ssp(:,:,1))
+     call add_nebular(pset, tspec_ssp(:,:,1), spec_ssp(:,:,1), emlin_ssp(:,:,1))
+  else
+     emlin_ssp = 0.
   endif
 
 
@@ -110,15 +114,16 @@ SUBROUTINE COMPSP(write_compsp, nzin, outfile,&
      ! solar mass formed, so we actually need to renormalize if computing all
      ! ages, which is done using info from `sfhinfo`
      call csp_gen(mass_ssp, lbol_ssp, spec_ssp, &
-                  pset, age, nzin, &
-                  mass_csp, lbol_csp, spec_csp, mdust_csp)
+          pset, age, nzin, mass_csp, lbol_csp, spec_csp,&
+          mdust_csp,emlin_ssp,emlin_csp)
      
      call sfhinfo(pset, age, mass_frac, tsfr, frac_linear)
      if (pset%tage.le.0) then   
-        mass_csp = mass_csp * mass_frac
-        lbol_csp = log10(10**lbol_csp * mass_frac)
-        spec_csp = spec_csp * mass_frac
+        mass_csp  = mass_csp * mass_frac
+        lbol_csp  = log10(10**lbol_csp * mass_frac)
+        spec_csp  = spec_csp * mass_frac
         mdust_csp = mdust_csp * mass_frac
+        emlin_csp = emlin_csp * mass_frac
      else
         ! Renormalize the SFR to be appropriate for one solar mass formed.
         tsfr = tsfr / mass_frac
@@ -162,7 +167,7 @@ SUBROUTINE COMPSP(write_compsp, nzin, outfile,&
      ! Store the spectrum and write....
      call save_compsp(write_compsp, ocompsp(i), log10(age)+9,&
           mass_csp, lbol_csp, tsfr, mags, spec_csp, mdust_csp, mass_frac,&
-          indx)
+          indx,emlin_csp)
 
      ! Terminate the loop if a single specific tage was requested
      if (nage.eq.1) then
@@ -459,7 +464,7 @@ END SUBROUTINE COMPSP_HEADER
 !------------------------------------------------------------!
 
 SUBROUTINE SAVE_COMPSP(write_compsp,cspo,time,mass,&
-     lbol,sfr,mags,spec,mdust,mformed,indx)
+     lbol,sfr,mags,spec,mdust,mformed,indx,emlines)
 
   !routine to print and save outputs
 
@@ -467,9 +472,10 @@ SUBROUTINE SAVE_COMPSP(write_compsp,cspo,time,mass,&
   IMPLICIT NONE
   INTEGER, INTENT(in) :: write_compsp
   REAL(SP), INTENT(in)    :: time,mass,lbol,sfr,mdust,mformed
-  REAL(SP), DIMENSION(nspec), INTENT(in)  :: spec
-  REAL(SP), DIMENSION(nbands), INTENT(in) :: mags
-  REAL(SP), DIMENSION(nindx), INTENT(in)  :: indx
+  REAL(SP), DIMENSION(nspec), INTENT(in)    :: spec
+  REAL(SP), DIMENSION(nbands), INTENT(in)   :: mags
+  REAL(SP), DIMENSION(nindx), INTENT(in)    :: indx
+  REAL(SP), DIMENSION(nemline), INTENT(in)  :: emlines
   TYPE(COMPSPOUT), INTENT(inout) :: cspo
   CHARACTER(34) :: fmt
 
@@ -488,6 +494,7 @@ SUBROUTINE SAVE_COMPSP(write_compsp,cspo,time,mass,&
   cspo%mdust    = mdust
   cspo%mformed  = mformed
   cspo%indx     = indx
+  cspo%emlines  = emlines
 
   !write to mags file
   IF (write_compsp.EQ.1.OR.write_compsp.EQ.3) &

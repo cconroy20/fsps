@@ -1,6 +1,6 @@
 subroutine csp_gen(mass_ssp, lbol_ssp, spec_ssp, &
-                   pset, tage, nzin, &
-                   mass_csp, lbol_csp, spec_csp, mdust_csp)
+     pset, tage, nzin, mass_csp, lbol_csp, spec_csp, &
+     mdust_csp,emlin_ssp,emlin_csp)
   !
   ! Return the spectrum (and mass and lbol) of a composite stellar population.
   !
@@ -27,7 +27,7 @@ subroutine csp_gen(mass_ssp, lbol_ssp, spec_ssp, &
   
   use sps_vars, only: ntfull, nspec, time_full, tiny_number, tiny_logt, &
                       zlegend, nz, sfh_tab, ntabsfh, compute_light_ages, &
-                      SFHPARAMS, PARAMS, SP
+                      SFHPARAMS, PARAMS, SP,nemline
   use sps_utils, only: locate, sfh_weight, sfhinfo, add_dust
   implicit none
 
@@ -40,7 +40,11 @@ subroutine csp_gen(mass_ssp, lbol_ssp, spec_ssp, &
   real(SP), intent(out) :: mass_csp, lbol_csp, mdust_csp
   real(SP), intent(out), dimension(nspec) :: spec_csp
 
-  real(SP), dimension(nspec) :: csp1, csp2, lw_age !for add_dust and light-weighted ages
+  real(SP), DIMENSION(nemline, ntfull, nzin), intent(in) :: emlin_ssp
+  real(SP), DIMENSION(nemline), intent(out) :: emlin_csp
+
+  real(SP), dimension(nspec) :: csp1, csp2, lw_age
+  real(SP), dimension(nemline) :: ncsp1, ncsp2, nlw_age
   real(SP), dimension(ntfull, nzin) :: total_weights
   real(SP), dimension(ntfull) :: w1=0., w2=0.
   integer :: i, j, k, imin, imax, i_tesc
@@ -215,10 +219,13 @@ subroutine csp_gen(mass_ssp, lbol_ssp, spec_ssp, &
   ! add_dust, which does the final sum as well as attenuating.
   ! This matrix multiply could probably be optimized!!!!
 
-  csp1 = 0. ! young
-  csp2 = 0. ! old
+  csp1  = 0. ! young
+  csp2  = 0. ! old
+  ncsp1 = 0. ! young nebular
+  ncsp2 = 0. ! old nebular
   if (compute_light_ages.eq.1) then
-     lw_age = 0.
+     nlw_age  = 0.
+     lw_age   = 0.
      lbol_age = 0.
      mass_age = 0.
   endif
@@ -232,12 +239,16 @@ subroutine csp_gen(mass_ssp, lbol_ssp, spec_ssp, &
      do k=1,nzin
         if (total_weights(i, k).gt.tiny_number) then
            if (i.le.i_tesc) then
-              csp1 = csp1 + total_weights(i, k) * spec_ssp(:, i, k)
+              csp1  = csp1  + total_weights(i, k) * spec_ssp(:, i, k)
+              ncsp1 = ncsp1 + total_weights(i, k) * emlin_ssp(:, i, k)
            else
-              csp2 = csp2 + total_weights(i, k) * spec_ssp(:, i, k)
+              csp2  = csp2  + total_weights(i, k) * spec_ssp(:, i, k)
+              ncsp2 = ncsp2 + total_weights(i, k) * emlin_ssp(:, i, k)
            endif
            ! Now do numerator in case of light and mass weighted ages.
            if (compute_light_ages.eq.1) then
+              nlw_age = nlw_age + total_weights(i, k) * emlin_ssp(:, i, k) &
+                       * 10**(time_full(i)-9)
               lw_age = lw_age + total_weights(i, k) * spec_ssp(:, i, k) &
                        * 10**(time_full(i)-9)
               lbol_age = lbol_age + 10**lbol_ssp(i, k) * total_weights(i, k) &
@@ -254,16 +265,19 @@ subroutine csp_gen(mass_ssp, lbol_ssp, spec_ssp, &
   ! Here we add young and old spectra with dust.
   if (((pset%dust1.gt.tiny_number).or.(pset%dust2.gt.tiny_number))&
        .and.(compute_light_ages.eq.0)) then
-     call add_dust(pset, csp1, csp2, spec_csp, mdust_csp)
+     call add_dust(pset, csp1, csp2, spec_csp, mdust_csp, ncsp1, ncsp2, emlin_csp)
+
   else
-     spec_csp = csp1 + csp2
+     spec_csp  = csp1 + csp2
+     emlin_csp = ncsp1 + ncsp2
      mdust_csp = 0.0
   endif
 
   if (compute_light_ages.eq.1) then
-     spec_csp = lw_age / spec_csp
-     lbol_csp = lbol_age / 10**lbol_csp
-     mass_csp = mass_age / mass_csp
+     spec_csp  = lw_age / spec_csp
+     emlin_csp = nlw_age / emlin_csp
+     lbol_csp  = lbol_age / 10**lbol_csp
+     mass_csp  = mass_age / mass_csp
   endif
 
 end subroutine csp_gen

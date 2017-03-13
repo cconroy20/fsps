@@ -1,15 +1,18 @@
-SUBROUTINE ADD_DUST(pset,csp1,csp2,specdust,mdust)
+SUBROUTINE ADD_DUST(pset,csp1,csp2,specdust,mdust,ncsp1,ncsp2,nebdust)
 
   USE sps_vars
-  USE sps_utils, ONLY : tsum, locate, attn_curve
+  USE sps_utils, ONLY : tsum, locate, attn_curve, linterparr
   IMPLICIT NONE
 
   REAL(SP), DIMENSION(nspec), INTENT(in) :: csp1,csp2
   TYPE(PARAMS), INTENT(in) :: pset
   REAL(SP), DIMENSION(nspec), INTENT(out) :: specdust
   REAL(SP), INTENT(out) :: mdust
+  REAL(SP), DIMENSION(nemline), INTENT(in) :: ncsp1,ncsp2
+  REAL(SP), DIMENSION(nemline), INTENT(out) :: nebdust
   INTEGER :: i,qlo,ulo,iself=0
   REAL(SP), DIMENSION(nspec)  :: diff_dust,tau2,cspi
+  REAL(SP), DIMENSION(nemline)  :: diff_dust_neb,ncspi
   REAL(SP), DIMENSION(nspec)  :: nu,dumin,dumax
   REAL(SP), DIMENSION(nspec)  :: mduste,duste,oduste,sduste,tduste
   REAL(SP), DIMENSION(7) :: qpaharr
@@ -64,6 +67,13 @@ SUBROUTINE ADD_DUST(pset,csp1,csp2,specdust,mdust)
   !allow a fraction of the diffuse dust spectrum to be dust-free
   specdust  = cspi*diff_dust*(1-pset%frac_nodust) + &
        cspi*pset%frac_nodust
+
+  !as above, for nebular line luminosities
+  diff_dust_neb = linterparr(spec_lambda,diff_dust,nebem_line_pos)
+  ncspi = ncsp1 * EXP(-pset%dust1*(nebem_line_pos/5500.)**(pset%dust1_index))*&
+       (1-pset%frac_obrun) + ncsp1*pset%frac_obrun + ncsp2
+  nebdust  = ncspi*diff_dust_neb*(1-pset%frac_nodust) + &
+       ncspi*pset%frac_nodust
 
   !---------------------------------------------------------------!
   !----------------------Add dust emission------------------------!

@@ -1,4 +1,4 @@
-SUBROUTINE ADD_NEBULAR(pset,sspi,sspo)
+SUBROUTINE ADD_NEBULAR(pset,sspi,sspo,nebemline)
 
   !routine to add nebular emission (both line and continuum)
   !to input SSPs (sspi).  Returns SSPs as output (sspo).
@@ -11,6 +11,7 @@ SUBROUTINE ADD_NEBULAR(pset,sspi,sspo)
   TYPE(PARAMS), INTENT(in) :: pset
   REAL(SP), INTENT(in), DIMENSION(nspec,ntfull)    :: sspi
   REAL(SP), INTENT(inout), DIMENSION(nspec,ntfull) :: sspo
+  REAL(SP), INTENT(inout), DIMENSION(nemline,ntfull), OPTIONAL :: nebemline
   REAL(SP), DIMENSION(nemline) :: tmpnebline
   REAL(SP), DIMENSION(nspec)   :: tmpnebcont,nu
 
@@ -32,7 +33,7 @@ SUBROUTINE ADD_NEBULAR(pset,sspi,sspo)
 
   !set up a "master" array of normalized Gaussians
   !in sps_setup.f90 this makes the code much faster
-  IF (setup_nebular_gaussians.EQ.0) THEN
+  IF (setup_nebular_gaussians.EQ.0.AND.nebemlineinspec.EQ.1) THEN
      DO i=1,nemline
         IF (smooth_velocity.EQ.1) THEN
            !smoothing variable is km/s
@@ -51,7 +52,8 @@ SUBROUTINE ADD_NEBULAR(pset,sspi,sspo)
   ENDIF
 
   sspo = sspi
-
+  nebemline = 0.0
+  
   DO t=1,nti
 
      !remove ionizing photons from the stellar source
@@ -94,10 +96,14 @@ SUBROUTINE ADD_NEBULAR(pset,sspi,sspo)
           (dz)*(da)*(1-du)*     nebem_line(:,z1+1,a1+1,u1)+&
           (dz)*(da)*(du)*       nebem_line(:,z1+1,a1+1,u1+1)
 
-     DO i=1,nemline
-        sspo(:,t) = sspo(:,t) + 10**tmpnebline(i)*qq*gaussnebarr(:,i)
-     ENDDO
+     IF (PRESENT(nebemline)) nebemline(:,t) = 10**tmpnebline
 
+     IF (nebemlineinspec.EQ.1) THEN
+        DO i=1,nemline
+           sspo(:,t) = sspo(:,t) + 10**tmpnebline(i)*qq*gaussnebarr(:,i)
+        ENDDO
+     ENDIF
+        
   ENDDO
 
 
