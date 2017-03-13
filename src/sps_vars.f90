@@ -12,8 +12,8 @@ MODULE SPS_VARS
 #define C3K 0
 
 !------set the isochrone library------!
-#define MIST 1
-#define PADOVA 0
+#define MIST 0
+#define PADOVA 1
 #define PARSEC 0
 #define BASTI 0
 #define GENEVA 0
@@ -149,9 +149,11 @@ MODULE SPS_VARS
   !flag indicating if the Gaussians used for implementing
   !nebular emission lines should be set up on initialization
   INTEGER :: setup_nebular_gaussians=0
+
   !Width of Gaussian kernels for initial nebular smoothing
   !if setup_nebular_gaussians=1 (units=km/s if smooth_velocity=1)
   REAL(SP) :: nebular_smooth_init=100.
+
   
   !------------Pre-compiler defintions------------!
   
@@ -466,9 +468,10 @@ MODULE SPS_VARS
   !structure for the output of the compsp routine
   TYPE COMPSPOUT
      REAL(SP) :: age=0.,mass_csp=0.,lbol_csp=0.,sfr=0.,mdust=0.,mformed=0.
-     REAL(SP), DIMENSION(nbands) :: mags=0.
-     REAL(SP), DIMENSION(nspec)  :: spec=0.
-     REAL(SP), DIMENSION(nindx)  :: indx=0.
+     REAL(SP), DIMENSION(nbands)  :: mags=0.
+     REAL(SP), DIMENSION(nspec)   :: spec=0.
+     REAL(SP), DIMENSION(nindx)   :: indx=0.
+     REAL(SP), DIMENSION(nemline) :: emlines=0.
   END TYPE COMPSPOUT
 
   ! A structure to hold SFH params converted to intrinsic units
@@ -511,4 +514,5 @@ MODULE SPS_VARS
   !REAL, DIMENSION(nspec,ntfull,ntaugrid,nz) :: csp_grid=0.0
   !INTEGER :: csp_grid_flag=0
 
+ 
 END MODULE SPS_VARS

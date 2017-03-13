@@ -222,7 +222,10 @@ SUBROUTINE SSP_GEN(pset,mass_ssp,lbol_ssp,spec_ssp)
      ENDDO
   ENDIF
 
-  !add the nebular emission model once at the SSP level
+  !-------------------------------------------------------------!
+  !-------add the nebular emission model at the SSP level-------!
+  !-------------------------------------------------------------!
+
   IF (add_neb_emission.EQ.2) THEN
      CALL ADD_NEBULAR(pset,spec_ssp,tspec_ssp)
      spec_ssp = tspec_ssp

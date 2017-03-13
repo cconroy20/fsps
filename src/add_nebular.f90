@@ -31,7 +31,7 @@ SUBROUTINE ADD_NEBULAR(pset,sspi,sspo)
   du = MAX(MIN(du,1.0),0.0) !no extrapolation
 
   !set up a "master" array of normalized Gaussians
-  !this makes the code much faster
+  !in sps_setup.f90 this makes the code much faster
   IF (setup_nebular_gaussians.EQ.0) THEN
      DO i=1,nemline
         IF (smooth_velocity.EQ.1) THEN
