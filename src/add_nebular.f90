@@ -96,7 +96,7 @@ SUBROUTINE ADD_NEBULAR(pset,sspi,sspo,nebemline)
           (dz)*(da)*(1-du)*     nebem_line(:,z1+1,a1+1,u1)+&
           (dz)*(da)*(du)*       nebem_line(:,z1+1,a1+1,u1+1)
 
-     IF (PRESENT(nebemline)) nebemline(:,t) = 10**tmpnebline
+     IF (PRESENT(nebemline)) nebemline(:,t) = 10**tmpnebline*qq
 
      IF (nebemlineinspec.EQ.1) THEN
         DO i=1,nemline
