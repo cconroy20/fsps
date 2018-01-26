@@ -96,7 +96,10 @@ SUBROUTINE ADD_DUST(pset,csp1,csp2,specdust,mdust,ncsp1,ncsp2,nebdust)
         nu    = clight/spec_lambda
         lbold = TSUM(nu,specdust)
         lboln = TSUM(nu,csp1+csp2)
-     
+        IF (nebemlineinspec.EQ.0) THEN
+           lboln = lboln + SUM(ncsp1) + SUM(ncsp2) - SUM(nebdust)
+        ENDIF
+
         !set up qpah interpolation
         qpaharr = (/0.47,1.12,1.77,2.50,3.19,3.90,4.58/)
         !set limits to qpah: 0.0<qpah<10.0
