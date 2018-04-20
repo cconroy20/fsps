@@ -258,14 +258,14 @@ MODULE SPS_UTILS
   END INTERFACE
 
   INTERFACE
-     SUBROUTINE MOD_GB(zz,t,age,delt,dell,pagb,redgb,&
+     SUBROUTINE MOD_GB(zz,t,age,delt,dell,pagb,redgb,agb,&
           nn,logl,logt,phase,wght)
        USE sps_vars
        INTEGER,  INTENT(in) :: t, nn,zz
        REAL(SP), INTENT(inout), DIMENSION(nt,nm) :: logl,logt
        REAL(SP), INTENT(in), DIMENSION(nt,nm)    :: phase
        REAL(SP), INTENT(inout), DIMENSION(nm)    :: wght
-       REAL(SP), INTENT(in) :: delt, dell, pagb,redgb
+       REAL(SP), INTENT(in) :: delt, dell, pagb,redgb, agb
        REAL(SP), INTENT(in), DIMENSION(nt) :: age
      END SUBROUTINE MOD_GB
   END INTERFACE
