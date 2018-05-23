@@ -25,7 +25,16 @@ FUNCTION READ_MAGS1, file, allow_old=allow_old
   res = (read_ascii(file[0],data_start=8)).(0)
   nn  = n_elements(res[0,*])
 
-  str = {agegyr:0.0,$
+  ;extract the metallicity from the header
+  openr,lun,file[0],/get_lun
+  ss = ''
+  readf,lun,ss
+  close,lun
+  free_lun,lun
+  zmet = float((strsplit(ss,':',/extr))[1])
+  
+  str = {logz:0.0,$
+         agegyr:0.0,$         
          logmass:0.0,$
          loglbol:0.0,$
          logsfr:0.0,$
@@ -176,22 +185,23 @@ FUNCTION READ_MAGS1, file, allow_old=allow_old
 
   str = replicate(str,nn)
   str.agegyr = 10^reform(res[0,*])/1E9 ; age in Gyr
-
+  str.logz   = zmet  ; metallicity in log(Z/Zsol) units
+  
   IF NOT(keyword_set(allow_old)) THEN BEGIN
 
-     IF n_tags(str) NE n_elements(res[*,0]) THEN BEGIN
+     IF (n_tags(str)-1) NE n_elements(res[*,0]) THEN BEGIN
         print,'READ_MAGS ERROR: structure and *mags file are incompatable!'
         RETURN,0
      ENDIF
 
-     FOR i=1,n_tags(str)-1 DO str.(i) = reform(res[i,*])
+     FOR i=2,n_tags(str)-1 DO str.(i) = reform(res[i-1,*])
  
   ENDIF ELSE BEGIN
 
      ;in this case we are trusting that the *ordering* of the 
      ;older mag file is the same, just that it is missing the
      ;latest filter entries
-     FOR i=1,n_elements(res[*,0])-1 DO str.(i) = reform(res[i,*])
+     FOR i=1,n_elements(res[*,0])-1 DO str.(i+1) = reform(res[i,*])
 
   ENDELSE
 

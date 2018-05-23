@@ -12,8 +12,8 @@ MODULE SPS_VARS
 #define C3K 0
 
 !------set the isochrone library------!
-#define MIST 0
-#define PADOVA 1
+#define MIST 1
+#define PADOVA 0
 #define PARSEC 0
 #define BASTI 0
 #define GENEVA 0
