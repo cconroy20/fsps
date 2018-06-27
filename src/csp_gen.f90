@@ -185,7 +185,7 @@ subroutine csp_gen(mass_ssp, lbol_ssp, spec_ssp, &
         sfhpars%sf_trunc = sfhpars%tage - sfhpars%tq
         ! Mass that formed within these valid times.
         dt = (sfhpars%tage - sfhpars%tq)
-        m2 = sfh_tab(2, j+1) * (1 - sfhpars%sf_slope/2. * (sfhpars%tage + sfhpars%tq - 2*t1)) * dt
+        m2 = sfh_tab(2, j+1) * (1 + sfhpars%sf_slope/2. * (sfhpars%tage + sfhpars%tq - 2*t1)) * dt
         ! min and max ssps to consider, being conservative.
         imin = min(max(locate(time_full, log10(t1)) - 1, 0), ntfull)
         imax = min(max(locate(time_full, log10(t2)) + 2, 0), ntfull)
