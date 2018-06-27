@@ -1,6 +1,6 @@
 MODULE SPS_VARS
 
-  ! module to set up most arrays and variables 
+  ! module to set up most arrays and variables
 
   IMPLICIT NONE
   SAVE
@@ -26,7 +26,7 @@ MODULE SPS_VARS
   INTEGER, PARAMETER :: SP = KIND(1.d0)
 
   !------Common parameters that may be altered by the user-------!
-  
+
   !setup cosmology (WMAP7).  Used only for z(t) relation.
   REAL(SP) :: om0=0.27, ol0=0.73, H0=72.
 
@@ -43,11 +43,11 @@ MODULE SPS_VARS
 
   !turn-on time for BHB and SBS phases, time is in log(yrs)
   REAL(SP), PARAMETER :: bhb_sbs_time=9.5
-  
+
   !turn on/off convolution of SSP with P(Z) (pz_convol.f90)
   !NB: pz_convol.f90 has not been tested in some time, use with caution
   INTEGER :: pzcon=0
-  
+
   !the factor by which we increase the time array
   !this should no longer need to be set to anything other than 1
   INTEGER, PARAMETER :: time_res_incr=1
@@ -67,7 +67,7 @@ MODULE SPS_VARS
   !NB: currently only works with sfh=1,4 options
   INTEGER :: compute_light_ages=0
 
-  !turn on/off the Draine & Li 2007 dust emission model 
+  !turn on/off the Draine & Li 2007 dust emission model
   INTEGER :: add_dust_emission=1
 
   !turn on/off the Nenkova et al. 2008 AGN torus dust model
@@ -81,28 +81,28 @@ MODULE SPS_VARS
   !if set to 2, then the nebular emission lines are added at the SSP
   !level, which may be useful if the nebular parameters are fixed
   INTEGER :: add_neb_emission=0
-  !turn on/off the nebular continuum component (automatically 
+  !turn on/off the nebular continuum component (automatically
   !turned off if the above is set to 0)
   INTEGER  :: add_neb_continuum=1
   !include dust in the Cloudy tables or not
   INTEGER :: cloudy_dust=0
- 
+
   !turn on/off IGM absorption a la Madau (1995)
   INTEGER :: add_igm_absorption=0
 
-  !turn on/off the addition of stellar remnants to the 
+  !turn on/off the addition of stellar remnants to the
   !computation of stellar masses
   INTEGER :: add_stellar_remnants=1
 
   !if set, use a simpler, algorithm to smooth
-  !the spectra.  Accurate to ~0.1% and somewhat faster than the 
+  !the spectra.  Accurate to ~0.1% and somewhat faster than the
   !correct approach.  NB: one should be careful when choosing
   !to run the slow version, as the accuracy depends on the min/max
   !wavelength parameters.  Contact me if you are intersted in this feature.
   INTEGER :: smoothspec_fast=1
 
   !if set, smooth the spectrum in velocity space, otherwise
-  !smooth in Angstrom space (in all cases the width of the 
+  !smooth in Angstrom space (in all cases the width of the
   !kernel is a sigma, not FWHM)
   INTEGER :: smooth_velocity=1
 
@@ -137,7 +137,7 @@ MODULE SPS_VARS
 
   !flag indicating whether or not the output colors
   !will be redshifted to the age of the Universe corresponding
-  !to the age of the SSP or CSP 
+  !to the age of the SSP or CSP
   !(only works when using compsp.f90 to compute mags)
   !0 = colors redshifted to a fixed redshift, specified in parameter set
   !1 = colors redshifted according to the age of the SSP or CSP
@@ -159,9 +159,9 @@ MODULE SPS_VARS
   !flag to include emission lines in the spectrum
   !if not set, the line luminosities are still computed
   INTEGER :: nebemlineinspec=1
-  
+
   !------------Pre-compiler defintions------------!
-  
+
   !flag indicating type of isochrones to use
   !and number of metallicities in the set
 #if (BASTI)
@@ -223,7 +223,7 @@ MODULE SPS_VARS
   INTEGER, PARAMETER :: nbands=143
   !number of indices defined in allindices.dat
   INTEGER, PARAMETER :: nindx=30
-  
+
   !The following parameters should never be changed
   !unless you are changing the libraries
 
@@ -252,14 +252,14 @@ MODULE SPS_VARS
   !number of emission lines and continuum emission points
   INTEGER, PARAMETER :: nemline=128, nlam_nebcont=1963
   !number of metallicity, age, and ionization parameter points
-  INTEGER, PARAMETER :: nebnz=11, nebnage=9, nebnip=7
+  INTEGER, PARAMETER :: nebnz=11, nebnage=10, nebnip=7
   !number of optical depths for AGN dust models
   INTEGER, PARAMETER :: nagndust=9
   !number of spectral points in the input library
   INTEGER, PARAMETER :: nagndust_spec=125
 
   !------------IMF-related Constants--------------!
-  
+
   !Salpeter IMF index
   REAL(SP) :: salp_ind= 2.35
   !min/max masses for the IMF
@@ -309,24 +309,24 @@ MODULE SPS_VARS
   REAL(SP), PARAMETER :: huge_number = 10**(70.d0)
   REAL(SP), PARAMETER :: tiny_number = 10**(-70.d0)
   REAL(SP), PARAMETER :: tiny30      = 10**(-30.0)
-  
+
   !---------------Common Block-------------------!
-    
+
   INTEGER :: check_sps_setup = 0
-  
+
   !IMF parameters for Kroupa 2001 IMF
   !the user does not set these vars explicitly.  They
-  !are set in the PARAMS structure below and are 
+  !are set in the PARAMS structure below and are
   !copied internally
   REAL(SP), DIMENSION(3) :: imf_alpha=1.3
   !IMF cut-off for van Dokkum parameterization
   !the user does not set this var explicitly.  It
-  !is set in the PARAMS structure below and 
+  !is set in the PARAMS structure below and
   !copied internally
   REAL(SP) :: imf_vdmc  = 0.08
   !IMF transition mass for Dave parameterization
   !the user does not set this var explicitly.  It
-  !is set in the PARAMS structure below and 
+  !is set in the PARAMS structure below and
   !copied internally
   REAL(SP) :: imf_mdave = 0.5
   !parameters for user-defined IMF
@@ -343,7 +343,7 @@ MODULE SPS_VARS
 
   !index in the wavelength array where lambda=5000A, Ly_lim
   INTEGER :: whlam5000,whlylim
-  
+
   !this specifies the size of the full time grid
   INTEGER, PARAMETER :: ntfull = time_res_incr*nt
 
@@ -364,8 +364,8 @@ MODULE SPS_VARS
 
   !array holding redshift-age-DL relations
   REAL(SP), DIMENSION(500,3) :: cosmospl=0.
- 
-  !array holding tabulated SFH 
+
+  !array holding tabulated SFH
   REAL(SP), DIMENSION(3,ntabmax) :: sfh_tab=0.
   INTEGER :: ntabsfh=0
 
@@ -383,12 +383,12 @@ MODULE SPS_VARS
   REAL(SP), DIMENSION(ndim_logt) :: speclib_logt=0.
   REAL(SP), DIMENSION(ndim_logg) :: speclib_logg=0.
   REAL(KIND(1.0)), DIMENSION(nspec,nz,ndim_logt,ndim_logg) :: speclib=0.
- 
+
   !arrays for the WMBasic grid
   REAL(SP), DIMENSION(ndim_wmb_logt) :: wmb_logt=0.
   REAL(SP), DIMENSION(ndim_wmb_logg) :: wmb_logg=0.
   REAL(KIND(1.0)), DIMENSION(nspec,nz,ndim_wmb_logt,ndim_wmb_logg) :: wmb_spec=0.
-  
+
   !AGB library (Lancon & Mouhcine 2002)
   REAL(SP), DIMENSION(nspec,n_agb_o) :: agb_spec_o=0.
   REAL(SP), DIMENSION(nz,n_agb_o)    :: agb_logt_o=0.
@@ -423,7 +423,7 @@ MODULE SPS_VARS
   REAL(SP), DIMENSION(nebnz)   :: nebem_logz=0.
   REAL(SP), DIMENSION(nebnage) :: nebem_age=0.
   REAL(SP), DIMENSION(nebnip)  :: nebem_logu=0.
-  !minimum resolution for nebular lines, based 
+  !minimum resolution for nebular lines, based
   !on the resolution of the spectral libraries.
   REAL(SP), DIMENSION(nspec)   :: neb_res_min=0.0
   REAL(SP), DIMENSION(nspec,nemline) :: gaussnebarr=0.0
@@ -443,15 +443,15 @@ MODULE SPS_VARS
   REAL(SP), DIMENSION(nz,nt) :: timestep_isoc=0.
   REAL(SP), DIMENSION(nz)    :: zlegend=-99.
   REAL(SP), DIMENSION(nzinit):: zlegendinit=-99.
-  
+
   !arrays for the full Z-dep SSP spectra
   REAL(SP), DIMENSION(nspec,ntfull,nz) :: spec_ssp_zz=0.
   REAL(SP), DIMENSION(ntfull,nz)       :: mass_ssp_zz=0.,lbol_ssp_zz=0.
-  
+
   REAL(SP), DIMENSION(ntfull) :: time_full=0.
 
   !------------Define TYPE structures-------------!
-  
+
   !structure for the set of parameters necessary to generate a model
   TYPE PARAMS
      REAL(SP) :: pagb=1.0,dell=0.,delt=0.,fbhb=0.,sbss=0.,tau=1.0,&
@@ -469,7 +469,7 @@ MODULE SPS_VARS
      INTEGER, DIMENSION(nt) :: ssp_gen_age=1
      CHARACTER(50) :: imf_filename='', sfh_filename=''
   END TYPE PARAMS
-  
+
   !structure for the output of the compsp routine
   TYPE COMPSPOUT
      REAL(SP) :: age=0.,mass_csp=0.,lbol_csp=0.,sfr=0.,mdust=0.,mformed=0.
@@ -519,5 +519,5 @@ MODULE SPS_VARS
   !REAL, DIMENSION(nspec,ntfull,ntaugrid,nz) :: csp_grid=0.0
   !INTEGER :: csp_grid_flag=0
 
- 
+
 END MODULE SPS_VARS
