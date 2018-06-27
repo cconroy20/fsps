@@ -65,7 +65,7 @@ SUBROUTINE WRITE_ISOCHRONE(outfile,pset)
 
      !modify the RGB and/or AGB stars
      CALL MOD_GB(zz,tt,timestep_isoc(zz,:),pset%delt,&
-          pset%dell,pset%pagb,pset%redgb,nmass(tt),logl,logt,phase,wght)
+          pset%dell,pset%pagb,pset%redgb,pset%agb,nmass(tt),logl,logt,phase,wght)
 
      DO i=1,nmass(tt)
         

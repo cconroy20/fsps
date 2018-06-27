@@ -1,4 +1,4 @@
-SUBROUTINE MOD_GB(zz,t,age,delt,dell,pagb,redgb,&
+SUBROUTINE MOD_GB(zz,t,age,delt,dell,pagb,redgb,agb,&
      nn,logl,logt,phase,wght)
 
   !routine to modify TP-AGB stars, HB+RGB, and post-AGB stars. 
@@ -10,7 +10,7 @@ SUBROUTINE MOD_GB(zz,t,age,delt,dell,pagb,redgb,&
   REAL(SP), INTENT(inout), DIMENSION(nt,nm) :: logl,logt
   REAL(SP), INTENT(in), DIMENSION(nt,nm)    :: phase
   REAL(SP), INTENT(inout), DIMENSION(nm)    :: wght
-  REAL(SP), INTENT(in) :: delt, dell, pagb,redgb
+  REAL(SP), INTENT(in) :: delt, dell, pagb, redgb, agb
   REAL(SP), INTENT(in), DIMENSION(nt) :: age
   INTEGER  :: i
   REAL(SP) :: age8=8.0_sp,age91=9.1_sp,twght
@@ -49,6 +49,9 @@ SUBROUTINE MOD_GB(zz,t,age,delt,dell,pagb,redgb,&
            ENDIF
 
         ENDIF
+
+        ! modify wght of tp-agb stars
+        wght(i) = wght(i)*agb
 
         !add extra fudge factors to the default normalization
         logl(t,i) = logl(t,i) + dell
