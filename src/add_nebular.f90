@@ -19,9 +19,9 @@ SUBROUTINE ADD_NEBULAR(pset,sspi,sspo,nebemline)
   !-----------------------------------------------------------!
 
   !locate the maximum nebular age point in the full time array
-  !nti = locate(time_full,nebem_age(nebnage))
+  nti = locate(time_full,nebem_age(nebnage))
   !right now we only include nebular emission for ages<2x10^7 yr
-  nti = locate(time_full,LOG10(2E7))
+  !nti = locate(time_full,7.d30)
 
   !set up the interpolation variables for logZ and logU
   z1 = MAX(MIN(locate(nebem_logz,pset%gas_logz),nebnz-1),1)
