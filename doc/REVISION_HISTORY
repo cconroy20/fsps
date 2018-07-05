@@ -2,7 +2,7 @@
 -------------------------REVISION HISTORY-----------------------------
 
 ** Note that this file details only major revisions and version updates 
-   to the code.  The svn repository online contains more detail regarding 
+   to the code.  The GitHub repository contains more detail regarding 
    minor changes and updates.
 
 01/10/09 
@@ -140,3 +140,9 @@
  - AGN dust models of Nenkova et al. 2008 added
  - Added additional filters, including NEWFIRM, Suprime-Cam, VISTA-VIRCAM
  - Fixed a minor bug in the write_isochrone routine related to BHB and BS stars
+
+07/05/18
+ - Release of v3.1
+ - major bug in tabulted SFHs identified and resolved
+ - New WMBasic O star grid courtesy of JJ Eldridge, Mason Ng, and Georgie Taylor
+ - Nebular emission (line and continuum) based on Cloudy tables provided by Nell Byler

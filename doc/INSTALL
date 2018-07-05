@@ -23,4 +23,4 @@ NOTES:
 1.  It has been reported that the code crashes if compiled with
     earlier versions of gfortran (specifically v4.2.1).  The code has
     been tested and compiles sucessfully with gfortran v4.4 and later.
-    (FYI, I currently compile FSPS with gfortran v4.9.0).
+    (FYI, I currently compile FSPS with gfortran v6.4.0).
