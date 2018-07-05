@@ -165,7 +165,7 @@ SUBROUTINE SSP_GEN(pset,mass_ssp,lbol_ssp,spec_ssp)
 
      !modify the TP-AGB stars and Post-AGB stars
      CALL MOD_GB(pset%zmet,i,time,pset%delt,pset%dell,pset%pagb,&
-          pset%redgb,nmass(i),logl,logt,phase,wght)
+          pset%redgb,pset%agb,nmass(i),logl,logt,phase,wght)
 
      ii = 1 + (i-1)*time_res_incr
 

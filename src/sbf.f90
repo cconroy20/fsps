@@ -67,7 +67,7 @@ SUBROUTINE SBF(pset,outfile)
 
      !modify the TP-AGB stars and Post-AGB stars
      CALL MOD_GB(pset%zmet,i,time,pset%delt,pset%dell,pset%pagb,&
-          pset%redgb,nmass(i),logl,logt,phase,wght)
+          pset%redgb,pset%agb,nmass(i),logl,logt,phase,wght)
  
      spec1 = 0.0
      spec2 = 0.0
