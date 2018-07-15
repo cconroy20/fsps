@@ -203,7 +203,7 @@ MODULE SPS_VARS
   REAL(SP), PARAMETER :: zsol_spec = 0.020
   CHARACTER(5), PARAMETER :: spec_type = 'bpass'
   INTEGER, PARAMETER :: nzinit=1
-  INTEGER, PARAMETER :: nspec=11000
+  INTEGER, PARAMETER :: nspec=15000
 #else
 #if (MILES)
   REAL(SP), PARAMETER :: zsol_spec = 0.019
