@@ -122,6 +122,9 @@ SUBROUTINE SPS_SETUP(zin)
   ELSE IF (isoc_type.EQ.'mist') THEN
      OPEN(90,FILE=TRIM(SPS_HOME)//'/ISOCHRONES/MIST/zlegend'//&
           '.dat',STATUS='OLD',iostat=stat,ACTION='READ')
+  ELSE IF (isoc_type.EQ.'bpss') THEN
+     OPEN(90,FILE=TRIM(SPS_HOME)//'/ISOCHRONES/BPASS/zlegend'//&
+          '.dat',STATUS='OLD',iostat=stat,ACTION='READ')
   ELSE IF (isoc_type.EQ.'gnva') THEN
      OPEN(90,FILE=TRIM(SPS_HOME)//'/ISOCHRONES/Geneva/zlegend'//&
           '.dat',STATUS='OLD',iostat=stat,ACTION='READ')
@@ -162,12 +165,62 @@ SUBROUTINE SPS_SETUP(zin)
      zmax = zin
   ENDIF
 
+  !----------------------------------------------------------------!
+  !---------------------Read in BPASS SSPs-------------------------!
+  !----------------------------------------------------------------!
 
+  IF (isoc_type.EQ.'bpss') THEN
+
+     IF (time_res_incr.NE.1) THEN
+        WRITE(*,*) 'SPS_SETUP ERROR: cannot have time_res_incr>1 w/ BPASS models'
+        STOP
+     ENDIF
+     
+     OPEN(91,FILE=TRIM(SPS_HOME)//'/ISOCHRONES/BPASS/bpass.lambda',&
+          STATUS='OLD',iostat=stat,ACTION='READ')
+     IF (stat.NE.0) THEN
+        WRITE(*,*) 'SPS_SETUP ERROR: wavelength grid cannot be opened'
+        STOP 
+     ENDIF
+     DO i=1,nspec
+        READ(91,*) spec_lambda(i)
+     ENDDO
+     CLOSE(91)
+
+     OPEN(92,FILE=TRIM(SPS_HOME)//'/ISOCHRONES/BPASS/bpass.mass',&
+          STATUS='OLD',iostat=stat,ACTION='READ')
+     IF (stat.NE.0) THEN
+        WRITE(*,*) 'SPS_SETUP ERROR: wavelength grid cannot be opened'
+        STOP 
+     ENDIF
+     DO i=1,nt
+        READ(92,*) time_full(i),bpass_mass_ssp(i,:)
+     ENDDO
+     CLOSE(92)
+
+     OPEN(93,FILE=TRIM(SPS_HOME)//'/ISOCHRONES/BPASS/bpass_v2.2_salpeter100'&
+          //'.ssp.bin',FORM='UNFORMATTED',&
+          STATUS='OLD',iostat=stat,ACTION='READ',access='direct',&
+          recl=nspec*nt*nz*8)
+     IF (stat.NE.0) THEN 
+        WRITE(*,*) 'SPS_SETUP ERROR: failed to find bpass ssp models'
+        STOP 
+     ENDIF
+
+     READ(93,rec=1) bpass_spec_ssp
+     CLOSE(93)
+
+
+     
+  ENDIF
+  
   !----------------------------------------------------------------!
   !-----------------Read in spectral libraries---------------------!
   !----------------------------------------------------------------!
 
-  !read in wavelength array and master zlegend
+  IF (isoc_type.NE.'bpss') THEN
+  
+  !read in wavelength array and spectral metallicity grid
   IF (spec_type.EQ.'basel') THEN
      OPEN(91,FILE=TRIM(SPS_HOME)//'/SPECTRA/BaSeL3.1/basel.lambda',&
           STATUS='OLD',iostat=stat,ACTION='READ')
@@ -687,6 +740,7 @@ SUBROUTINE SPS_SETUP(zin)
      imf_lower_bound = imf_lower_limit
   ENDIF
 
+  ENDIF  
 
   !----------------------------------------------------------------!
   !--------Read in dust emission spectra from Draine & Li----------!
@@ -825,91 +879,96 @@ SUBROUTINE SPS_SETUP(zin)
   !----------------Set up nebular emission arrays------------------!
   !----------------------------------------------------------------!
 
-  !read in nebular continuum arrays.  Units are Lsun/Hz/Q
-  IF (cloudy_dust.EQ.1) THEN
-     OPEN(99,FILE=TRIM(SPS_HOME)//'/nebular/ZAU_WD_'//isoc_type//'.cont',&
-          STATUS='OLD',iostat=stat,ACTION='READ')
-  ELSE
-     OPEN(99,FILE=TRIM(SPS_HOME)//'/nebular/ZAU_ND_'//isoc_type//'.cont',&
-       STATUS='OLD',iostat=stat,ACTION='READ')
-  ENDIF
-  IF (stat.NE.0) THEN
-     WRITE(*,*) 'SPS_SETUP ERROR: nebular cont file cannot be opened. Only available for Padova or MIST isochrones.'
-     STOP
-  ENDIF
-  !burn the header
-  READ(99,*)
-  !read the wavelength array
-  READ(99,*) readlambneb
-  DO i=1,nebnz
-     DO j=1,nebnage
-        DO k=1,nebnip
-           READ(99,*,iostat=stat) nebem_logz(i),nebem_age(j),nebem_logu(k)
-           READ(99,*,iostat=stat) readcontneb
-           !interpolate onto the main wavelength grid
-           !some values in the table are 0.0, set a floor of 1E-95
-           nebem_cont(:,i,j,k) = linterparr(readlambneb,&
-                LOG10(readcontneb+10**(-95.d0)),spec_lambda)
+  IF (isoc_type.EQ.'mist'.OR.isoc_type.EQ.'pdva'.OR.isoc_type.EQ.'prsc') THEN
+  
+     !read in nebular continuum arrays.  Units are Lsun/Hz/Q
+     IF (cloudy_dust.EQ.1) THEN
+        OPEN(99,FILE=TRIM(SPS_HOME)//'/nebular/ZAU_WD_'//isoc_type//'.cont',&
+             STATUS='OLD',iostat=stat,ACTION='READ')
+     ELSE
+        OPEN(99,FILE=TRIM(SPS_HOME)//'/nebular/ZAU_ND_'//isoc_type//'.cont',&
+             STATUS='OLD',iostat=stat,ACTION='READ')
+     ENDIF
+     IF (stat.NE.0) THEN
+        WRITE(*,*) 'SPS_SETUP ERROR: nebular cont file cannot be opened. '//&
+             'Only available for Padova, PARSEC, and MIST isochrones.'
+        STOP
+     ENDIF
+     !burn the header
+     READ(99,*)
+     !read the wavelength array
+     READ(99,*) readlambneb
+     DO i=1,nebnz
+        DO j=1,nebnage
+           DO k=1,nebnip
+              READ(99,*,iostat=stat) nebem_logz(i),nebem_age(j),nebem_logu(k)
+              READ(99,*,iostat=stat) readcontneb
+              !interpolate onto the main wavelength grid
+              !some values in the table are 0.0, set a floor of 1E-95
+              nebem_cont(:,i,j,k) = linterparr(readlambneb,&
+                   LOG10(readcontneb+10**(-95.d0)),spec_lambda)
+           ENDDO
         ENDDO
      ENDDO
-  ENDDO
-  CLOSE(99)
-
-  !read in nebular emission line luminosities.  Units are Lsun/Q
-  IF (cloudy_dust.EQ.1) THEN
-     OPEN(99,FILE=TRIM(SPS_HOME)//'/nebular/ZAU_WD_'//isoc_type//'.lines',&
-          STATUS='OLD',iostat=stat,ACTION='READ')
-  ELSE
-     OPEN(99,FILE=TRIM(SPS_HOME)//'/nebular/ZAU_ND_'//isoc_type//'.lines',&
-          STATUS='OLD',iostat=stat,ACTION='READ')
-  ENDIF
-  IF (stat.NE.0) THEN
-     WRITE(*,*) 'SPS_SETUP ERROR: nebular line file cannot be opened. Only available for Padova or MIST isochrones.'
-     STOP
-  ENDIF
-  !burn the header
-  READ(99,*) 
-  !read the wavelength array
-  READ(99,*) nebem_line_pos
-  DO i=1,nebnz
-     DO j=1,nebnage
-        DO k=1,nebnip
-           READ(99,*,iostat=stat) nebem_logz(i),nebem_age(j),nebem_logu(k)
-           READ(99,*,iostat=stat) nebem_line(:,i,j,k)
+     CLOSE(99)
+     
+     !read in nebular emission line luminosities.  Units are Lsun/Q
+     IF (cloudy_dust.EQ.1) THEN
+        OPEN(99,FILE=TRIM(SPS_HOME)//'/nebular/ZAU_WD_'//isoc_type//'.lines',&
+             STATUS='OLD',iostat=stat,ACTION='READ')
+     ELSE
+        OPEN(99,FILE=TRIM(SPS_HOME)//'/nebular/ZAU_ND_'//isoc_type//'.lines',&
+             STATUS='OLD',iostat=stat,ACTION='READ')
+     ENDIF
+     IF (stat.NE.0) THEN
+        WRITE(*,*) 'SPS_SETUP ERROR: nebular line file cannot be opened. Only available for Padova or MIST isochrones.'
+        STOP
+     ENDIF
+     !burn the header
+     READ(99,*) 
+     !read the wavelength array
+     READ(99,*) nebem_line_pos
+     DO i=1,nebnz
+        DO j=1,nebnage
+           DO k=1,nebnip
+              READ(99,*,iostat=stat) nebem_logz(i),nebem_age(j),nebem_logu(k)
+              READ(99,*,iostat=stat) nebem_line(:,i,j,k)
+           ENDDO
         ENDDO
      ENDDO
-  ENDDO
-  CLOSE(99)
-
-  !convert the nebem_age array to log(age), and log the emission arrays
-  nebem_age  = LOG10(nebem_age)
-  nebem_line = LOG10(nebem_line)
-
-  !define the minimum resolution of the emission lines
-  !based on the resolution of the spectral library
-  DO i=1,nemline
-     j = MIN(MAX(locate(spec_lambda,nebem_line_pos(i)),1),nspec-1)
-     neb_res_min(i) = spec_lambda(j+1)-spec_lambda(j)
-  ENDDO
-
-  !set up a "master" array of normalized Gaussians
-  !this makes the code much faster
-  IF (setup_nebular_gaussians.EQ.1) THEN
+     CLOSE(99)
+     
+     !convert the nebem_age array to log(age), and log the emission arrays
+     nebem_age  = LOG10(nebem_age)
+     nebem_line = LOG10(nebem_line)
+     
+     !define the minimum resolution of the emission lines
+     !based on the resolution of the spectral library
      DO i=1,nemline
-        IF (smooth_velocity.EQ.1) THEN
-           !smoothing variable is km/s
-           dlam = nebem_line_pos(i)*nebular_smooth_init/clight*1E13
-        ELSE
-           !smoothing variable is A
-           dlam = nebular_smooth_init
-        ENDIF
-        !broaden the line to at least the resolution element 
-        !of the spectrum (x2).
-        dlam = MAX(dlam,neb_res_min(i)*2)
-        gaussnebarr(:,i) = 1/SQRT(2*mypi)/dlam*&
-             EXP(-(spec_lambda-nebem_line_pos(i))**2/2/dlam**2)  / &
-             clight*nebem_line_pos(i)**2
+        j = MIN(MAX(locate(spec_lambda,nebem_line_pos(i)),1),nspec-1)
+        neb_res_min(i) = spec_lambda(j+1)-spec_lambda(j)
      ENDDO
+     
+     !set up a "master" array of normalized Gaussians
+     !this makes the code much faster
+     IF (setup_nebular_gaussians.EQ.1) THEN
+        DO i=1,nemline
+           IF (smooth_velocity.EQ.1) THEN
+              !smoothing variable is km/s
+              dlam = nebem_line_pos(i)*nebular_smooth_init/clight*1E13
+           ELSE
+              !smoothing variable is A
+              dlam = nebular_smooth_init
+           ENDIF
+           !broaden the line to at least the resolution element 
+           !of the spectrum (x2).
+           dlam = MAX(dlam,neb_res_min(i)*2)
+           gaussnebarr(:,i) = 1/SQRT(2*mypi)/dlam*&
+                EXP(-(spec_lambda-nebem_line_pos(i))**2/2/dlam**2)  / &
+                clight*nebem_line_pos(i)**2
+        ENDDO
+     ENDIF
+
   ENDIF
 
  
@@ -1187,18 +1246,22 @@ SUBROUTINE SPS_SETUP(zin)
   !-----------------set up expanded time array---------------------!
   !----------------------------------------------------------------!
 
-  DO i=1,ntfull
-     IF (MOD(i-1,time_res_incr).EQ.0) THEN
-        time_full(i) = timestep_isoc(zmin,(i-1)/time_res_incr+1)
-     ELSE
-        IF ((i-1)/time_res_incr+2.LT.nt) THEN
-           d1 = (timestep_isoc(zmin,(i-1)/time_res_incr+2)-&
-                timestep_isoc(zmin,(i-1)/time_res_incr+1))/time_res_incr 
+  IF (isoc_type.NE.'bpss') THEN
+  
+     DO i=1,ntfull
+        IF (MOD(i-1,time_res_incr).EQ.0) THEN
+           time_full(i) = timestep_isoc(zmin,(i-1)/time_res_incr+1)
+        ELSE
+           IF ((i-1)/time_res_incr+2.LT.nt) THEN
+              d1 = (timestep_isoc(zmin,(i-1)/time_res_incr+2)-&
+                   timestep_isoc(zmin,(i-1)/time_res_incr+1))/time_res_incr 
+           ENDIF
+           time_full(i) = timestep_isoc(zmin,(i-1)/time_res_incr+1)+d1
+           time_full(i) = time_full(i-1)+d1
         ENDIF
-        time_full(i) = timestep_isoc(zmin,(i-1)/time_res_incr+1)+d1
-        time_full(i) = time_full(i-1)+d1
-     ENDIF
-  ENDDO
+     ENDDO
+
+  ENDIF
 
   !----------------------------------------------------------------!
   !------------------------set up the LSF--------------------------!

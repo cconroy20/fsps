@@ -26,9 +26,9 @@
   ! with no dust, and the 'default' assumptions regarding the 
   ! locations of the isochrones
 
-  imf_type  = 2             !define the IMF (1=Chabrier 2003)
+  imf_type  = 0             !define the IMF (1=Chabrier 2003)
                             !see sps_vars.f90 for details of this var
-  pset%zmet = 20            !define the metallicity (see the manual)
+  pset%zmet = 10            !define the metallicity (see the manual)
                             !20 = solar metallacity
 
   CALL SPS_SETUP(pset%zmet) !read in the isochrones and spectral libraries
@@ -49,7 +49,7 @@
   !compute the SSP
   CALL SSP_GEN(pset,mass_ssp,lbol_ssp,spec_ssp)
   !compute mags and write out mags and spec for SSP
-  file1 = 'SSP.out'
+  file1 = 'SSP_BPASS.out'
   CALL COMPSP(3,1,file1,mass_ssp,lbol_ssp,spec_ssp,pset,ocompsp)
 
 
@@ -60,8 +60,6 @@
 
   imf_type  = 0                !define the IMF (0=Salpeter)
                                !see sps_vars.f90 for details of this var
-  pset%zmet = 20               !define the metallicity (see the lookup table)
-                               !20 = solar metallacity
 
   !NB: you only need to re-run SPS_SETUP if you have changed the metallicity
   !    or, even better (but slower), you can call SPS_SETUP(-1) and this will

@@ -17,7 +17,8 @@ MODULE SPS_VARS
 #define PARSEC 0
 #define BASTI 0
 #define GENEVA 0
-
+#define BPASS 0
+  
   !--------------------------------------------------------------!
   !--------------------------------------------------------------!
 
@@ -189,10 +190,21 @@ MODULE SPS_VARS
   CHARACTER(4), PARAMETER :: isoc_type = 'pdva'
   INTEGER, PARAMETER :: nt=94
   INTEGER, PARAMETER :: nz=22
+#elif (BPASS)
+  REAL(SP), PARAMETER :: zsol = 0.020
+  CHARACTER(4), PARAMETER :: isoc_type = 'bpss'
+  INTEGER, PARAMETER :: nt=43
+  INTEGER, PARAMETER :: nz=12
 #endif
 
   !flag indicating type of spectral library to use
   !and number of elements per stellar spectrum
+#if (BPASS)
+  REAL(SP), PARAMETER :: zsol_spec = 0.020
+  CHARACTER(5), PARAMETER :: spec_type = 'bpass'
+  INTEGER, PARAMETER :: nzinit=1
+  INTEGER, PARAMETER :: nspec=11000
+#else
 #if (MILES)
   REAL(SP), PARAMETER :: zsol_spec = 0.019
   CHARACTER(5), PARAMETER :: spec_type = 'miles'
@@ -208,6 +220,7 @@ MODULE SPS_VARS
   CHARACTER(5), PARAMETER :: spec_type = 'basel'
   INTEGER, PARAMETER :: nzinit=6
   INTEGER, PARAMETER :: nspec=1963
+#endif
 #endif
 
   !flag indicating the type of normalization used in the BaSeL library
@@ -450,6 +463,10 @@ MODULE SPS_VARS
 
   REAL(SP), DIMENSION(ntfull) :: time_full=0.
 
+  !array for full BPASS SSPs
+  REAL(SP), DIMENSION(nspec,nt,nz) :: bpass_spec_ssp=0.
+  REAL(SP), DIMENSION(nt,nz)       :: bpass_mass_ssp=0.
+  
   !------------Define TYPE structures-------------!
 
   !structure for the set of parameters necessary to generate a model

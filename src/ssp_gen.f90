@@ -44,7 +44,7 @@ SUBROUTINE SSP_GEN(pset,mass_ssp,lbol_ssp,spec_ssp)
   CHARACTER(2) :: istr,istr2
 
   !-----------------------------------------------------------!
-  !-------------------Read in user input----------------------!
+  !--------------------------Setup----------------------------!
   !-----------------------------------------------------------!
 
   IF (check_sps_setup.EQ.0) THEN
@@ -58,151 +58,162 @@ SUBROUTINE SSP_GEN(pset,mass_ssp,lbol_ssp,spec_ssp)
   mass_ssp = 0.
   lbol_ssp = 0.
 
-  !set up metallicity
+  !test metallicity range
   IF (pset%zmet.LT.1.OR.pset%zmet.GT.nz) THEN
      WRITE(*,*) 'SSP_GEN ERROR: metallicity outside of range',pset%zmet
      STOP
   ENDIF
 
-  IF (imf_type.NE.0.AND.imf_type.NE.1.AND.imf_type.NE.2.&
-       .AND.imf_type.NE.3.AND.imf_type.NE.4.AND.imf_type.NE.5) THEN
-     WRITE(*,*) 'SSP_GEN ERROR: IMF type outside of range',imf_type
-     STOP
-  ENDIF
+  IF (isoc_type.EQ.'bpss') THEN
 
-  !dump IMF parameters into common block
-  imf_alpha(1) = pset%imf1
-  imf_alpha(2) = pset%imf2
-  imf_alpha(3) = pset%imf3
-  imf_vdmc     = pset%vdmc
-  imf_mdave    = pset%mdave
+     !the BPASS SSPs are stored in a master array so simply
+     !pull the relevant metallicity model into spec_ssp
+     spec_ssp = bpass_spec_ssp(:,:,pset%zmet)
+     mass_ssp = bpass_mass_ssp(:,pset%zmet)
+    
+  ELSE
 
-  !read in user-defined IMF (this needs to be done here rather than
-  !in sps_setup because the user can change the IMF without having
-  !to re-run the setup
-  IF (imf_type.EQ.5) THEN
-     IF (TRIM(pset%imf_filename).EQ.'') THEN
-        OPEN(13,FILE=TRIM(SPS_HOME)//'/data/imf.dat',ACTION='READ',STATUS='OLD')
-     ELSE
-        OPEN(13,FILE=TRIM(SPS_HOME)//'/data/'//TRIM(pset%imf_filename),&
-             ACTION='READ',STATUS='OLD')
+     IF (imf_type.NE.0.AND.imf_type.NE.1.AND.imf_type.NE.2.&
+          .AND.imf_type.NE.3.AND.imf_type.NE.4.AND.imf_type.NE.5) THEN
+        WRITE(*,*) 'SSP_GEN ERROR: IMF type outside of range',imf_type
+        STOP
      ENDIF
-     DO i=1,100
-        READ(13,*,IOSTAT=stat) imf_user_alpha(1,i),imf_user_alpha(2,i),&
-             imf_user_alpha(3,i)
-        IF (stat.NE.0) GOTO 29
-     ENDDO
-     WRITE(*,*) 'SSP_GEN ERROR: didnt finish reading in the imf file'
-     STOP
-29   CONTINUE
-     CLOSE(13)
-     n_user_imf = i-1
-     !define the upper and lower IMF limits
-     imf_lower_limit = imf_user_alpha(1,1)
-     imf_upper_limit = imf_user_alpha(2,n_user_imf)
-  ENDIF
-
-  !transfer isochrones into temporary arrays
-  mini  = mini_isoc(pset%zmet,:,:)  !initial mass
-  mact  = mact_isoc(pset%zmet,:,:)  !actual (present) mass
-  logl  = logl_isoc(pset%zmet,:,:)  !log(Lbol)
-  logt  = logt_isoc(pset%zmet,:,:)  !log(Teff)
-  logg  = logg_isoc(pset%zmet,:,:)  !log(g)
-  ffco  = ffco_isoc(pset%zmet,:,:)  !is the TP-AGB star C-rich or O-rich?
-  phase = phase_isoc(pset%zmet,:,:) !flag indicating phase of evolution
-  lmdot = lmdot_isoc(pset%zmet,:,:) !log Mdot
-  nmass = nmass_isoc(pset%zmet,:)   !number of elements per isochrone
-  time  = timestep_isoc(pset%zmet,:)!age of each isochrone in log(yr)
-
-  !write for control
-  IF (verbose.EQ.1) THEN
-     WRITE(*,*)
-     WRITE(*,'("   Log(Z/Zsol): ",F6.3)') LOG10(zlegend(pset%zmet)/0.019)
-     WRITE(*,'("   Fraction of blue HB stars: ",F6.3)') pset%fbhb
-     WRITE(*,'("   Ratio of BS to HB stars  : ",F6.3)') pset%sbss
-     WRITE(*,'("   Shift to TP-AGB [log(Teff),log(Lbol)]: ",F5.2,1x,F5.2)') &
-          pset%delt, pset%dell
-     IF (imf_type.EQ.2) THEN
-        WRITE(*,'("   IMF: ",I1,", slopes= ",3F4.1)') &
-             imf_type,imf_alpha
-     ELSE IF (imf_type.EQ.3) THEN
-        WRITE(*,'("   IMF: ",I1,", cut-off= ",F4.2)') imf_type,imf_vdmc
-     ELSE
-        WRITE(*,'("   IMF: ",I1)') imf_type
-     ENDIF
-  ENDIF
-
-  !-----------------------------------------------------------!
-  !---------------------Generate SSPs-------------------------!
-  !-----------------------------------------------------------!
-
-  !loop over each isochrone
-  DO i=1,nt
-
-     !flag that allows us to compute only a subset of models
-     IF (pset%ssp_gen_age(i).EQ.0) CYCLE
-
-     !reset arrays
-     hb_wght  = 0.
-     wght     = 0.
- 
-     IF (verbose.EQ.1) &
-          WRITE(*,'("age=",F5.2)') time(i)
-
-     !compute IMF-based weights
-     CALL IMF_WEIGHT(mini(i,:),wght,nmass(i))
      
-     !modify the horizontal branch
-     !need the hb weight for the blue stragglers too
-     IF (pset%fbhb.GT.0.0.OR.pset%sbss.GT.1E-3) &
-          CALL MOD_HB(pset%fbhb,i,mini,mact,logl,logt,logg,phase,&
-          wght,hb_wght,nmass,time(i))
-
-     !add in blue stragglers
-     IF (time(i).GE.bhb_sbs_time.AND.pset%sbss.GT.1E-3) &
-          CALL ADD_BS(pset%sbss,i,mini,mact,logl,logt,logg,phase,&
-          wght,hb_wght,nmass)
-
-     !modify the TP-AGB stars and Post-AGB stars
-     CALL MOD_GB(pset%zmet,i,time,pset%delt,pset%dell,pset%pagb,&
-          pset%redgb,pset%agb,nmass(i),logl,logt,phase,wght)
-
-     ii = 1 + (i-1)*time_res_incr
-
-     !compute IMF-weighted mass of the SSP
-     mass_ssp(ii) = SUM(wght(1:nmass(i))*mact(i,1:nmass(i)))
-
-     !add in remant masses
-     IF (add_stellar_remnants.EQ.1) THEN 
-        CALL ADD_REMNANTS(mass_ssp(ii),MAXVAL(mini(i,:)))
-     ENDIF
-
-     !compute IMF-weighted bolometric luminosity (actually log(Lbol))
-     lbol_ssp(ii) = LOG10(SUM(wght(1:nmass(i))*10**logl(i,1:nmass(i))))
-
-     !compute SSP spectrum
-     spec_ssp(:,ii) = 0.
-     DO j=1,nmass(i)
-
-        tco = ffco(i,j)
-        IF (phase(i,j).EQ.5.AND.tco.GT.1.0) THEN
-           !dilute the C star fraction
-           !IF (1.0.GE.pset%fcstar) tco = 1.0
+     !dump IMF parameters into common block
+     imf_alpha(1) = pset%imf1
+     imf_alpha(2) = pset%imf2
+     imf_alpha(3) = pset%imf3
+     imf_vdmc     = pset%vdmc
+     imf_mdave    = pset%mdave
+     
+     !read in user-defined IMF (this needs to be done here rather than
+     !in sps_setup because the user can change the IMF without having
+     !to re-run the setup
+     IF (imf_type.EQ.5) THEN
+        IF (TRIM(pset%imf_filename).EQ.'') THEN
+           OPEN(13,FILE=TRIM(SPS_HOME)//'/data/imf.dat',ACTION='READ',STATUS='OLD')
+        ELSE
+           OPEN(13,FILE=TRIM(SPS_HOME)//'/data/'//TRIM(pset%imf_filename),&
+                ACTION='READ',STATUS='OLD')
         ENDIF
-
-        CALL GETSPEC(pset,mact(i,j),logt(i,j),&
-             10**logl(i,j),logg(i,j),phase(i,j),tco,lmdot(i,j),&
-             wght(j)/MAXVAL(wght(1:nmass(i))*10**logl(i,1:nmass(i))),tspec)
-
-        !only construct SSPs for particular evolutionary
-        !phases if evtype NE -1
-        IF ((pset%evtype.EQ.-1.OR.pset%evtype.EQ.phase(i,j))&
-             .AND.mini(i,j).LT.pset%masscut) &
-             spec_ssp(:,ii) = wght(j)*tspec + spec_ssp(:,ii)
-
+        DO i=1,100
+           READ(13,*,IOSTAT=stat) imf_user_alpha(1,i),imf_user_alpha(2,i),&
+                imf_user_alpha(3,i)
+           IF (stat.NE.0) GOTO 29
+        ENDDO
+        WRITE(*,*) 'SSP_GEN ERROR: didnt finish reading in the imf file'
+        STOP
+29      CONTINUE
+        CLOSE(13)
+        n_user_imf = i-1
+        !define the upper and lower IMF limits
+        imf_lower_limit = imf_user_alpha(1,1)
+        imf_upper_limit = imf_user_alpha(2,n_user_imf)
+     ENDIF
+     
+     !transfer isochrones into temporary arrays
+     mini  = mini_isoc(pset%zmet,:,:)  !initial mass
+     mact  = mact_isoc(pset%zmet,:,:)  !actual (present) mass
+     logl  = logl_isoc(pset%zmet,:,:)  !log(Lbol)
+     logt  = logt_isoc(pset%zmet,:,:)  !log(Teff)
+     logg  = logg_isoc(pset%zmet,:,:)  !log(g)
+     ffco  = ffco_isoc(pset%zmet,:,:)  !is the TP-AGB star C-rich or O-rich?
+     phase = phase_isoc(pset%zmet,:,:) !flag indicating phase of evolution
+     lmdot = lmdot_isoc(pset%zmet,:,:) !log Mdot
+     nmass = nmass_isoc(pset%zmet,:)   !number of elements per isochrone
+     time  = timestep_isoc(pset%zmet,:)!age of each isochrone in log(yr)
+     
+     !write for control
+     IF (verbose.EQ.1) THEN
+        WRITE(*,*)
+        WRITE(*,'("   Log(Z/Zsol): ",F6.3)') LOG10(zlegend(pset%zmet)/0.019)
+        WRITE(*,'("   Fraction of blue HB stars: ",F6.3)') pset%fbhb
+        WRITE(*,'("   Ratio of BS to HB stars  : ",F6.3)') pset%sbss
+        WRITE(*,'("   Shift to TP-AGB [log(Teff),log(Lbol)]: ",F5.2,1x,F5.2)') &
+             pset%delt, pset%dell
+        IF (imf_type.EQ.2) THEN
+           WRITE(*,'("   IMF: ",I1,", slopes= ",3F4.1)') &
+                imf_type,imf_alpha
+        ELSE IF (imf_type.EQ.3) THEN
+           WRITE(*,'("   IMF: ",I1,", cut-off= ",F4.2)') imf_type,imf_vdmc
+        ELSE
+           WRITE(*,'("   IMF: ",I1)') imf_type
+        ENDIF
+     ENDIF
+     
+     !-----------------------------------------------------------!
+     !---------------------Generate SSPs-------------------------!
+     !-----------------------------------------------------------!
+     
+     !loop over each isochrone
+     DO i=1,nt
+        
+        !flag that allows us to compute only a subset of models
+        IF (pset%ssp_gen_age(i).EQ.0) CYCLE
+        
+        !reset arrays
+        hb_wght  = 0.
+        wght     = 0.
+        
+        IF (verbose.EQ.1) &
+             WRITE(*,'("age=",F5.2)') time(i)
+        
+        !compute IMF-based weights
+        CALL IMF_WEIGHT(mini(i,:),wght,nmass(i))
+        
+        !modify the horizontal branch
+        !need the hb weight for the blue stragglers too
+        IF (pset%fbhb.GT.0.0.OR.pset%sbss.GT.1E-3) &
+             CALL MOD_HB(pset%fbhb,i,mini,mact,logl,logt,logg,phase,&
+             wght,hb_wght,nmass,time(i))
+        
+        !add in blue stragglers
+        IF (time(i).GE.bhb_sbs_time.AND.pset%sbss.GT.1E-3) &
+             CALL ADD_BS(pset%sbss,i,mini,mact,logl,logt,logg,phase,&
+             wght,hb_wght,nmass)
+        
+        !modify the TP-AGB stars and Post-AGB stars
+        CALL MOD_GB(pset%zmet,i,time,pset%delt,pset%dell,pset%pagb,&
+             pset%redgb,pset%agb,nmass(i),logl,logt,phase,wght)
+        
+        ii = 1 + (i-1)*time_res_incr
+        
+        !compute IMF-weighted mass of the SSP
+        mass_ssp(ii) = SUM(wght(1:nmass(i))*mact(i,1:nmass(i)))
+        
+        !add in remant masses
+        IF (add_stellar_remnants.EQ.1) THEN 
+           CALL ADD_REMNANTS(mass_ssp(ii),MAXVAL(mini(i,:)))
+        ENDIF
+        
+        !compute IMF-weighted bolometric luminosity (actually log(Lbol))
+        lbol_ssp(ii) = LOG10(SUM(wght(1:nmass(i))*10**logl(i,1:nmass(i))))
+        
+        !compute SSP spectrum
+        spec_ssp(:,ii) = 0.
+        DO j=1,nmass(i)
+           
+           tco = ffco(i,j)
+           IF (phase(i,j).EQ.5.AND.tco.GT.1.0) THEN
+              !dilute the C star fraction
+              !IF (1.0.GE.pset%fcstar) tco = 1.0
+           ENDIF
+           
+           CALL GETSPEC(pset,mact(i,j),logt(i,j),&
+                10**logl(i,j),logg(i,j),phase(i,j),tco,lmdot(i,j),&
+                wght(j)/MAXVAL(wght(1:nmass(i))*10**logl(i,1:nmass(i))),tspec)
+           
+           !only construct SSPs for particular evolutionary
+           !phases if evtype NE -1
+           IF ((pset%evtype.EQ.-1.OR.pset%evtype.EQ.phase(i,j))&
+                .AND.mini(i,j).LT.pset%masscut) &
+                spec_ssp(:,ii) = wght(j)*tspec + spec_ssp(:,ii)
+           
+        ENDDO
+        
      ENDDO
 
-  ENDDO
+  ENDIF
 
   !-------------------------------------------------------------!
   !-now interpolate the SSPs to fill out the expanded time grid-!
