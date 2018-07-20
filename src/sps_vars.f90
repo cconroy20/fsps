@@ -12,14 +12,14 @@ MODULE SPS_VARS
 #define C3K 0
 
 !------set the isochrone library------!
-#define MIST 1
+#define MIST 0
 #define PADOVA 0
 #define PARSEC 0
 #define BASTI 0
 #define GENEVA 0
 !note that in the case of BPASS the SSPs are already pre-computed
 !so the spectral library, IMF, etc. is fixed in this case.  
-#define BPASS 0
+#define BPASS 1
   
   !--------------------------------------------------------------!
   !--------------------------------------------------------------!

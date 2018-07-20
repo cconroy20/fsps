@@ -879,7 +879,8 @@ SUBROUTINE SPS_SETUP(zin)
   !----------------Set up nebular emission arrays------------------!
   !----------------------------------------------------------------!
 
-  IF (isoc_type.EQ.'mist'.OR.isoc_type.EQ.'pdva'.OR.isoc_type.EQ.'prsc') THEN
+  IF (isoc_type.EQ.'mist'.OR.isoc_type.EQ.'pdva'.OR.&
+     isoc_type.EQ.'prsc'.OR.isoc_type.EQ.'bpss') THEN
   
      !read in nebular continuum arrays.  Units are Lsun/Hz/Q
      IF (cloudy_dust.EQ.1) THEN
@@ -890,8 +891,7 @@ SUBROUTINE SPS_SETUP(zin)
              STATUS='OLD',iostat=stat,ACTION='READ')
      ENDIF
      IF (stat.NE.0) THEN
-        WRITE(*,*) 'SPS_SETUP ERROR: nebular cont file cannot be opened. '//&
-             'Only available for Padova, PARSEC, and MIST isochrones.'
+        WRITE(*,*) 'SPS_SETUP ERROR: nebular cont file cannot be opened. '
         STOP
      ENDIF
      !burn the header
