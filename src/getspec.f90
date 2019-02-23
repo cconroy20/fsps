@@ -192,8 +192,8 @@ SUBROUTINE GETSPEC(pset,mact,logt,lbol,logg,phase,ffco,lmdot,wght,spec)
 
      ENDIF
 
-     !NB: extra factor of 4pi, that I can't explain,
-     !but its needed for everything to work out.
+     !at long last the extra factor of 4pi (below) has been found!
+     !see p244-245 of Collins' "Fundamentals of Stellar Astrophysics"
      spec = 4*mypi*4*mypi*r2/lsun * ispec
 
   ENDIF

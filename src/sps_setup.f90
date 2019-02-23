@@ -154,8 +154,8 @@ SUBROUTINE SPS_SETUP(zin)
   CLOSE(90)
 
   !C3K hack
-  !zlegend_str(1) = 'm1.00'
-  !zlegend(1) = 0.0013
+  !zlegend_str(1) = 'p0.00'
+  !zlegend(1) = 0.0134
 
   IF (zin.LE.0) THEN
      zmin = 1

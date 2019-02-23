@@ -69,6 +69,7 @@ SUBROUTINE MOD_GB(zz,t,age,delt,dell,pagb,redgb,agb,&
      !dont have these phases explicitly defined
      IF (phase(t,i).EQ.2.OR.phase(t,i).EQ.3 &
           .OR.phase(t,i).EQ.4.OR.phase(t,i).EQ.5) THEN
+        !logt(t,i) = LOG10(10**logt(t,i) - 100.)
         wght(i) = wght(i)*redgb
      ENDIF
 

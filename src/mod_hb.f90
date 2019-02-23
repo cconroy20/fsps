@@ -43,7 +43,7 @@ SUBROUTINE MOD_HB(f_bhb,t,mini,mact,logl,logt,logg,phase, &
 
   !we need to count the total number of HB stars in 
   !these isochrones
-  IF (isoc_type.EQ.'bsti'.OR.isoc_type.EQ.'mesa') THEN
+  IF (isoc_type.EQ.'bsti'.OR.isoc_type.EQ.'mist') THEN
      tnhb = 0
      DO i=1,nm
         IF (tphase(i).EQ.3) tnhb=tnhb+1
@@ -107,7 +107,7 @@ SUBROUTINE MOD_HB(f_bhb,t,mini,mact,logl,logt,logg,phase, &
         
         ENDIF
      
-     ELSE IF ((isoc_type.EQ.'bsti'.OR.isoc_type.EQ.'mesa')&
+     ELSE IF ((isoc_type.EQ.'bsti'.OR.isoc_type.EQ.'mist')&
           .AND.tphase(j).EQ.3) THEN
 
         !keep track of total HB weight
