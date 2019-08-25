@@ -28,10 +28,7 @@ F90 = gfortran
 # Compiler Optimizations
 #  (Uncomment only one)
 #========================
-# GNU (version < 4.3.0)
-F90FLAGS = -O -cpp
-# GNU (version >= 4.3.0)
-#F90FLAGS = -O3 -march=native -cpp
+F90FLAGS := -O3 -cpp $(F90FLAGS) # prepend so a user can set -Ofast from outside the Makefile
 #---------------------
 # Intel (Itanium 2 processor)
 #F90FLAGS = -O3 -mcpu=itanium2 -cpp
@@ -56,31 +53,23 @@ clean :
 	rm -rf *.o *.mod *.MOD *~
 
 autosps : autosps.o $(COMMON)
-	$(F90) -o autosps.exe autosps.o $(COMMON)
+	$(F90) $(F90FLAGS) -o autosps.exe autosps.o $(COMMON)
 
 simple : simple.o $(COMMON)
-	$(F90) -o simple.exe simple.o $(COMMON)
+	$(F90) $(F90FLAGS) -o simple.exe simple.o $(COMMON)
 
 lesssimple : lesssimple.o $(COMMON)
-	$(F90) -o lesssimple.exe lesssimple.o $(COMMON)
+	$(F90) $(F90FLAGS) -o lesssimple.exe lesssimple.o $(COMMON)
 
 spec_bin : spec_bin.o sps_vars.o
-	$(F90) -o spec_bin.exe spec_bin.o sps_vars.o
+	$(F90) $(F90FLAGS) -o spec_bin.exe spec_bin.o sps_vars.o
 
-autosps.o : sps_vars.o sps_utils.o
+sps_vars.o : sps_vars.f90
+	$(F90) $(F90FLAGS) sps_vars.f90 -c
 
-simple.o : sps_vars.o  sps_utils.o
+sps_utils.o : sps_utils.f90 sps_vars.o
+	$(F90) $(F90FLAGS) sps_utils.f90 -c
 
-lesssimple.o : sps_vars.o sps_utils.o
-
-spec_bin.o : sps_vars.o sps_utils.o
-
-sps_utils.o :  sps_vars.o
-
-%.o : %.f90
+%.o : %.f90 sps_vars.o sps_utils.o
 	$(F90) $(F90FLAGS) -o $@ -c $<
-
-%.o : nr/%.f90
-	$(F90) $(F90FLAGS) -o $@ -c $<
-
 

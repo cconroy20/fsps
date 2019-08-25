@@ -6,20 +6,45 @@ MODULE SPS_VARS
   SAVE
 
 !-------set the spectral library------!
+#ifndef MILES
 #define MILES 1
+#endif
+
+#ifndef BASEL
 #define BASEL 0
+#endif
+
 ! "C3K" currently under development.  do not use.
+#ifndef C3K
 #define C3K 0
+#endif
 
 !------set the isochrone library------!
+#ifndef MIST
 #define MIST 1
+#endif
+
+#ifndef PADOVA
 #define PADOVA 0
+#endif
+
+#ifndef PARSEC
 #define PARSEC 0
+#endif
+
+#ifndef BASTI
 #define BASTI 0
+#endif
+
+#ifndef GENEVA
 #define GENEVA 0
+#endif
+
 !note that in the case of BPASS the SSPs are already pre-computed
 !so the spectral library, IMF, etc. is fixed in this case.  
+#ifndef BPASS
 #define BPASS 0
+#endif
   
   !--------------------------------------------------------------!
   !--------------------------------------------------------------!
