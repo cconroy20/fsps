@@ -27,18 +27,20 @@ SUBROUTINE GETMAGS(zred,spec,mags,mag_compute)
   !set up the flags determining which mags are computed
   IF (PRESENT(mag_compute)) THEN
      magflag = mag_compute
-     IF (compute_vega_mags.EQ.1) & 
+     IF (compute_vega_mags.EQ.1) &
           magflag(1) = 1  !force V band to be computed
+     IF (MAXVAL(magflag).EQ.0) & !no mags being computed so exit
+          RETURN
   ELSE
      magflag = 1
   ENDIF
 
   !redshift the spectrum
   IF (ABS(zred).GT.tiny_number) THEN
-
+     !write(*,*) "getmags: interpolating"
      DO i=1,nspec
         tspec(i) = MAX(linterp(spec_lambda*(1+zred),spec,&
-        spec_lambda(i)),0.0)
+                       spec_lambda(i)),0.0)
      ENDDO
 
      !compute additional terms for cosmological mags
@@ -56,7 +58,7 @@ SUBROUTINE GETMAGS(zred,spec,mags,mag_compute)
      IF (magflag(i).EQ.0) CYCLE
      mags(i) = TSUM(spec_lambda,tspec*bands(:,i)/spec_lambda)
      IF (mags(i).LE.tiny_number) THEN
-        mags(i) = 99.0 
+        mags(i) = 99.0
      ELSE
         IF (compute_light_ages.EQ.0) THEN
            !the mag2cgs var converts from Lsun/Hz to cgs at 10pc
