@@ -16,7 +16,7 @@ SUBROUTINE ADD_DUST(pset,csp1,csp2,specdust,mdust,ncsp1,ncsp2,nebdust)
   REAL(SP), DIMENSION(nspec)  :: nu,dumin,dumax
   REAL(SP), DIMENSION(nspec)  :: mduste,duste,oduste,sduste,tduste
   REAL(SP), DIMENSION(7) :: qpaharr
-  REAL(SP) :: clump_ave,lboln,lbold,gamma,norm,dq,qpah,umin,du
+  REAL(SP) :: clump_ave,lboln,lbold,labs,gamma,norm,dq,qpah,umin,du
   REAL(SP), DIMENSION(numin_dl07) :: uminarr
 
   !---------------------------------------------------------------!
@@ -134,8 +134,9 @@ SUBROUTINE ADD_DUST(pset,csp1,csp2,specdust,mdust,ncsp1,ncsp2,nebdust)
 
         !normalize the dust emission to the luminosity absorbed by 
         !the dust, i.e., demand that Lbol remains the same
+        labs = (lboln-lbold)
         norm   = TSUM(nu,mduste)
-        duste  = mduste/norm * (lboln-lbold)
+        duste  = mduste/norm * labs
         duste  = MAX(duste,tiny_number)
 
         !include dust self-absorption
@@ -160,7 +161,7 @@ SUBROUTINE ADD_DUST(pset,csp1,csp2,specdust,mdust,ncsp1,ncsp2,nebdust)
         !this factor assumes Md/Mh=0.01 (appropriate for the 
         !MW3.1 models), and includes conversion factors from 
         !Jy -> Lsun and the hydrogen mass in solar units
-        mdust = 3.21E-3 / 4/mypi * (lboln-lbold)/norm
+        mdust = 3.21E-3 / 4/mypi * labs/norm
 
         !add the dust emission to the stellar spectrum
         specdust = specdust + tduste
