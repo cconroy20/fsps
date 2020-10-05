@@ -28,9 +28,9 @@ SUBROUTINE MOD_HB(f_bhb,t,mini,mact,logl,logt,logg,phase, &
 
   !number of blue HB to add per HB star
   !(not important b/c their total weight remains fixed)
-  INTEGER, PARAMETER :: nhb=40
+  INTEGER, PARAMETER :: nhb=10
   INTEGER :: j, i, flip=0, tnhb
-  REAL(SP) :: tgrad=0., hblum=-999.
+  REAL(SP) :: tgrad=0., hblum=-999.,minteff=1E6
   REAL(SP), DIMENSION(nhb) :: dumarr=0.
 
   !---------------------------------------------------------------!
@@ -39,14 +39,18 @@ SUBROUTINE MOD_HB(f_bhb,t,mini,mact,logl,logt,logg,phase, &
   hblum   = -999.
   flip    = 0
   hb_wght = 0.
-  tphase = phase(t,:)
+  tphase  = phase(t,:)
 
   !we need to count the total number of HB stars in 
-  !these isochrones
+  !these isochrones.  Also the minimum Teff for the HB
   IF (isoc_type.EQ.'bsti'.OR.isoc_type.EQ.'mist') THEN
      tnhb = 0
+     minteff=1E6
      DO i=1,nm
-        IF (tphase(i).EQ.3) tnhb=tnhb+1
+        IF (tphase(i).EQ.3) THEN
+           tnhb=tnhb+1
+           IF (logt(t,i).LT.minteff)  minteff=logt(t,i)
+        ENDIF
      ENDDO
      i=1
   ENDIF
@@ -106,16 +110,20 @@ SUBROUTINE MOD_HB(f_bhb,t,mini,mact,logl,logt,logg,phase, &
            ENDIF
         
         ENDIF
-     
-     ELSE IF ((isoc_type.EQ.'bsti'.OR.isoc_type.EQ.'mist')&
+
+     ELSE IF ((isoc_type.EQ.'bsti'.OR.isoc_type.EQ.'mist') &
           .AND.tphase(j).EQ.3) THEN
 
         !keep track of total HB weight
         hb_wght  = hb_wght+wght(j)
         
         !Blue HB stars have to be old
+        !here, we're adding one additional BHB stars per CHeB star
+        !we're also putting the original BHB star to the RC, so that
+        !if f_bhb is small, then the actual BHB contribution is small
+        !if f_bhb<1E-4, then the default MIST BHB is used
         IF (f_bhb.GT.1E-4.AND.hbtime.GE.bhb_sbs_time) THEN
-           
+
            !update number of stars in the isochrone
            nmass(t) = nmass(t)+1
            !add blue HB stars (their mass and Lbol remain the same)
@@ -123,16 +131,17 @@ SUBROUTINE MOD_HB(f_bhb,t,mini,mact,logl,logt,logg,phase, &
            mact(t,nmass(t))  = mact(t,j)
            logl(t,nmass(t))  = logl(t,j)
            phase(t,nmass(t)) = 8.
+           logt(t,j) = minteff 
            !distribute Teff uniformly to high T
-           logt(t,nmass(t)) = logt(t,j)+(4.2-logt(t,j))*i/REAL(tnhb)
+           logt(t,nmass(t)) = logt(t,j)+(4.5-logt(t,j))*i/REAL(tnhb)
            i=i+1
-           wght(nmass(t)) = f_bhb*wght(j)
+           wght(nmass(t))   = f_bhb*wght(j)
            !modify the weight of the existing HB stars
            wght(j)   = wght(j) * (1-f_bhb)                
            !compute logg
            logg(t,nmass(t)) = LOG10( gsig4pi*mact(t,nmass(t))/&
                 10**logl(t,nmass(t)) ) + 4*logt(t,nmass(t)) 
-           
+              
         ENDIF
 
      ENDIF

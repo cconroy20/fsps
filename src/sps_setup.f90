@@ -210,8 +210,6 @@ SUBROUTINE SPS_SETUP(zin)
      READ(93,rec=1) bpass_spec_ssp
      CLOSE(93)
 
-
-     
   ENDIF
   
   !----------------------------------------------------------------!
