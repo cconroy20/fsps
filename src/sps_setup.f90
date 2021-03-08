@@ -120,7 +120,7 @@ SUBROUTINE SPS_SETUP(zin)
      OPEN(90,FILE=TRIM(SPS_HOME)//'/ISOCHRONES/BaSTI/zlegend'//&
           '.dat',STATUS='OLD',iostat=stat,ACTION='READ')
   ELSE IF (isoc_type.EQ.'mist') THEN
-     OPEN(90,FILE=TRIM(SPS_HOME)//'/ISOCHRONES/MIST/zlegend'//&
+     OPEN(90,FILE=TRIM(SPS_HOME)//'/ISOCHRONES/MIST/MIST2_zlegend'//&
           '.dat',STATUS='OLD',iostat=stat,ACTION='READ')
   ELSE IF (isoc_type.EQ.'bpss') THEN
      OPEN(90,FILE=TRIM(SPS_HOME)//'/ISOCHRONES/BPASS/zlegend'//&
@@ -230,9 +230,9 @@ SUBROUTINE SPS_SETUP(zin)
      OPEN(93,FILE=TRIM(SPS_HOME)//'/SPECTRA/MILES/zlegend.dat',&
           STATUS='OLD',iostat=stat,ACTION='READ')
   ELSE IF (spec_type(1:5).EQ.'ckc14') THEN
-     OPEN(91,FILE=TRIM(SPS_HOME)//'/SPECTRA/CKC14/'//spec_type//'.lambda',&
+     OPEN(91,FILE=TRIM(SPS_HOME)//'/SPECTRA/CKC14/'//spec_type//'_'//afestr//'.lambda',&
           STATUS='OLD',iostat=stat,ACTION='READ')
-     OPEN(93,FILE=TRIM(SPS_HOME)//'/SPECTRA/CKC14/zlegend.dat',&
+     OPEN(93,FILE=TRIM(SPS_HOME)//'/SPECTRA/CKC14/'//spec_type//'_'//afestr//'_zlegend.dat',&
           STATUS='OLD',iostat=stat,ACTION='READ')
   ENDIF
   IF (stat.NE.0) THEN
@@ -278,7 +278,7 @@ SUBROUTINE SPS_SETUP(zin)
              STATUS='OLD',iostat=stat,ACTION='READ',access='direct',&
              recl=nspec*ndim_logg*ndim_logt*4)
      ELSE IF (spec_type(1:5).EQ.'ckc14') THEN
-        OPEN(92,FILE=TRIM(SPS_HOME)//'/SPECTRA/CKC14/'//spec_type//'_z'&
+        OPEN(92,FILE=TRIM(SPS_HOME)//'/SPECTRA/CKC14/'//spec_type//'_'//afestr//'_z'&
              //zstype//'.spectra.bin',FORM='UNFORMATTED',&
              STATUS='OLD',iostat=stat,ACTION='READ',access='direct',&
              recl=nspec*ndim_logg*ndim_logt*4)
@@ -664,8 +664,8 @@ SUBROUTINE SPS_SETUP(zin)
           zstype//'.dat',STATUS='OLD', IOSTAT=stat,ACTION='READ')
      !open MIST isochrones
      IF (isoc_type.EQ.'mist') OPEN(97,FILE=TRIM(SPS_HOME)//&
-          '/ISOCHRONES/MIST/isoc_z'//zlegend_str(z)//'.dat',STATUS='OLD',&
-          IOSTAT=stat,ACTION='READ')
+          '/ISOCHRONES/MIST/isoc_MIST2_z'//zlegend_str(z)//'_'//afestr//'.dat',&
+          STATUS='OLD',IOSTAT=stat,ACTION='READ')
      !open BaSTI isochrones
      IF (isoc_type.EQ.'bsti') OPEN(97,FILE=TRIM(SPS_HOME)//&
           '/ISOCHRONES/BaSTI/isoc_z'//zstype//'.dat',STATUS='OLD',&

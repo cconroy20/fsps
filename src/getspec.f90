@@ -15,7 +15,7 @@ SUBROUTINE GETSPEC(pset,mact,logt,lbol,logg,phase,ffco,lmdot,wght,spec)
   REAL(SP), INTENT(inout), DIMENSION(nspec) :: spec  
   REAL(SP), DIMENSION(nspec) :: ispec
   REAL(SP) :: t,u,r2,test1,test2,test3,test4,loggi,teffi,rwr,twr
-  INTEGER  :: klo,jlo,flag
+  INTEGER  :: klo,jlo,flag,i
 
   !---------------------------------------------------------------!
   !---------------------------------------------------------------!
@@ -147,7 +147,7 @@ SUBROUTINE GETSPEC(pset,mact,logt,lbol,logg,phase,ffco,lmdot,wght,spec)
   ELSE
 
      flag = flag+1
-
+     
      !find the subgrid containing point i 
      jlo = MIN(MAX(locate(speclib_logt,logt),1),ndim_logt-1)
      klo = MIN(MAX(locate(speclib_logg,loggi),1),ndim_logg-1)
@@ -170,7 +170,7 @@ SUBROUTINE GETSPEC(pset,mact,logt,lbol,logg,phase,ffco,lmdot,wght,spec)
      IF ((test1.LE.tiny30.OR.test2.LE.tiny30.OR.&
           test3.LE.tiny30.OR.test4.LE.tiny30).AND.flag.EQ.1) THEN
 
-        IF (verbose.EQ.99) & 
+        IF (verbose.EQ.1) & 
              WRITE(*,'(" GETSPEC WARNING: Part of the '//&
              'point is off the grid: Z=",I2,'//&
              '" logT=",F5.2," logg=",F5.2," phase=",I2," lg IMF*L=",F5.2)') &
@@ -182,6 +182,15 @@ SUBROUTINE GETSPEC(pset,mact,logt,lbol,logg,phase,ffco,lmdot,wght,spec)
         IF (test3.GT.tiny30) ispec = speclib(:,pset%zmet,jlo,klo+1)
         IF (test4.GT.tiny30) ispec = speclib(:,pset%zmet,jlo+1,klo+1)
 
+   !     DO i=1000,5180
+   !        WRITE(88,*) spec_lambda(i),speclib(i,pset%zmet,34,17),&
+   !             speclib(i,pset%zmet,38,17),speclib(i,pset%zmet,42,17),&
+   !             speclib(i,pset%zmet,46,17),speclib(i,pset%zmet,50,17),&
+   !             speclib(i,pset%zmet,55,17),speclib(i,pset%zmet,60,17),&
+   !             speclib(i,pset%zmet,65,17)
+   !     ENDDO
+   !     STOP
+        
      ELSE
 
         !bilinear interpolation
@@ -189,7 +198,7 @@ SUBROUTINE GETSPEC(pset,mact,logt,lbol,logg,phase,ffco,lmdot,wght,spec)
              t*(1-u)*speclib(:,pset%zmet,jlo+1,klo) + &
              t*u*speclib(:,pset%zmet,jlo+1,klo+1) + &
              (1-t)*u*speclib(:,pset%zmet,jlo,klo+1)
-
+        
      ENDIF
 
      !at long last the extra factor of 4pi (below) has been found!
@@ -204,7 +213,7 @@ SUBROUTINE GETSPEC(pset,mact,logt,lbol,logg,phase,ffco,lmdot,wght,spec)
   IF (verbose.EQ.1) THEN
      !IF (flag.EQ.0.AND.(spec_type.EQ.'basel'.OR.spec_type.EQ.'ckc14').AND.&
      !     phase.NE.6.AND.phase.NE.9) THEN
-     IF (flag.EQ.0..AND.wght.GT.0.0) THEN
+     IF (flag.EQ.0..AND.wght.GT.0.0.AND.phase.GT.-1) THEN
         WRITE(*,'(" GETSPEC WARNING: point entirely off the grid: Z=",I2,'//&
              '" logT=",F5.2," logg=",F5.2," phase=",I2," lg IMF*L=",F5.2)') &
             pset%zmet,logt,loggi,INT(phase),LOG10(wght*lbol)
