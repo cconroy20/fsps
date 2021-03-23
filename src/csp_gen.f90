@@ -27,7 +27,7 @@ subroutine csp_gen(mass_ssp, lbol_ssp, spec_ssp, &
   
   use sps_vars, only: ntfull, nspec, time_full, tiny_number, tiny_logt, &
                       zlegend, nz, sfh_tab, ntabsfh, compute_light_ages, &
-                      SFHPARAMS, PARAMS, SP,nemline
+                      SFHPARAMS, PARAMS, SP, nemline, dust_type
   use sps_utils, only: locate, sfh_weight, sfhinfo, add_dust
   implicit none
 
@@ -263,7 +263,7 @@ subroutine csp_gen(mass_ssp, lbol_ssp, spec_ssp, &
   lbol_csp = log10(sum(10**lbol_ssp * total_weights))
 
   ! Here we add young and old spectra with dust.
-  if (((pset%dust1.gt.tiny_number).or.(pset%dust2.gt.tiny_number))&
+  if (((pset%dust1.gt.tiny_number).or.(pset%dust2.gt.tiny_number).or.(dust_type.eq.3))&
        .and.(compute_light_ages.eq.0)) then
      call add_dust(pset, csp1, csp2, spec_csp, mdust_csp, ncsp1, ncsp2, emlin_csp)
 
