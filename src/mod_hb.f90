@@ -49,10 +49,7 @@ SUBROUTINE MOD_HB(f_bhb,t,mini,mact,logl,logt,logg,phase, &
      DO i=1,nm
         IF (tphase(i).EQ.3) THEN
            tnhb=tnhb+1
-           !need this delta(mass) cut to remove the stars 
-           !descending from the TRGB in the MIST models
-           IF (logt(t,i).LT.minteff.AND.(mini(t,i+1)-mini(t,i)).GT.1E-6)  &
-                minteff=logt(t,i)
+           IF (logt(t,i).LT.minteff)  minteff=logt(t,i)
         ENDIF
      ENDDO
      i=1
