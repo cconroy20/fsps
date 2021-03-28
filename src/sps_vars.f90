@@ -7,16 +7,16 @@ MODULE SPS_VARS
 
 !-------set the spectral library------!
 #ifndef MILES
-#define MILES 0
+#define MILES 1
 #endif
 
 #ifndef BASEL
 #define BASEL 0
 #endif
 
-! "CKC14" currently under development.  do not use.
-#ifndef CKC14
-#define CKC14 1
+! "C3K" currently under development.  do not use.
+#ifndef C3K
+#define C3K 0
 #endif
 
 !------set the isochrone library------!
@@ -49,8 +49,6 @@ MODULE SPS_VARS
   !--------------------------------------------------------------!
   !--------------------------------------------------------------!
 
-  CHARACTER(7), PARAMETER :: afestr = 'afe+0.0'
-  
   !note that "SP" actually means double precision; this is a hack
   !to turn the nr routines into DP
   INTEGER, PARAMETER :: SP = KIND(1.d0)
@@ -239,11 +237,11 @@ MODULE SPS_VARS
   CHARACTER(5), PARAMETER :: spec_type = 'miles'
   INTEGER, PARAMETER :: nzinit=5
   INTEGER, PARAMETER :: nspec=5994
-#elif (CKC14)
+#elif (C3K)
   REAL(SP), PARAMETER :: zsol_spec = 0.0134
   CHARACTER(5), PARAMETER :: spec_type = 'ckc14'
-  INTEGER, PARAMETER :: nzinit=11
-  INTEGER, PARAMETER :: nspec=8737 !47378  !46666 !47378 !, 26500
+  INTEGER, PARAMETER :: nzinit=6
+  INTEGER, PARAMETER :: nspec=47378  !46666 !47378 !, 26500
 #elif (BASEL)
   REAL(SP), PARAMETER :: zsol_spec = 0.020
   CHARACTER(5), PARAMETER :: spec_type = 'basel'
