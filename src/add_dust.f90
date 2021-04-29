@@ -15,9 +15,7 @@ SUBROUTINE ADD_DUST(pset,csp1,csp2,specdust,mdust,ncsp1,ncsp2,nebdust)
   REAL(SP), DIMENSION(nemline)  :: diff_dust_neb,ncspi
   REAL(SP), DIMENSION(nspec)  :: nu,dumin,dumax
   REAL(SP), DIMENSION(nspec)  :: mduste,duste,oduste,sduste,tduste
-  REAL(SP), DIMENSION(7) :: qpaharr
-  REAL(SP) :: clump_ave,lboln,lbold,labs,gamma,norm,dq,qpah,umin,du
-  REAL(SP), DIMENSION(numin_dl07) :: uminarr
+  REAL(SP) :: clump_ave,lboln,lbold,labs,gamma,norm,dq,du
 
   !---------------------------------------------------------------!
   !----------------------Test input params------------------------!
@@ -101,32 +99,28 @@ SUBROUTINE ADD_DUST(pset,csp1,csp2,specdust,mdust,ncsp1,ncsp2,nebdust)
         ENDIF
 
         !set up qpah interpolation
-        qpaharr = (/0.47,1.12,1.77,2.50,3.19,3.90,4.58/)
-        !set limits to qpah: 0.0<qpah<10.0
-        qpah = MAX(MIN(pset%duste_qpah,10.0),0.0)
-        qlo  = MAX(MIN(locate(qpaharr,qpah),6),1)
-        dq   = (qpah-qpaharr(qlo))/(qpaharr(qlo+1)-qpaharr(qlo))
-
+        qlo = MAX(MIN(locate(qpaharr,pset%duste_qpah),nqpah_dustem-1),1)
+        dq  = (pset%duste_qpah-qpaharr(qlo))/(qpaharr(qlo+1)-qpaharr(qlo))
+        dq  = MIN(MAX(dq,0.0),1.0)  !no extrapolation
+        
         !set up Umin interpolation
-        uminarr = (/0.1,0.15,0.2,0.3,0.4,0.5,0.7,0.8,1.0,1.2,1.5,2.0,&
-             2.5,3.0,4.0,5.0,7.0,8.0,12.0,15.0,20.0,25.0/)
         !set limits on Umin: 0.1<Umin<25.0
-        umin = MAX(MIN(pset%duste_umin,25.0),0.1)
-        ulo  = MAX(MIN(locate(uminarr,umin),numin_dl07),1)
-        du   = (umin-uminarr(ulo))/(uminarr(ulo+1)-uminarr(ulo))
+        ulo = MAX(MIN(locate(uminarr,pset%duste_umin),numin_dustem),1)
+        du  = (pset%duste_umin-uminarr(ulo))/(uminarr(ulo+1)-uminarr(ulo))
+        du  = MIN(MAX(du,0.0),1.0)  !no extrapolation
 
         !set limits to gamma (gamma is a fraction)
         gamma = MAX(MIN(pset%duste_gamma,1.0),0.0)
 
         !bi-linear interpolation over qpah and Umin
-        dumin = (1-dq)*(1-du)*dustem2_dl07(:,qlo,2*ulo-1) + &
-             dq*(1-du)*dustem2_dl07(:,qlo+1,2*ulo-1) + &
-             dq*du*dustem2_dl07(:,qlo+1,2*(ulo+1)-1) + &
-             (1-dq)*du*dustem2_dl07(:,qlo,2*(ulo+1)-1)
-        dumax = (1-dq)*(1-du)*dustem2_dl07(:,qlo,2*ulo) + &
-             dq*(1-du)*dustem2_dl07(:,qlo+1,2*ulo) + &
-             dq*du*dustem2_dl07(:,qlo+1,2*(ulo+1)) + &
-             (1-dq)*du*dustem2_dl07(:,qlo,2*(ulo+1))
+        dumin = (1-dq)*(1-du)*dustem2_dustem(:,qlo,2*ulo-1) + &
+             dq*(1-du)*dustem2_dustem(:,qlo+1,2*ulo-1) + &
+             dq*du*dustem2_dustem(:,qlo+1,2*(ulo+1)-1) + &
+             (1-dq)*du*dustem2_dustem(:,qlo,2*(ulo+1)-1)
+        dumax = (1-dq)*(1-du)*dustem2_dustem(:,qlo,2*ulo) + &
+             dq*(1-du)*dustem2_dustem(:,qlo+1,2*ulo) + &
+             dq*du*dustem2_dustem(:,qlo+1,2*(ulo+1)) + &
+             (1-dq)*du*dustem2_dustem(:,qlo,2*(ulo+1))
 
         !combine both parts of P(U)dU
         mduste = (1-gamma)*dumin + gamma*dumax

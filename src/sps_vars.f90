@@ -45,6 +45,15 @@ MODULE SPS_VARS
 #ifndef BPASS
 #define BPASS 0
 #endif
+
+!------set the dust emission model------!
+#ifndef DL07
+#define DL07 1
+#endif
+
+#ifndef THEMIS
+#define THEMIS 0
+#endif
   
   !--------------------------------------------------------------!
   !--------------------------------------------------------------!
@@ -283,10 +292,6 @@ MODULE SPS_VARS
   INTEGER, PARAMETER :: ndim_wr=12
   !dimensions of WMBasic grid
   INTEGER, PARAMETER :: ndim_wmb_logt=11,ndim_wmb_logg=3
-  !wavelength dimension of the Draine & Li 2007 dust model
-  INTEGER, PARAMETER :: ndim_dl07=1001
-  !number of Umin models from Drain & Li 2007 dust model
-  INTEGER, PARAMETER :: numin_dl07=22
   !parameters for circumstellar dust models
   INTEGER, PARAMETER :: ntau_dagb=50, nteff_dagb=6
   !number of emission lines and continuum emission points
@@ -446,11 +451,34 @@ MODULE SPS_VARS
   REAL(SP), DIMENSION(nspec,ndim_wr,nz) :: wrn_spec=0.,wrc_spec=0.
   REAL(SP), DIMENSION(ndim_wr)          :: wrn_logt=0.,wrc_logt=0.
 
+#if (DL07)
   !dust emission model (Draine & Li 2007)
-  REAL(SP), DIMENSION(ndim_dl07)              :: lambda_dl07=0.
-  REAL(SP), DIMENSION(ndim_dl07,numin_dl07*2) :: dustem_dl07=0.
-  REAL(SP), DIMENSION(nspec,7,numin_dl07*2)   :: dustem2_dl07=0.
+  INTEGER, PARAMETER :: ndim_dustem=1001
+  INTEGER, PARAMETER :: numin_dustem=22, nqpah_dustem=7
+  CHARACTER(6), PARAMETER :: str_dustem='DL07'
+  REAL(SP), DIMENSION(nqpah_dustem), PARAMETER :: &
+       qpaharr = (/0.47,1.12,1.77,2.50,3.19,3.90,4.58/)
+  REAL(SP), DIMENSION(numin_dustem) :: uminarr = &
+       (/0.1,0.15,0.2,0.3,0.4,0.5,0.7,0.8,1.0,1.2,1.5,2.0,&
+       2.5,3.0,4.0,5.0,7.0,8.0,12.0,15.0,20.0,25.0/)
+#elif (THEMIS)
+  !dust emission model (THEMIS; Jones et al. 2013, 2017)
+  INTEGER, PARAMETER :: ndim_dustem=576
+  INTEGER, PARAMETER :: numin_dustem=37, nqpah_dustem=11
+  CHARACTER(6), PARAMETER :: str_dustem='THEMIS'
+  REAL(SP), DIMENSION(nqpah_dustem), PARAMETER :: &
+       qpaharr = (/0.02,0.06,0.10,0.14,0.17,0.20,0.24,0.28,0.32,0.36,0.40/)/2.2*100
+  REAL(SP), DIMENSION(numin_dustem) :: uminarr = &
+       (/0.1,0.12,0.15,0.17,0.2,0.25,0.3,0.35,0.4,0.5,0.6,0.7,0.8,1.0,&
+       1.2,1.5,1.7, 2.0, 2.5, 3.0, 3.5, 4.0, 5.0, 6.0, 7.0, 8.0, 10.0,&
+       12.0, 15.0, 17.0, 20.0, 25.0, 30.0, 35.0, 40.0, 50.0, 80.0/)
+#endif
 
+  REAL(SP), DIMENSION(ndim_dustem)                :: lambda_dustem=0.
+  REAL(SP), DIMENSION(ndim_dustem,numin_dustem*2) :: dustem_dustem=0.
+  REAL(SP), DIMENSION(nspec,nqpah_dustem,numin_dustem*2) :: dustem2_dustem=0.
+
+  
   !circumstellar AGB dust model (Villaume et al. 2015)
   REAL(SP), DIMENSION(nspec,2,nteff_dagb,ntau_dagb) :: flux_dagb=0.
   REAL(SP), DIMENSION(2,ntau_dagb)                  :: tau1_dagb=0.

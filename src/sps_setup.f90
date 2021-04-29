@@ -744,11 +744,15 @@ SUBROUTINE SPS_SETUP(zin)
   !--------Read in dust emission spectra from Draine & Li----------!
   !----------------------------------------------------------------!
   
-  DO k=0,6
-
-     WRITE(sqpah,'(I1)') k
-     OPEN(99,FILE=TRIM(SPS_HOME)//'/dust/DL07/DL07_MW3.1_'//sqpah//'0.dat',&
-          STATUS='OLD',iostat=stat,ACTION='READ')
+  DO k=1,nqpah_dustem
+     WRITE(sqpah,'(I1)') k-1
+     IF (k-1.EQ.10) THEN
+        OPEN(99,FILE=TRIM(SPS_HOME)//'/dust/dustem/'//TRIM(str_dustem)//&
+             '_MW3.1_100.dat',STATUS='OLD',iostat=stat,ACTION='READ')
+     ELSE
+        OPEN(99,FILE=TRIM(SPS_HOME)//'/dust/dustem/'//TRIM(str_dustem)//&
+             '_MW3.1_'//sqpah//'0.dat',STATUS='OLD',iostat=stat,ACTION='READ')
+     ENDIF
      IF (stat.NE.0) THEN 
         WRITE(*,*) 'SPS_SETUP ERROR: error opening dust emission file'
         STOP
@@ -756,22 +760,22 @@ SUBROUTINE SPS_SETUP(zin)
      DO i=1,2  !burn the header
         READ(99,*)
      ENDDO
-     DO i=1,ndim_dl07
-        READ(99,*,IOSTAT=stat) lambda_dl07(i),dustem_dl07(i,:)
+     DO i=1,ndim_dustem
+        READ(99,*,IOSTAT=stat) lambda_dustem(i),dustem_dustem(i,:)
         IF (stat.NE.0) THEN 
            WRITE(*,*) 'SPS_SETUP ERROR: error during dust emission read'
            STOP
         ENDIF
      ENDDO
      CLOSE(99)
-     lambda_dl07 = lambda_dl07*1E4  !convert to Ang
+     lambda_dustem = lambda_dustem*1E4  !convert to Ang
   
      !now interpolate the dust spectra onto the master wavelength array
-     DO j=1,numin_dl07*2
+     DO j=1,numin_dustem*2
         !the dust models only extend to 1um
         jj = locate(spec_lambda/1E4,one)
-        dustem2_dl07(jj:,k+1,j) = linterparr(lambda_dl07,&
-             dustem_dl07(:,j),spec_lambda(jj:))
+        dustem2_dustem(jj:,k,j) = linterparr(lambda_dustem,&
+             dustem_dustem(:,j),spec_lambda(jj:))
      ENDDO
 
   ENDDO

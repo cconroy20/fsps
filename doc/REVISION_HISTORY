@@ -146,3 +146,7 @@
  - major bug in tabulted SFHs identified and resolved
  - New WMBasic O star grid courtesy of JJ Eldridge, Mason Ng, and Georgie Taylor
  - Nebular emission (line and continuum) based on Cloudy tables provided by Nell Byler
+
+04/2/21
+ - Release of v3.2
+ - added THEMIS dust emission model
