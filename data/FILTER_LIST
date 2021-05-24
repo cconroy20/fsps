@@ -141,3 +141,10 @@
 141 PS1_i		Pan-STARRS1 i (http://iopscience.iop.org/0004-637X/750/2/99/suppdata/apj425122t3_mrt.txt)
 142 PS1_z		Pan-STARRS1 z (http://iopscience.iop.org/0004-637X/750/2/99/suppdata/apj425122t3_mrt.txt)
 143 PS1_y		Pan-STARRS1 y (http://iopscience.iop.org/0004-637X/750/2/99/suppdata/apj425122t3_mrt.txt)
+144 LSST_u      LSST u (version 1.5 https://github.com/lsst/throughputs/tree/master/baseline)
+145 LSST_g      LSST g (version 1.5 https://github.com/lsst/throughputs/tree/master/baseline)
+146 LSST_r      LSST r (version 1.5 https://github.com/lsst/throughputs/tree/master/baseline)
+147 LSST_i      LSST i (version 1.5 https://github.com/lsst/throughputs/tree/master/baseline)
+148 LSST_z      LSST z (version 1.5 https://github.com/lsst/throughputs/tree/master/baseline)
+149 LSST_y      LSST y (version 1.5 https://github.com/lsst/throughputs/tree/master/baseline)
+
