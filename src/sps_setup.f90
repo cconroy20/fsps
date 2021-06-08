@@ -153,10 +153,6 @@ SUBROUTINE SPS_SETUP(zin)
 
   CLOSE(90)
 
-  !C3K hack
-  !zlegend_str(1) = 'p0.00'
-  !zlegend(1) = 0.0134
-
   IF (zin.LE.0) THEN
      zmin = 1
      zmax = nz
@@ -229,10 +225,10 @@ SUBROUTINE SPS_SETUP(zin)
           STATUS='OLD',iostat=stat,ACTION='READ')
      OPEN(93,FILE=TRIM(SPS_HOME)//'/SPECTRA/MILES/zlegend.dat',&
           STATUS='OLD',iostat=stat,ACTION='READ')
-  ELSE IF (spec_type(1:5).EQ.'ckc14') THEN
-     OPEN(91,FILE=TRIM(SPS_HOME)//'/SPECTRA/CKC14/'//spec_type//'.lambda',&
+  ELSE IF (spec_type(1:3).EQ.'c3k') THEN
+     OPEN(91,FILE=TRIM(SPS_HOME)//'/SPECTRA/C3K/'//TRIM(spec_type)//'.lambda',&
           STATUS='OLD',iostat=stat,ACTION='READ')
-     OPEN(93,FILE=TRIM(SPS_HOME)//'/SPECTRA/CKC14/zlegend.dat',&
+     OPEN(93,FILE=TRIM(SPS_HOME)//'/SPECTRA/C3K/zlegend.dat',&
           STATUS='OLD',iostat=stat,ACTION='READ')
   ENDIF
   IF (stat.NE.0) THEN
@@ -263,7 +259,6 @@ SUBROUTINE SPS_SETUP(zin)
   DO z=1,nzinit
 
      READ(93,*) zlegendinit(z)
-     !zlegendinit(z) = zlegend(1) !C3K hack
      WRITE(zstype,'(F6.4)') zlegendinit(z)
 
      !read in the spectral library
@@ -277,8 +272,8 @@ SUBROUTINE SPS_SETUP(zin)
              //zstype//'.spectra.bin',FORM='UNFORMATTED',&
              STATUS='OLD',iostat=stat,ACTION='READ',access='direct',&
              recl=nspec*ndim_logg*ndim_logt*4)
-     ELSE IF (spec_type(1:5).EQ.'ckc14') THEN
-        OPEN(92,FILE=TRIM(SPS_HOME)//'/SPECTRA/CKC14/'//spec_type//'_z'&
+     ELSE IF (spec_type(1:3).EQ.'c3k') THEN
+        OPEN(92,FILE=TRIM(SPS_HOME)//'/SPECTRA/C3K/'//spec_type//'_z'&
              //zstype//'.spectra.bin',FORM='UNFORMATTED',&
              STATUS='OLD',iostat=stat,ACTION='READ',access='direct',&
              recl=nspec*ndim_logg*ndim_logt*4)
@@ -286,11 +281,6 @@ SUBROUTINE SPS_SETUP(zin)
      IF (stat.NE.0) THEN 
         WRITE(*,*) 'SPS_SETUP ERROR: '//spec_type//&
              ' spectral library cannot be opened Z=', zstype
-        IF (spec_type(1:5).EQ.'ckc14') THEN
-           WRITE(*,*) 'you are attempting to use the CKC14 grid but you'//&
-                ' seem to not have the files.  Download them here XXX, and '//&
-                'put them in the SPECTRA/CKC14/ directory (not available yet!)'
-        ENDIF
         STOP 
      ENDIF
 

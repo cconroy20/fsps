@@ -14,7 +14,6 @@ MODULE SPS_VARS
 #define BASEL 0
 #endif
 
-! "C3K" currently under development.  do not use.
 #ifndef C3K
 #define C3K 0
 #endif
@@ -113,6 +112,10 @@ MODULE SPS_VARS
   !turn on/off the AGB circumstellar dust model
   !see Villaume et al. (2014) for details
   INTEGER :: add_agb_dust_model=1
+
+  !turn on/off the WR spectral library
+  !if off (0), will use the main default library instead
+  INTEGER :: use_wr_spectra=1
 
   !turn on/off a Cloudy-based nebular emission model (cont+lines)
   !if set to 2, then the nebular emission lines are added at the SSP
@@ -248,9 +251,9 @@ MODULE SPS_VARS
   INTEGER, PARAMETER :: nspec=5994
 #elif (C3K)
   REAL(SP), PARAMETER :: zsol_spec = 0.0134
-  CHARACTER(5), PARAMETER :: spec_type = 'ckc14'
-  INTEGER, PARAMETER :: nzinit=6
-  INTEGER, PARAMETER :: nspec=47378  !46666 !47378 !, 26500
+  CHARACTER(11), PARAMETER :: spec_type = 'c3k_afe+0.0'
+  INTEGER, PARAMETER :: nzinit=11
+  INTEGER, PARAMETER :: nspec=11149
 #elif (BASEL)
   REAL(SP), PARAMETER :: zsol_spec = 0.020
   CHARACTER(5), PARAMETER :: spec_type = 'basel'

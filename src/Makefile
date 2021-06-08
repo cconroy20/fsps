@@ -36,7 +36,7 @@ F90FLAGS := -O3 -cpp -fPIC $(F90FLAGS) # prepend so a user can set -Ofast from o
 #F90FLAGS = -O3 -funroll-loops -xP -cpp
 #---------------------
 
-PROGS = simple lesssimple autosps spec_bin calc_magsun
+PROGS = simple lesssimple autosps spec_bin
 
 COMMON = sps_vars.o sps_utils.o compsp.o csp_gen.o ssp_gen.o \
 	getmags.o locate.o funcint.o sps_setup.o pz_convol.o \
@@ -63,10 +63,6 @@ lesssimple : lesssimple.o $(COMMON)
 
 spec_bin : spec_bin.o sps_vars.o
 	$(F90) $(F90FLAGS) -o spec_bin.exe spec_bin.o sps_vars.o
-
-calc_magsun : calc_magsun.o $(COMMON)
-	$(F90) $(F90FLAGS) -o calc_magsun.exe calc_magsun.o $(COMMON)
-
 
 sps_vars.o : sps_vars.f90
 	$(F90) $(F90FLAGS) sps_vars.f90 -c

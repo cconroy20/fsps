@@ -46,7 +46,7 @@ SUBROUTINE GETSPEC(pset,mact,logt,lbol,logg,phase,ffco,lmdot,wght,spec)
 
   !WR library from Smith et al. 2002 (CMFGEN)
   !NB: there is currently no log(g) dependence in the WR spectra
-  ELSE IF (phase.EQ.9.0) THEN
+  ELSE IF (phase.EQ.9.0.AND.use_wr_spectra.EQ.1) THEN
      
      IF (isoc_type.EQ.'mist') THEN
         !below is from Maeder (1990)
