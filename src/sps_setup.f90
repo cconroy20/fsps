@@ -52,7 +52,8 @@ SUBROUTINE SPS_SETUP(zin)
   REAL(SP), DIMENSION(nspec_wmb) :: wmb_lam=0.
   REAL(SP), DIMENSION(nspec_wmb,ndim_wmb_logt,ndim_wmb_logg) :: wmb_specinit=0.
   REAL(SP), DIMENSION(ntabmax)   :: lsflam=0.,lsfsig=0.
-
+  REAL(SP), DIMENSION(30) :: g03lam=0., g03smc=0.
+  
   !---------------------------------------------------------------!
   !---------------------------------------------------------------!
 
@@ -1196,6 +1197,28 @@ SUBROUTINE SPS_SETUP(zin)
            ENDDO
         ENDDO
      ENDDO
+  ENDDO
+
+  !set up Gordon et al. (2003) SMC bar extinction curve
+
+  OPEN(99,FILE=TRIM(SPS_HOME)//'/dust/Gordon03_table4.dat',&
+       STATUS='OLD',iostat=stat,ACTION='READ')
+  DO i=1,30
+     !the data are in reverse wavelength order
+     READ(99,*) g03lam(30-i+1),d1,g03smc(30-i+1)
+  ENDDO
+  CLOSE(99)
+  g03lam = g03lam*1E4 !convert from um to A
+
+  DO n=1,nspec
+     IF (spec_lambda(n).GT.g03lam(30)) THEN
+        g03smcextn(n)=0.0
+     ELSE IF (spec_lambda(n).LT.g03lam(1)) THEN
+        g03smcextn(n) = g03smc(1)
+     ELSE
+        g03smcextn(n) = linterp(g03lam,g03smc,spec_lambda(n))
+     ENDIF
+     write(34,*) spec_lambda(n),g03smcextn(n)
   ENDDO
 
   !----------------------------------------------------------------!

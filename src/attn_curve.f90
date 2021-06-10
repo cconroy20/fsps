@@ -21,6 +21,11 @@ FUNCTION ATTN_CURVE(lambda,dtype,pset)
 
   attn_curve = 0.0
 
+  IF (dtype.LT.0.OR.dtype.GT.6) THEN
+     WRITE(*,*) 'ATTN_CURVE ERROR: dust_type out of range:',dtype
+     STOP
+  ENDIF
+  
   !-------------------------power-law attenuation-----------------------!
 
   !power-law attenuation
@@ -148,6 +153,19 @@ FUNCTION ATTN_CURVE(lambda,dtype,pset)
      attn_curve = pset%dust2*(cal00+drude/4.05)*&
           (lambda/lamv)**pset%dust_index
 
+
+  !-----------------Gordon et al. (2003) SMC exctincion----------------!
+
+  ELSE IF (dtype.EQ.5) THEN
+
+     attn_curve = pset%dust2*g03smcextn
+     
+  !------------------Reddy et al. (2015) attenuation-------------------!
+
+  ELSE IF (dtype.EQ.6) THEN
+
+
+     
   ENDIF
 
 

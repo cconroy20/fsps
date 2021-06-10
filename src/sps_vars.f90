@@ -156,6 +156,9 @@ MODULE SPS_VARS
   !    with a UV bump strength parameterized by uvb (see params below)
   !2 = Calzetti attenuation law
   !3 = Witt & Gordon 2000 attenuation curve models
+  !4 = Kriek & Conroy (2013) attenuation model
+  !5 = Gordon et al. (2003) SMC bar extinction
+  !6 = Reddy et al. (2015) attenuation
   INTEGER :: dust_type=0
 
   !IMF definition
@@ -405,6 +408,9 @@ MODULE SPS_VARS
   !wgdust(lam,tau,model,homo/clump)
   REAL(SP), DIMENSION(nspec,18,6,2) :: wgdust=0.
 
+  !array holding the Gordon et al. (2003) SMC extinction
+  REAL(SP), DIMENSION(nspec) :: g03smcextn=0.
+  
   !Index for P(Z) distribution.  1=closed box;
   !P(Z) = z^zpow*exp(-z/pmetals)  (see pz_convol.f90)
   !pmetals set in PARAMS structure
