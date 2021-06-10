@@ -14,7 +14,7 @@ SUBROUTINE GETSPEC(pset,mact,logt,lbol,logg,phase,ffco,lmdot,wght,spec)
   TYPE(PARAMS), INTENT(in) :: pset
   REAL(SP), INTENT(inout), DIMENSION(nspec) :: spec  
   REAL(SP), DIMENSION(nspec) :: ispec
-  REAL(SP) :: t,u,r2,test1,test2,test3,test4,loggi,teffi,rwr,twr
+  REAL(SP) :: t,u,r2,test1,test2,test3,test4,loggi,teffi,rwr,twr,logt_cut
   INTEGER  :: klo,jlo,flag
 
   !---------------------------------------------------------------!
@@ -23,6 +23,7 @@ SUBROUTINE GETSPEC(pset,mact,logt,lbol,logg,phase,ffco,lmdot,wght,spec)
   spec  = tiny_number
   ispec = tiny_number
   flag  = 0
+  logt_cut = MAX(wmb_logt(1),logt_wmb_hot)
 
   !compute radius squared (cm^2) 
   !we need to re-compute logg becuase we modify the logt,logl of AGB stars
@@ -125,7 +126,7 @@ SUBROUTINE GETSPEC(pset,mact,logt,lbol,logg,phase,ffco,lmdot,wght,spec)
      ENDIF
 
   !use WMBasic grid from JJ Eldridge for T>25,000K MS stars
-  ELSE IF (phase.EQ.0.0.AND.logt.GT.wmb_logt(1)) THEN
+  ELSE IF (phase.EQ.0.0.AND.logt.GT.logt_cut) THEN
 
      flag = flag+1
 

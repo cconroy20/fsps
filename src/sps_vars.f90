@@ -117,6 +117,10 @@ MODULE SPS_VARS
   !if off (0), will use the main default library instead
   INTEGER :: use_wr_spectra=1
 
+  !Use Eldridge 2017 WMBasic library for stars hotter than 25,000 K
+  !or this value, whichever is larger
+  real(SP) :: logt_wmb_hot = 0.0
+
   !turn on/off a Cloudy-based nebular emission model (cont+lines)
   !if set to 2, then the nebular emission lines are added at the SSP
   !level, which may be useful if the nebular parameters are fixed
