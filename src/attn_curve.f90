@@ -11,10 +11,10 @@ FUNCTION ATTN_CURVE(lambda,dtype,pset)
 
   INTEGER, INTENT(in) :: dtype
   TYPE(PARAMS), INTENT(in) :: pset
-  INTEGER  :: w63
+  INTEGER  :: w63,w1,w2
   REAL(SP) :: eb,zero=0.0,dd63=6300.00,lamv=5500.0,dlam=350.0,lamuvb=2175.0
   REAL(SP), INTENT(in), DIMENSION(nspec) :: lambda
-  REAL(SP), DIMENSION(nspec) :: x,a,b,y,fa,fb,hack,cal00
+  REAL(SP), DIMENSION(nspec) :: x,a,b,y,fa,fb,hack,cal00,reddy
   REAL(SP), DIMENSION(nspec) :: attn_curve,drude,tmp
  
   !---------------------------------------------------------------------!
@@ -164,7 +164,28 @@ FUNCTION ATTN_CURVE(lambda,dtype,pset)
 
   ELSE IF (dtype.EQ.6) THEN
 
+     reddy = 0.0
 
+     ! see Eqn. 8 in Reddy et al. (2015)
+     
+     w1   = locate(lambda,1500.d0)
+     w2   = locate(lambda,6000.d0)
+     reddy(w1:w2) = -5.726 + 4.004/(lambda(w1:w2)/1E4) - 0.525/(lambda(w1:w2)/1E4)**2 + &
+          0.029/(lambda(w1:w2)/1E4)**3 + 2.505
+
+     reddy(1:w1) = reddy(w1) ! constant extrapolation blueward
+     
+     w1   = locate(lambda,6000.d0)
+     w2   = locate(lambda,28500.d0)
+     ! note the last term is not in Reddy et al. but was included to make the
+     ! two functions continuous at 0.6um
+     reddy(w1:w2) = -2.672 - 0.010/(lambda(w1:w2)/1E4) + 1.532/(lambda(w1:w2)/1E4)**2 + &
+          -0.412/(lambda(w1:w2)/1E4)**3 + 2.505 - 0.036221981
+
+     ! convert k_lam to A_lam/A_V assuming Rv=2.505
+     reddy = reddy/2.505
+
+     attn_curve = pset%dust2*reddy
      
   ENDIF
 

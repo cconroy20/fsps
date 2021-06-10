@@ -21,8 +21,7 @@ SUBROUTINE ADD_DUST(pset,csp1,csp2,specdust,mdust,ncsp1,ncsp2,nebdust)
   !----------------------Test input params------------------------!
   !---------------------------------------------------------------!
 
-  IF (dust_type.NE.0.AND.dust_type.NE.1.AND.dust_type.NE.2&
-       .AND.dust_type.NE.3.AND.dust_type.NE.4) THEN
+  IF (dust_type.LT.0.OR.dust_type.GT.6) THEN
      WRITE(*,*) 'ADD_DUST ERROR: unknown dust_type: ', dust_type
      STOP
   ENDIF
