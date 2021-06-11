@@ -1,6 +1,6 @@
 FSPS: Flexible Stellar Population Synthesis
 =====
-version 3.1
+version 3.2
 
 References
 ---------
@@ -18,6 +18,10 @@ git clone https://github.com/cconroy20/fsps
 Otherwise download a gzipped tarball from [here](https://github.com/cconroy20/fsps/releases). Then follow the instructions at [doc/INSTALL](doc/INSTALL).
 
 You should not need to update the git repository until an update is announced (which is why you need to be on the mailing list - see [doc/INSTALL](doc/INSTALL)).  If you've obtained FSPS using git then when an update is announced you will need to simply type ``cd $SPS_HOME; git pull`` and then recompile.  If you have made your own edits to the FSPS files, git will attempt to gracefully merge your local version with the repository version.
+
+Documentation
+------
+See the [Manual](doc/MANUAL.pdf)
 
 Contents
 ---------
