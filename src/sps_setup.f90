@@ -1218,7 +1218,7 @@ SUBROUTINE SPS_SETUP(zin)
      ELSE
         g03smcextn(n) = linterp(g03lam,g03smc,spec_lambda(n))
      ENDIF
-     write(34,*) spec_lambda(n),g03smcextn(n)
+     !write(34,*) spec_lambda(n),g03smcextn(n)
   ENDDO
 
   !----------------------------------------------------------------!
