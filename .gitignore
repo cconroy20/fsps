@@ -1,6 +1,7 @@
 *.o
 *.mod
 *.exe
+.DS_Store
 nr
 SPECTRA/CKC14/*
 OUTPUTS/*
