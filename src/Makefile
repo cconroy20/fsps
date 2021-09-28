@@ -1,6 +1,3 @@
-# NB: this code is fairly memory intensive.  If you run into memory errors
-# when building this code, you may have to increase the default memory 
-# allocation.
 
 #======================
 # Fortran 90 compiler
@@ -10,42 +7,36 @@
 F90 = gfortran
 #---------------------
 # Intel
-#F90 = ifort
-#---------------------
-# PGI
-#F90 = pgf90
-# PGI (franklin.nersc.gov)
-#F90 = ftn
-#---------------------
-# Pathscale
-#F90 = pathf90
-#---------------------
-# IBM
-#F90 = xlf90_r
+#F90 = ifort 
 #---------------------
 
 #========================
 # Compiler Optimizations
 #  (Uncomment only one)
 #========================
+# GNU
 F90FLAGS := -O3 -cpp -fPIC $(F90FLAGS) # prepend so a user can set -Ofast from outside the Makefile
+#-fopenmp -Wl,-stack_size,4000000
 #---------------------
-# Intel (Itanium 2 processor)
-#F90FLAGS = -O3 -mcpu=itanium2 -cpp
+# Intel
+#F90FLAGS = -O3 -assume byterecl
 # Intel (EM64T/AMD64 processor)
-#F90FLAGS = -O3 -funroll-loops -xP -cpp
+#F90FLAGS = -O3 -funroll-loops -xP
 #---------------------
 
-PROGS = simple lesssimple autosps spec_bin
+PROGS = sps_vars.o sps_utils.o simple
 
-COMMON = sps_vars.o sps_utils.o compsp.o csp_gen.o ssp_gen.o \
-	getmags.o locate.o funcint.o sps_setup.o pz_convol.o \
-	get_tuniv.o intsfwght.o imf.o imf_weight.o add_dust.o \
-	getspec.o sbf.o add_bs.o mod_hb.o add_remnants.o getindx.o \
-	smoothspec.o mod_gb.o add_nebular.o add_xrb.o write_isochrone.o \
-	sfhstat.o linterp.o tsum.o add_agb_dust.o linterparr.o \
-	ztinterp.o vacairconv.o igm_absorb.o get_lumdist.o attn_curve.o \
-	sfh_weight.o sfhlimit.o sfhinfo.o setup_tabular_sfh.o agn_dust.o
+COMMON = sps_vars.o sps_utils.o sps_setup.o compsp.o \
+    csp_gen.o ssp_gen.o ztinterp.o \
+	mod_hb.o mod_gb.o \
+	add_nebular.o add_bs.o add_xrb.o add_remnants.o \
+	add_dust.o add_agb_dust.o agn_dust.o attn_curve.o \
+	get_tuniv.o imf.o imf_weight.o \
+	sfhstat.o sfh_weight.o intsfwght.o sfhlimit.o sfhinfo.o setup_tabular_sfh.o \
+	getspec.o getmags.o getindx.o sbf.o \
+	smoothspec.o vacairconv.o write_isochrone.o \
+	igm_absorb.o get_lumdist.o \
+	funcint.o locate.o linterp.o tsum.o linterparr.o
 
 all : $(PROGS)
 
@@ -68,8 +59,9 @@ sps_vars.o : sps_vars.f90
 	$(F90) $(F90FLAGS) sps_vars.f90 -c
 
 sps_utils.o : sps_utils.f90 sps_vars.o
-	$(F90) $(F90FLAGS) sps_utils.f90 -c
 
-%.o : %.f90 sps_vars.o sps_utils.o
-	$(F90) $(F90FLAGS) -o $@ -c $<
+%.o : %.f90
+	$(F90) $(F90FLAGS) -o  $@ -c $<
+
+
 

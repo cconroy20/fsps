@@ -65,6 +65,12 @@ SUBROUTINE SSP_GEN(pset,mass_ssp,lbol_ssp,spec_ssp)
      STOP
   ENDIF
 
+  !test afe range
+  IF (pset%afeindx.LT.1.OR.pset%afeindx.GT.nafe) THEN
+     WRITE(*,*) 'SSP_GEN ERROR: afe outside of range',pset%afeindx
+     STOP
+  ENDIF
+
   IF (isoc_type.EQ.'bpss') THEN
 
      !the BPASS SSPs are stored in a master array so simply
@@ -113,16 +119,16 @@ SUBROUTINE SSP_GEN(pset,mass_ssp,lbol_ssp,spec_ssp)
      ENDIF
 
      !transfer isochrones into temporary arrays
-     mini  = mini_isoc(pset%zmet,:,:)  !initial mass
-     mact  = mact_isoc(pset%zmet,:,:)  !actual (present) mass
-     logl  = logl_isoc(pset%zmet,:,:)  !log(Lbol)
-     logt  = logt_isoc(pset%zmet,:,:)  !log(Teff)
-     logg  = logg_isoc(pset%zmet,:,:)  !log(g)
-     ffco  = ffco_isoc(pset%zmet,:,:)  !is the TP-AGB star C-rich or O-rich?
-     phase = phase_isoc(pset%zmet,:,:) !flag indicating phase of evolution
-     lmdot = lmdot_isoc(pset%zmet,:,:) !log Mdot
-     nmass = nmass_isoc(pset%zmet,:)   !number of elements per isochrone
-     time  = timestep_isoc(pset%zmet,:)!age of each isochrone in log(yr)
+     mini  = mini_isoc(pset%zmet,pset%afeindx,:,:)  !initial mass
+     mact  = mact_isoc(pset%zmet,pset%afeindx,:,:)  !actual (present) mass
+     logl  = logl_isoc(pset%zmet,pset%afeindx,:,:)  !log(Lbol)
+     logt  = logt_isoc(pset%zmet,pset%afeindx,:,:)  !log(Teff)
+     logg  = logg_isoc(pset%zmet,pset%afeindx,:,:)  !log(g)
+     ffco  = ffco_isoc(pset%zmet,pset%afeindx,:,:)  !is the TP-AGB star C-rich or O-rich?
+     phase = phase_isoc(pset%zmet,pset%afeindx,:,:) !flag indicating phase of evolution
+     lmdot = lmdot_isoc(pset%zmet,pset%afeindx,:,:) !log Mdot
+     nmass = nmass_isoc(pset%zmet,pset%afeindx,:)   !number of elements per isochrone
+     time  = timestep_isoc(pset%zmet,pset%afeindx,:)!age of each isochrone in log(yr)
 
      !write for control
      IF (verbose.EQ.1) THEN

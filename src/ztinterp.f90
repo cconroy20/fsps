@@ -1,6 +1,6 @@
-SUBROUTINE ZTINTERP(zpos,spec,lbol,mass,tpos,zpow)
+SUBROUTINE ZTINTERP(zpos,apos,spec,lbol,mass,tpos,zpow)
 
-  !Linearly interpolate a grid of SSPs with the following options:
+  ! Linearly interpolate a grid of SSPs with the following options:
   !1) single metallicity (zpos) for a single age (tpos)
   !2) integrate over an MDF (zpos,zpow) for a grid of ages
   !3) single metallicity (zpos) for a grid of ages
@@ -9,19 +9,21 @@ SUBROUTINE ZTINTERP(zpos,spec,lbol,mass,tpos,zpow)
   USE sps_utils, ONLY : locate, tsum
   IMPLICIT NONE
 
-  REAL(SP),INTENT(in) :: zpos
+  REAL(SP),INTENT(in) :: zpos,apos
   REAL(SP),INTENT(in), OPTIONAL :: tpos,zpow
   REAL(SP),INTENT(inout),DIMENSION(:) :: mass, lbol
   REAL(SP),INTENT(inout),DIMENSION(:,:) :: spec
-  INTEGER  :: zlo,zhi,tlo,i
-  REAL(SP) :: dz,dt,z0,imdf,w1=0.25,w2=0.5,w3=0.25
+  INTEGER  :: zlo,zhi,tlo,i,alo
+  REAL(SP) :: dz,da,dt,z0,imdf,w1=0.25,w2=0.5,w3=0.25
   REAL(SP), DIMENSION(nz) :: mdf
 
   !------------------------------------------------------------!
 
-
   !interpolate to a single metallicity and a single time
   IF (PRESENT(tpos)) THEN
+
+     WRITE(*,*) 'ZTINTERP ERROR: this portion of the code does not work!'
+     STOP
      
      IF (SIZE(mass).GT.1.OR.SIZE(lbol).GT.1.OR.SIZE(spec(:,1)).GT.nspec) THEN
         WRITE(*,*) 'ZTINERP ERROR: you specified an age but are '//&
@@ -41,20 +43,20 @@ SUBROUTINE ZTINTERP(zpos,spec,lbol,mass,tpos,zpow)
      dz  = (zpos-LOG10(zlegend(zlo)/zsol)) / &
           ( LOG10(zlegend(zlo+1)/zsol) - LOG10(zlegend(zlo)/zsol) )
 
-     mass = (1-dz)*(1-dt)*mass_ssp_zz(tlo,zlo) + &
-          dz*(1-dt)*mass_ssp_zz(tlo,zlo+1) + &
-          (1-dz)*dt*mass_ssp_zz(tlo+1,zlo) + &
-          dz*dt*mass_ssp_zz(tlo+1,zlo+1)
+    ! mass = (1-dz)*(1-dt)*mass_ssp_zz(tlo,zlo) + &
+    !      dz*(1-dt)*mass_ssp_zz(tlo,zlo+1) + &
+    !      (1-dz)*dt*mass_ssp_zz(tlo+1,zlo) + &
+    !      dz*dt*mass_ssp_zz(tlo+1,zlo+1)
      
-     lbol = (1-dz)*(1-dt)*lbol_ssp_zz(tlo,zlo) + &
-          dz*(1-dt)*lbol_ssp_zz(tlo,zlo+1) + &
-          (1-dz)*dt*lbol_ssp_zz(tlo+1,zlo) + &
-          dz*dt*lbol_ssp_zz(tlo+1,zlo+1)
+    ! lbol = (1-dz)*(1-dt)*lbol_ssp_zz(tlo,zlo) + &
+    !      dz*(1-dt)*lbol_ssp_zz(tlo,zlo+1) + &
+    !      (1-dz)*dt*lbol_ssp_zz(tlo+1,zlo) + &
+    !      dz*dt*lbol_ssp_zz(tlo+1,zlo+1)
      
-     spec(:,1) = (1-dz)*(1-dt)*spec_ssp_zz(:,tlo,zlo) + &
-          dz*(1-dt)*spec_ssp_zz(:,tlo,zlo+1) + &
-          (1-dz)*dt*spec_ssp_zz(:,tlo+1,zlo) + &
-          dz*dt*spec_ssp_zz(:,tlo+1,zlo+1)
+    ! spec(:,1) = (1-dz)*(1-dt)*spec_ssp_zz(:,tlo,zlo) + &
+    !      dz*(1-dt)*spec_ssp_zz(:,tlo,zlo+1) + &
+    !      (1-dz)*dt*spec_ssp_zz(:,tlo+1,zlo) + &
+    !      dz*dt*spec_ssp_zz(:,tlo+1,zlo+1)
      
   ELSE
 
@@ -82,8 +84,8 @@ SUBROUTINE ZTINTERP(zpos,spec,lbol,mass,tpos,zpow)
            mdf(zlo)   = mdf(zlo) + w2*(1-dz) + w1*dz
            mdf(zlo+1) = mdf(zlo+1) + w3*(1-dz) + w2*dz
            ! order matters here
-           zhi = min(zlo+2, nz)
-           zlo = max(zlo-1, 1)
+           zhi = MIN(zlo+2, nz)
+           zlo = MAX(zlo-1, 1)
         ELSE
            z0  = 10**zpos*zsol
            !mdf = ds/dlogZ
@@ -97,9 +99,9 @@ SUBROUTINE ZTINTERP(zpos,spec,lbol,mass,tpos,zpow)
         lbol = 0.
         spec = 0.
         DO i=zlo,zhi
-           mass = mass + mdf(i)*mass_ssp_zz(:,i)
-           lbol = lbol + mdf(i)*lbol_ssp_zz(:,i)
-           spec = spec + mdf(i)*spec_ssp_zz(:,:,i)
+    !       mass = mass + mdf(i)*mass_ssp_zz(:,i)
+    !       lbol = lbol + mdf(i)*lbol_ssp_zz(:,i)
+    !       spec = spec + mdf(i)*spec_ssp_zz(:,:,i)
         ENDDO
  
      !interpolate to a single metallicity and return a grid of ages
@@ -108,10 +110,36 @@ SUBROUTINE ZTINTERP(zpos,spec,lbol,mass,tpos,zpow)
         zlo = MAX(MIN(locate(LOG10(zlegend/zsol),zpos),nz-1),1)
         dz  = (zpos-LOG10(zlegend(zlo)/zsol)) / &
              ( LOG10(zlegend(zlo+1)/zsol) - LOG10(zlegend(zlo)/zsol) )
+
+        !no [a/Fe] variation
+        IF (nafe.EQ.1) THEN
         
-        mass = (1-dz)*mass_ssp_zz(:,zlo)   + dz*mass_ssp_zz(:,zlo+1)
-        lbol = (1-dz)*lbol_ssp_zz(:,zlo)   + dz*lbol_ssp_zz(:,zlo+1)
-        spec(:,:) = (1-dz)*spec_ssp_zz(:,:,zlo) + dz*spec_ssp_zz(:,:,zlo+1)
+           mass = (1-dz)*mass_ssp_zz(:,zlo,1) + dz*mass_ssp_zz(:,zlo+1,1)
+           lbol = (1-dz)*lbol_ssp_zz(:,zlo,1) + dz*lbol_ssp_zz(:,zlo+1,1)
+           spec(:,:) = (1-dz)*spec_ssp_zz(:,:,zlo,1) + dz*spec_ssp_zz(:,:,zlo+1,1)
+
+        ELSE
+           
+           alo = MAX(MIN(locate(afe_val,apos),nafe-1),1)
+           da  = (apos-afe_val(alo)) / (afe_val(alo+1) - afe_val(alo))
+           da  = MAX(MIN(da,1.0),0.0)  ! no extrapolation
+
+           mass = (1-dz)*(1-da)*mass_ssp_zz(:,zlo,alo) + &
+                dz*(1-da)*mass_ssp_zz(:,zlo+1,alo) + & 
+                (1-dz)*da*mass_ssp_zz(:,zlo,alo+1) + &
+                dz*da*mass_ssp_zz(:,zlo+1,alo+1)
+
+           lbol = (1-dz)*(1-da)*lbol_ssp_zz(:,zlo,alo) + &
+                dz*(1-da)*lbol_ssp_zz(:,zlo+1,alo) + &
+                (1-dz)*da*lbol_ssp_zz(:,zlo,alo+1) + &
+                dz*da*lbol_ssp_zz(:,zlo+1,alo+1)
+
+           spec(:,:) = (1-dz)*(1-da)*spec_ssp_zz(:,:,zlo,alo) + &
+                dz*(1-da)*spec_ssp_zz(:,:,zlo+1,alo) + & 
+                (1-dz)*da*spec_ssp_zz(:,:,zlo,alo+1) + &
+                dz*da*spec_ssp_zz(:,:,zlo+1,alo+1)
+           
+        ENDIF
      
      ENDIF
 
