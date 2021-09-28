@@ -45,6 +45,13 @@ MODULE SPS_VARS
 #define BPASS 0
 #endif
 
+!------use alpha-enhanced models------!
+! note: setting this flag=1 requires lots of memory
+! check with a developer before attempting to use this feature
+#ifndef AFE_FLAG
+#define AFE_FLAG 0
+#endif
+  
 !------set the dust emission model------!
 #ifndef DL07
 #define DL07 1
@@ -228,7 +235,11 @@ MODULE SPS_VARS
   CHARACTER(4), PARAMETER :: isoc_type = 'mist'
   INTEGER, PARAMETER :: nt=107
   INTEGER, PARAMETER :: nz=12
-  INTEGER, PARAMETER :: nafe=2
+#if (AFE_FLAG)
+  INTEGER, PARAMETER :: nafe=5
+#else
+  INTEGER, PARAMETER :: nafe=1
+#endif
 #elif (PARSEC)
   REAL(SP), PARAMETER :: zsol = 0.01524
   CHARACTER(4), PARAMETER :: isoc_type = 'prsc'
@@ -257,6 +268,8 @@ MODULE SPS_VARS
   INTEGER, PARAMETER :: nzinit=1
   INTEGER, PARAMETER :: nspec=15000
   INTEGER, PARAMETER :: nafeinit=1
+  CHARACTER(4), DIMENSION(nafeinit), PARAMETER :: afe_str=''
+  REAL(SP), DIMENSION(nafeinit), PARAMETER     :: afe_val=0.0
   INTEGER, PARAMETER :: afe_sol_indx=1
 #else
 #if (MILES)
@@ -265,24 +278,35 @@ MODULE SPS_VARS
   INTEGER, PARAMETER :: nzinit=5
   INTEGER, PARAMETER :: nspec=5994
   INTEGER, PARAMETER :: nafeinit=1
+  CHARACTER(4), DIMENSION(nafeinit), PARAMETER :: afe_str=''
+  REAL(SP), DIMENSION(nafeinit), PARAMETER     :: afe_val=0.0
   INTEGER, PARAMETER :: afe_sol_indx=1
 #elif (C3K)
   REAL(SP), PARAMETER :: zsol_spec = 0.0134
   CHARACTER(7), PARAMETER :: spec_type = 'c3k_afe'
   INTEGER, PARAMETER :: nzinit=11
   INTEGER, PARAMETER :: nspec=8737  !11149
+#if (AFE_FLAG)
   INTEGER, PARAMETER :: nafeinit=5
-  !CHARACTER(4), DIMENSION(nafeinit), PARAMETER :: afe_str = (/'+0.0','+0.4'/)
-  !REAL(SP), DIMENSION(nafeinit), PARAMETER     :: afe_val = (/0.0,0.4/)
-  CHARACTER(4), DIMENSION(nafeinit), PARAMETER :: afe_str = (/'-0.2','+0.0','+0.2','+0.4','+0.6'/)
-  REAL(SP), DIMENSION(nafeinit), PARAMETER     :: afe_val = (/-0.2,0.0,0.2,0.4,0.6/)
-  INTEGER, PARAMETER      :: afe_sol_indx=1
+  CHARACTER(4), DIMENSION(nafeinit), PARAMETER :: &
+       afe_str=(/'-0.2','+0.0','+0.2','+0.4','+0.6'/)
+  REAL(SP), DIMENSION(nafeinit), PARAMETER     :: &
+       afe_val=(/-0.2,0.0,0.2,0.4,0.6/)
+  INTEGER, PARAMETER      :: afe_sol_indx=2
+#else
+  INTEGER, PARAMETER :: nafeinit=1
+  CHARACTER(4), DIMENSION(nafeinit), PARAMETER :: afe_str='+0.0'
+  REAL(SP), DIMENSION(nafeinit), PARAMETER     :: afe_val=0.0
+  INTEGER, PARAMETER :: afe_sol_indx=1
+#endif
 #elif (BASEL)
   REAL(SP), PARAMETER :: zsol_spec = 0.020
   CHARACTER(5), PARAMETER :: spec_type = 'basel'
   INTEGER, PARAMETER :: nzinit=6
   INTEGER, PARAMETER :: nspec=1963
   INTEGER, PARAMETER :: nafeinit=1
+  CHARACTER(4), DIMENSION(nafeinit), PARAMETER :: afe_str=''
+  REAL(SP), DIMENSION(nafeinit), PARAMETER     :: afe_val=0.0
   INTEGER, PARAMETER :: afe_sol_indx=1
 #endif
 #endif
