@@ -332,7 +332,7 @@ SUBROUTINE SPS_SETUP(zin)
         ELSE IF (nafe.GT.1.AND.nafeinit.EQ.1) THEN
            nafei = 1
         ENDIF
-        
+       
         speclib(:,z,aa,:,:) = (1-dz)*LOG10(speclibinit(:,i1,nafei,:,:)+tiny_number) + &
              dz*LOG10(speclibinit(:,i1+1,nafei,:,:)+tiny_number)
         
