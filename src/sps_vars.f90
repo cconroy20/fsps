@@ -49,7 +49,7 @@ MODULE SPS_VARS
 ! note: setting this flag=1 requires lots of memory
 ! check with a developer before attempting to use this feature
 #ifndef AFE_FLAG
-#define AFE_FLAG 0
+#define AFE_FLAG 1
 #endif
   
 !------set the dust emission model------!

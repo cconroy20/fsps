@@ -268,8 +268,8 @@ SUBROUTINE SPS_SETUP(zin)
 
         IF (aa.EQ.1) THEN
            READ(93,*) zlegendinit(z)
-           WRITE(zstype,'(F6.4)') zlegendinit(z)
         ENDIF
+        WRITE(zstype,'(F6.4)') zlegendinit(z)
 
         !read in the spectral library
         IF (spec_type.EQ.'basel') THEN
