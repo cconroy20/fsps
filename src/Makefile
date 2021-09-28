@@ -15,7 +15,7 @@ F90 = gfortran
 #  (Uncomment only one)
 #========================
 # GNU
-F90FLAGS = -O -cpp  #-mcmodel=large
+F90FLAGS = -O -cpp #-march=native -mcmodel=large
 #-fopenmp -Wl,-stack_size,4000000 
 #---------------------
 # Intel 

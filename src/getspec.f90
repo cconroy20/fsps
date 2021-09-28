@@ -157,10 +157,10 @@ SUBROUTINE GETSPEC(pset,mact,logt,lbol,logg,phase,ffco,lmdot,wght,spec)
      u   = (loggi-speclib_logg(klo))/(speclib_logg(klo+1)-speclib_logg(klo))
      u   = MIN(MAX(u,0.0),1.0) !no extrapolation
 
-     test1 = speclib(whlam5000,pset%zmet,pset%afe,jlo,klo)
-     test2 = speclib(whlam5000,pset%zmet,pset%afe,jlo+1,klo)
-     test3 = speclib(whlam5000,pset%zmet,pset%afe,jlo,klo+1)
-     test4 = speclib(whlam5000,pset%zmet,pset%afe,jlo+1,klo+1)
+     test1 = speclib(whlam5000,pset%zmet,pset%afeindx,jlo,klo)
+     test2 = speclib(whlam5000,pset%zmet,pset%afeindx,jlo+1,klo)
+     test3 = speclib(whlam5000,pset%zmet,pset%afeindx,jlo,klo+1)
+     test4 = speclib(whlam5000,pset%zmet,pset%afeindx,jlo+1,klo+1)
      
      !if all four components are zero, set the flag to zero
      IF ((test1.LE.tiny30.AND.test2.LE.tiny30.AND.&
@@ -178,18 +178,18 @@ SUBROUTINE GETSPEC(pset,mact,logt,lbol,logg,phase,ffco,lmdot,wght,spec)
              pset%zmet,logt,loggi,INT(phase),LOG10(wght*lbol)
 
         !this is a very crude hack.  just pick one of the spectra
-        IF (test1.GT.tiny30) ispec = speclib(:,pset%zmet,pset%afe,jlo,klo)
-        IF (test2.GT.tiny30) ispec = speclib(:,pset%zmet,pset%afe,jlo+1,klo)
-        IF (test3.GT.tiny30) ispec = speclib(:,pset%zmet,pset%afe,jlo,klo+1)
-        IF (test4.GT.tiny30) ispec = speclib(:,pset%zmet,pset%afe,jlo+1,klo+1)
+        IF (test1.GT.tiny30) ispec = speclib(:,pset%zmet,pset%afeindx,jlo,klo)
+        IF (test2.GT.tiny30) ispec = speclib(:,pset%zmet,pset%afeindx,jlo+1,klo)
+        IF (test3.GT.tiny30) ispec = speclib(:,pset%zmet,pset%afeindx,jlo,klo+1)
+        IF (test4.GT.tiny30) ispec = speclib(:,pset%zmet,pset%afeindx,jlo+1,klo+1)
 
      ELSE
 
         !bilinear interpolation
-        ispec = (1-t)*(1-u)*speclib(:,pset%zmet,pset%afe,jlo,klo) + &
-             t*(1-u)*speclib(:,pset%zmet,pset%afe,jlo+1,klo) + &
-             t*u*speclib(:,pset%zmet,pset%afe,jlo+1,klo+1) + &
-             (1-t)*u*speclib(:,pset%zmet,pset%afe,jlo,klo+1)
+        ispec = (1-t)*(1-u)*speclib(:,pset%zmet,pset%afeindx,jlo,klo) + &
+             t*(1-u)*speclib(:,pset%zmet,pset%afeindx,jlo+1,klo) + &
+             t*u*speclib(:,pset%zmet,pset%afeindx,jlo+1,klo+1) + &
+             (1-t)*u*speclib(:,pset%zmet,pset%afeindx,jlo,klo+1)
 
      ENDIF
 

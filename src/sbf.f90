@@ -38,16 +38,16 @@ SUBROUTINE SBF(pset,outfile)
   ENDDO
 
   !transfer isochrones into temporary arrays
-  mini  = mini_isoc(pset%zmet,pset%afe,:,:)  !initial mass
-  mact  = mact_isoc(pset%zmet,pset%afe,:,:)  !actual (present) mass
-  logl  = logl_isoc(pset%zmet,pset%afe,:,:)  !log(Lbol)
-  logt  = logt_isoc(pset%zmet,pset%afe,:,:)  !log(Teff)
-  logg  = logg_isoc(pset%zmet,pset%afe,:,:)  !log(g)
-  ffco  = ffco_isoc(pset%zmet,pset%afe,:,:)  !is the TP-AGB star C-rich or O-rich?
-  lmdot = lmdot_isoc(pset%zmet,pset%afe,:,:) !log Mdot
-  phase = phase_isoc(pset%zmet,pset%afe,:,:) !flag indicating phase of evolution
-  nmass = nmass_isoc(pset%zmet,pset%afe,:)   !number of elements per isochrone
-  time  = timestep_isoc(pset%zmet,pset%afe,:)!age of each isochrone in log(yr)
+  mini  = mini_isoc(pset%zmet,pset%afeindx,:,:)  !initial mass
+  mact  = mact_isoc(pset%zmet,pset%afeindx,:,:)  !actual (present) mass
+  logl  = logl_isoc(pset%zmet,pset%afeindx,:,:)  !log(Lbol)
+  logt  = logt_isoc(pset%zmet,pset%afeindx,:,:)  !log(Teff)
+  logg  = logg_isoc(pset%zmet,pset%afeindx,:,:)  !log(g)
+  ffco  = ffco_isoc(pset%zmet,pset%afeindx,:,:)  !is the TP-AGB star C-rich or O-rich?
+  lmdot = lmdot_isoc(pset%zmet,pset%afeindx,:,:) !log Mdot
+  phase = phase_isoc(pset%zmet,pset%afeindx,:,:) !flag indicating phase of evolution
+  nmass = nmass_isoc(pset%zmet,pset%afeindx,:)   !number of elements per isochrone
+  time  = timestep_isoc(pset%zmet,pset%afeindx,:)!age of each isochrone in log(yr)
 
   DO i=1,nt
 
