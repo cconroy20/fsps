@@ -42,9 +42,9 @@ SUBROUTINE PZ_CONVOL(yield,zave,spec_pz,lbol_pz,mass_pz)
         mass_pz = mass_pz + (LOG(zlegend(z+1))-LOG(zlegend(z))) * &
              (pzz1(z+1)*mass_ssp_zz(:,z+1) + pzz1(z)*mass_ssp_zz(:,z))/2.
         norm    = norm + (LOG(zlegend(z+1))-LOG(zlegend(z))) * &
-          (pzz1(z+1)+pzz1(z))/2.
+             (pzz1(z+1)+pzz1(z))/2.
         zave    = zave + (LOG(zlegend(z+1))-LOG(zlegend(z))) * &
-          (pzz1(z+1)*zlegend(z+1)+pzz1(z)*zlegend(z))/2.
+             (pzz1(z+1)*zlegend(z+1)+pzz1(z)*zlegend(z))/2.
      ENDDO
      
   ELSE

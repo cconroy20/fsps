@@ -7,7 +7,7 @@ MODULE SPS_VARS
 
 !-------set the spectral library------!
 #ifndef MILES
-#define MILES 1
+#define MILES 0
 #endif
 
 #ifndef BASEL
@@ -15,7 +15,7 @@ MODULE SPS_VARS
 #endif
 
 #ifndef C3K
-#define C3K 0
+#define C3K 1
 #endif
 
 !------set the isochrone library------!
@@ -216,31 +216,37 @@ MODULE SPS_VARS
   CHARACTER(4), PARAMETER :: isoc_type = 'bsti'
   INTEGER, PARAMETER :: nt=94
   INTEGER, PARAMETER :: nz=10
+  INTEGER, PARAMETER :: nafe=1
 #elif (GENEVA)
   REAL(SP), PARAMETER :: zsol = 0.020
   CHARACTER(4), PARAMETER :: isoc_type = 'gnva'
   INTEGER, PARAMETER :: nt=51
   INTEGER, PARAMETER :: nz=5
+  INTEGER, PARAMETER :: nafe=1
 #elif (MIST)
   REAL(SP), PARAMETER :: zsol = 0.0142
   CHARACTER(4), PARAMETER :: isoc_type = 'mist'
   INTEGER, PARAMETER :: nt=107
   INTEGER, PARAMETER :: nz=12
+  INTEGER, PARAMETER :: nafe=2
 #elif (PARSEC)
   REAL(SP), PARAMETER :: zsol = 0.01524
   CHARACTER(4), PARAMETER :: isoc_type = 'prsc'
   INTEGER, PARAMETER :: nt=93
   INTEGER, PARAMETER :: nz=15
+  INTEGER, PARAMETER :: nafe=1
 #elif (PADOVA)
   REAL(SP), PARAMETER :: zsol = 0.019
   CHARACTER(4), PARAMETER :: isoc_type = 'pdva'
   INTEGER, PARAMETER :: nt=94
   INTEGER, PARAMETER :: nz=22
+  INTEGER, PARAMETER :: nafe=1
 #elif (BPASS)
   REAL(SP), PARAMETER :: zsol = 0.020
   CHARACTER(4), PARAMETER :: isoc_type = 'bpss'
   INTEGER, PARAMETER :: nt=43
   INTEGER, PARAMETER :: nz=12
+  INTEGER, PARAMETER :: nafe=1
 #endif
 
   !flag indicating type of spectral library to use
@@ -250,22 +256,32 @@ MODULE SPS_VARS
   CHARACTER(5), PARAMETER :: spec_type = 'bpass'
   INTEGER, PARAMETER :: nzinit=1
   INTEGER, PARAMETER :: nspec=15000
+  INTEGER, PARAMETER :: nafeinit=1
+  INTEGER, PARAMETER :: afe_sol_indx=1
 #else
 #if (MILES)
   REAL(SP), PARAMETER :: zsol_spec = 0.019
   CHARACTER(5), PARAMETER :: spec_type = 'miles'
   INTEGER, PARAMETER :: nzinit=5
   INTEGER, PARAMETER :: nspec=5994
+  INTEGER, PARAMETER :: nafeinit=1
+  INTEGER, PARAMETER :: afe_sol_indx=1
 #elif (C3K)
   REAL(SP), PARAMETER :: zsol_spec = 0.0134
-  CHARACTER(11), PARAMETER :: spec_type = 'c3k_afe+0.0'
+  CHARACTER(7), PARAMETER :: spec_type = 'c3k_afe'
   INTEGER, PARAMETER :: nzinit=11
-  INTEGER, PARAMETER :: nspec=11149
+  INTEGER, PARAMETER :: nspec=8737  !11149
+  INTEGER, PARAMETER :: nafeinit=2
+  CHARACTER(4), DIMENSION(nafeinit), PARAMETER :: afe_str = (/'+0.0','+0.4'/)
+  REAL(SP), DIMENSION(nafeinit), PARAMETER     :: afe_val = (/0.0,0.4/)
+  INTEGER, PARAMETER      :: afe_sol_indx=1
 #elif (BASEL)
   REAL(SP), PARAMETER :: zsol_spec = 0.020
   CHARACTER(5), PARAMETER :: spec_type = 'basel'
   INTEGER, PARAMETER :: nzinit=6
   INTEGER, PARAMETER :: nspec=1963
+  INTEGER, PARAMETER :: nafeinit=1
+  INTEGER, PARAMETER :: afe_sol_indx=1
 #endif
 #endif
 
@@ -440,7 +456,7 @@ MODULE SPS_VARS
   !arrays for stellar spectral information in HR diagram
   REAL(SP), DIMENSION(ndim_logt) :: speclib_logt=0.
   REAL(SP), DIMENSION(ndim_logg) :: speclib_logg=0.
-  REAL(KIND(1.0)), DIMENSION(nspec,nz,ndim_logt,ndim_logg) :: speclib=0.
+  REAL(KIND(1.0)), DIMENSION(nspec,nz,nafe,ndim_logt,ndim_logg) :: speclib=0.
 
   !arrays for the WMBasic grid
   REAL(SP), DIMENSION(ndim_wmb_logt) :: wmb_logt=0.
@@ -514,20 +530,20 @@ MODULE SPS_VARS
   REAL(SP), DIMENSION(nspec,nagndust) :: agndust_spec=0.
 
   !arrays for the isochrone data
-  REAL(SP), DIMENSION(nz,nt,nm) :: mact_isoc=0.,logl_isoc=0.,&
+  REAL(SP), DIMENSION(nz,nafe,nt,nm) :: mact_isoc=0.,logl_isoc=0.,&
        logt_isoc=0.,logg_isoc=0.,ffco_isoc=0.,phase_isoc=0.,&
        mini_isoc=0.,lmdot_isoc=0.
 
   !arrays holding the number of mass elements for each isochrone,
   !the age of each isochrone, and the metallicity of each isochrone
-  INTEGER, DIMENSION(nz,nt)  :: nmass_isoc=0
-  REAL(SP), DIMENSION(nz,nt) :: timestep_isoc=0.
+  INTEGER, DIMENSION(nz,nafe,nt)  :: nmass_isoc=0
+  REAL(SP), DIMENSION(nz,nafe,nt) :: timestep_isoc=0.
   REAL(SP), DIMENSION(nz)    :: zlegend=-99.
   REAL(SP), DIMENSION(nzinit):: zlegendinit=-99.
 
   !arrays for the full Z-dep SSP spectra
-  REAL(SP), DIMENSION(nspec,ntfull,nz) :: spec_ssp_zz=0.
-  REAL(SP), DIMENSION(ntfull,nz)       :: mass_ssp_zz=0.,lbol_ssp_zz=0.
+  REAL(SP), DIMENSION(nspec,ntfull,nz,nafe) :: spec_ssp_zz=0.
+  REAL(SP), DIMENSION(ntfull,nz,nafe)       :: mass_ssp_zz=0.,lbol_ssp_zz=0.
 
   REAL(SP), DIMENSION(ntfull) :: time_full=0.
 
@@ -549,7 +565,7 @@ MODULE SPS_VARS
           masscut=150.0,sigma_smooth=0.,agb_dust=1.0,min_wave_smooth=1E3,&
           max_wave_smooth=1E4,gas_logu=-2.0,gas_logz=0.,igm_factor=1.0,&
           fagn=0.0,agn_tau=10.0
-     INTEGER :: zmet=1,sfh=0,wgp1=1,wgp2=1,wgp3=1,evtype=-1
+     INTEGER :: zmet=1,afe=1,sfh=0,wgp1=1,wgp2=1,wgp3=1,evtype=-1
      INTEGER, DIMENSION(nbands) :: mag_compute=1
      INTEGER, DIMENSION(nt) :: ssp_gen_age=1
      CHARACTER(50) :: imf_filename='', sfh_filename=''

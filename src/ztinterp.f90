@@ -18,7 +18,6 @@ SUBROUTINE ZTINTERP(zpos,spec,lbol,mass,tpos,zpow)
 
   !------------------------------------------------------------!
 
-
   !interpolate to a single metallicity and a single time
   IF (PRESENT(tpos)) THEN
      
