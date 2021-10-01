@@ -30,7 +30,7 @@ PROGS = runsps simple lesssimple autosps metalml \
 COMMON =  nrtype.o sps_vars.o sps_utils.o nr.o \
 	nrutil.o compsp.o csp_gen.o ssp_gen.o getmags.o gasdev.o \
 	ran_state.o locate.o qromb.o polint.o trapzd.o sps_setup.o \
-	add_agb_dust.o ran1.o intsfwght.o \
+	add_agb_dust.o ran1.o intsfwght.o ztinterp.o \
 	get_tuniv.o imf.o imf_weight.o linterparr.o add_dust.o getspec.o  \
 	mod_hb.o add_remnants.o getindx.o smoothspec.o mod_gb.o \
 	write_isochrone.o sfhstat.o linterp.o add_bs.o \
