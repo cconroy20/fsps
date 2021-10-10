@@ -121,7 +121,7 @@ SUBROUTINE ZTINTERP(zpos,apos,spec,lbol,mass,tpos,zpow)
            
            alo = MAX(MIN(locate(afe_val,apos),nafe-1),1)
            da  = (apos-afe_val(alo)) / (afe_val(alo+1) - afe_val(alo))
-           da = MAX(MIN(da,1.0),0.0)  ! no extrapolation
+           da  = MAX(MIN(da,1.0),0.0)  ! no extrapolation
 
            mass = (1-dz)*(1-da)*mass_ssp_zz(:,zlo,alo) + &
                 dz*(1-da)*mass_ssp_zz(:,zlo+1,alo) + & 
