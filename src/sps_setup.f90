@@ -18,6 +18,7 @@ SUBROUTINE SPS_SETUP(zin)
   INTEGER, PARAMETER :: nzwmb=12, nspec_wmb=5508
   INTEGER :: n_isoc,z,zmin,zmax,nlam
   CHARACTER(1) :: char,sqpah
+  CHARACTER(2) :: nebtype
   CHARACTER(6) :: zstype
   CHARACTER(5) :: zstype5
   REAL(SP) :: dumr1,d1,d2,logage,x,a,zero=0.0,d,one=1.0,dz,dlam
@@ -874,17 +875,28 @@ SUBROUTINE SPS_SETUP(zin)
 
   IF (isoc_type.EQ.'mist'.OR.isoc_type.EQ.'pdva'.OR.&
      isoc_type.EQ.'prsc'.OR.isoc_type.EQ.'bpss') THEN
-  
+
+     ! which nebular file to read?
+     if (xgrid.eq.1) THEN
+         if (cloudy_xray.eq.1) then
+             nebtype = 'WX'
+         else
+             nebtype = 'NX'
+         endif
+     else
+         IF (cloudy_dust.EQ.1) THEN
+             nebtype = 'WD'
+         else
+             nebtype = 'ND'
+        endif
+     endif
+
      !read in nebular continuum arrays.  Units are Lsun/Hz/Q
-     IF (cloudy_dust.EQ.1) THEN
-        OPEN(99,FILE=TRIM(SPS_HOME)//'/nebular/ZAU_WD_'//isoc_type//'.cont',&
+     OPEN(99,FILE=TRIM(SPS_HOME)//'/nebular/ZAU_'//nebtype//'_'//isoc_type//'.cont',&
              STATUS='OLD',iostat=stat,ACTION='READ')
-     ELSE
-        OPEN(99,FILE=TRIM(SPS_HOME)//'/nebular/ZAU_ND_'//isoc_type//'.cont',&
-             STATUS='OLD',iostat=stat,ACTION='READ')
-     ENDIF
      IF (stat.NE.0) THEN
         WRITE(*,*) 'SPS_SETUP ERROR: nebular cont file cannot be opened. '
+        WRITE(*,*) TRIM(SPS_HOME)//'/nebular/ZAU_'//nebtype//'_'//isoc_type//'.cont'
         STOP
      ENDIF
      !burn the header
@@ -904,15 +916,10 @@ SUBROUTINE SPS_SETUP(zin)
         ENDDO
      ENDDO
      CLOSE(99)
-     
+
      !read in nebular emission line luminosities.  Units are Lsun/Q
-     IF (cloudy_dust.EQ.1) THEN
-        OPEN(99,FILE=TRIM(SPS_HOME)//'/nebular/ZAU_WD_'//isoc_type//'.lines',&
+     OPEN(99,FILE=TRIM(SPS_HOME)//'/nebular/ZAU_'//nebtype//'_'//isoc_type//'.lines',&
              STATUS='OLD',iostat=stat,ACTION='READ')
-     ELSE
-        OPEN(99,FILE=TRIM(SPS_HOME)//'/nebular/ZAU_ND_'//isoc_type//'.lines',&
-             STATUS='OLD',iostat=stat,ACTION='READ')
-     ENDIF
      IF (stat.NE.0) THEN
         WRITE(*,*) 'SPS_SETUP ERROR: nebular line file cannot be opened. Only available for Padova or MIST isochrones.'
         STOP

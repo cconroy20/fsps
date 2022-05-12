@@ -7,7 +7,7 @@ MODULE SPS_VARS
 
 !-------set the spectral library------!
 #ifndef MILES
-#define MILES 1
+#define MILES 0
 #endif
 
 #ifndef BASEL
@@ -20,7 +20,7 @@ MODULE SPS_VARS
 
 !------set the isochrone library------!
 #ifndef MIST
-#define MIST 1
+#define MIST 0
 #endif
 
 #ifndef PADOVA
@@ -42,7 +42,12 @@ MODULE SPS_VARS
 !note that in the case of BPASS the SSPs are already pre-computed
 !so the spectral library, IMF, etc. is fixed in this case.  
 #ifndef BPASS
-#define BPASS 0
+#define BPASS 1
+#endif
+
+!use Xray nebular grids with different shapes
+#ifndef XRAY
+#define XRAY 1
 #endif
 
 !------set the dust emission model------!
@@ -130,6 +135,8 @@ MODULE SPS_VARS
   INTEGER  :: add_neb_continuum=1
   !include dust in the Cloudy tables or not
   INTEGER :: cloudy_dust=0
+  !include xray contribution to nebular lines
+  INTEGER :: cloudy_xray=1
 
   !turn on/off IGM absorption a la Madau (1995)
   INTEGER :: add_igm_absorption=0
@@ -304,11 +311,23 @@ MODULE SPS_VARS
   INTEGER, PARAMETER :: ndim_wmb_logt=11,ndim_wmb_logg=3
   !parameters for circumstellar dust models
   INTEGER, PARAMETER :: ntau_dagb=50, nteff_dagb=6
+
+#if (XRAY)
+  !number of emission lines and continuum emission points
+  INTEGER, PARAMETER :: nemline=129, nlam_nebcont=2008
+  !number of metallicity, age, and ionization parameter points
+  INTEGER, PARAMETER :: nebnz=2, nebnage=7, nebnip=7
+  INTEGER, PARAMETER :: xgrid = 1
+
+#else
   !number of emission lines and continuum emission points
   INTEGER, PARAMETER :: nemline=128, nlam_nebcont=1963
   !number of metallicity, age, and ionization parameter points
   INTEGER, PARAMETER :: nebnz=11, nebnage=10, nebnip=7
-  !number of optical depths for AGN dust models
+  INTEGER, PARAMETER :: xgrid=0
+#endif
+
+!number of optical depths for AGN dust models
   INTEGER, PARAMETER :: nagndust=9
   !number of spectral points in the input library
   INTEGER, PARAMETER :: nagndust_spec=125
