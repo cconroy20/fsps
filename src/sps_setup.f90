@@ -12,7 +12,7 @@ SUBROUTINE SPS_SETUP(zin)
   USE sps_vars; USE sps_utils
   IMPLICIT NONE
   INTEGER, INTENT(in) :: zin
-  INTEGER :: stat=1,n,i,j,m,jj,k,i1,i2
+  INTEGER :: stat=1,n,i,j,m,jj,k,i1,i2,stat2=1
   INTEGER, PARAMETER :: ntlam=1221,nspec_agb=6146,nspec_aringer=9032
   INTEGER, PARAMETER :: nlamwr=1963,nspec_pagb=9281
   INTEGER, PARAMETER :: nzwmb=12, nspec_wmb=5508
@@ -221,15 +221,21 @@ SUBROUTINE SPS_SETUP(zin)
           STATUS='OLD',iostat=stat,ACTION='READ')
      OPEN(93,FILE=TRIM(SPS_HOME)//'/SPECTRA/BaSeL3.1/zlegend.dat',&
           STATUS='OLD',iostat=stat,ACTION='READ')
+     OPEN(94,FILE=TRIM(SPS_HOME)//'SPECTRA/BaSeL3.1/basel.res',&
+          STATUS='OLD',iostat=stat,ACTION='READ')
   ELSE IF (spec_type.EQ.'miles') THEN
      OPEN(91,FILE=TRIM(SPS_HOME)//'/SPECTRA/MILES/miles.lambda',&
           STATUS='OLD',iostat=stat,ACTION='READ')
      OPEN(93,FILE=TRIM(SPS_HOME)//'/SPECTRA/MILES/zlegend.dat',&
           STATUS='OLD',iostat=stat,ACTION='READ')
+     OPEN(94,FILE=TRIM(SPS_HOME)//'/SPECTRA/MILES/miles.res',&
+          STATUS='OLD',iostat=stat,ACTION='READ')
   ELSE IF (spec_type(1:3).EQ.'c3k') THEN
      OPEN(91,FILE=TRIM(SPS_HOME)//'/SPECTRA/C3K/'//TRIM(spec_type)//'.lambda',&
           STATUS='OLD',iostat=stat,ACTION='READ')
      OPEN(93,FILE=TRIM(SPS_HOME)//'/SPECTRA/C3K/zlegend.dat',&
+          STATUS='OLD',iostat=stat,ACTION='READ')
+     OPEN(94,FILE=TRIM(SPS_HOME)//'/SPECTRA/C3K/'//TRIM(spec_type)//'.res',&
           STATUS='OLD',iostat=stat,ACTION='READ')
   ENDIF
   IF (stat.NE.0) THEN
@@ -241,6 +247,10 @@ SUBROUTINE SPS_SETUP(zin)
   ENDDO
   CLOSE(91)
 
+  DO i=1,nspec
+     READ(94,*) spec_res(i)
+  ENDDO
+  CLOSE(94)  
   !read in primary logg and logt arrays
   !NB: these are the same for all spectral libraries
   OPEN(91,FILE=TRIM(SPS_HOME)//'/SPECTRA/BaSeL3.1/basel_logt.dat',&
