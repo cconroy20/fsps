@@ -112,14 +112,14 @@
 112 I1500		Idealized 1500A bandpass with 15% bandwidth, FWHM = 225A from M. Dickinson
 113 I2300		Idealized 2300A bandpass with 15% bandwidth, FWHM = 345A from M. Dickinson
 114 I2800		Idealized 2800A bandpass with 15% bandwidth, FWHM = 420A from M. Dickinson
-115 JWST_F070W		JWST F070W (http://www.stsci.edu/jwst/instruments/nircam/instrumentdesign/filters/)
-116 JWST_F090W		JWST F090W (http://www.stsci.edu/jwst/instruments/nircam/instrumentdesign/filters/)
-117 JWST_F115W		JWST F115W (http://www.stsci.edu/jwst/instruments/nircam/instrumentdesign/filters/)
-118 JWST_F150W		JWST F150W (http://www.stsci.edu/jwst/instruments/nircam/instrumentdesign/filters/)
-119 JWST_F200W		JWST F200W (http://www.stsci.edu/jwst/instruments/nircam/instrumentdesign/filters/)
-120 JWST_F277W		JWST F277W (http://www.stsci.edu/jwst/instruments/nircam/instrumentdesign/filters/)
-121 JWST_F356W		JWST F356W (http://www.stsci.edu/jwst/instruments/nircam/instrumentdesign/filters/)
-122 JWST_F444W		JWST F444W (http://www.stsci.edu/jwst/instruments/nircam/instrumentdesign/filters/)
+115 JWST_F070W		JWST F070W (https://jwst-docs.stsci.edu/jwst-near-infrared-camera/nircam-instrumentation/nircam-filters)
+116 JWST_F090W		JWST F090W (https://jwst-docs.stsci.edu/jwst-near-infrared-camera/nircam-instrumentation/nircam-filters)
+117 JWST_F115W		JWST F115W (https://jwst-docs.stsci.edu/jwst-near-infrared-camera/nircam-instrumentation/nircam-filters)
+118 JWST_F150W		JWST F150W (https://jwst-docs.stsci.edu/jwst-near-infrared-camera/nircam-instrumentation/nircam-filters)
+119 JWST_F200W		JWST F200W (https://jwst-docs.stsci.edu/jwst-near-infrared-camera/nircam-instrumentation/nircam-filters)
+120 JWST_F277W		JWST F277W (https://jwst-docs.stsci.edu/jwst-near-infrared-camera/nircam-instrumentation/nircam-filters)
+121 JWST_F356W		JWST F356W (https://jwst-docs.stsci.edu/jwst-near-infrared-camera/nircam-instrumentation/nircam-filters)
+122 JWST_F444W		JWST F444W (https://jwst-docs.stsci.edu/jwst-near-infrared-camera/nircam-instrumentation/nircam-filters)
 123 NEWFIRM_J1		NEWFIRM J1 (via 3DHST filter list)
 124 NEWFIRM_J2		NEWFIRM J2 (via 3DHST filter list)
 125 NEWFIRM_J3		NEWFIRM J3 (via 3DHST filter list)
