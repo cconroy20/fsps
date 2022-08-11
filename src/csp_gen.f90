@@ -106,7 +106,7 @@ subroutine csp_gen(mass_ssp, lbol_ssp, spec_ssp, &
      total_weights(:, 1) = total_weights(:, 1) / m1
   endif
 
-  
+
   ! Add constant and burst weights for SFH=1,4
   if (((pset%sfh.eq.1).or.(pset%sfh.eq.4)).and.&
        ((pset%const.gt.0).or.(pset%fburst.gt.tiny_number))) then
@@ -134,7 +134,7 @@ subroutine csp_gen(mass_ssp, lbol_ssp, spec_ssp, &
                           fburst * w2
   endif
 
-  
+
   ! Simha
   if (pset%sfh.eq.5) then
      imin = 0
@@ -324,10 +324,10 @@ subroutine convert_sfhparams(pset, tage, sfh)
   !
   use sps_vars, only: tiny_number, SFHPARAMS, PARAMS, SP
   implicit none
-  
+
   type(PARAMS), intent(in) :: pset
   real(SP), intent(in) :: tage
-  
+
   type(SFHPARAMS), intent(inout) :: sfh
 
   real(SP) :: start
@@ -350,7 +350,7 @@ subroutine convert_sfhparams(pset, tage, sfh)
 
   ! convert tburst to lookback time
   sfh%tb = sfh%tage - sfh%tburst
-  
+
   ! convert sf_trunc to to lookback time
   if ((sfh%sf_trunc.le.0).or.(sfh%sf_trunc.gt.sfh%tage)) then
      sfh%tq = 0.

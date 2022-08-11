@@ -22,10 +22,9 @@ SUBROUTINE COMPSP(write_compsp, nzin, outfile,&
   REAL(SP), DIMENSION(nspec, ntfull, nzin)   :: spec_ssp
   REAL(SP), DIMENSION(nemline, ntfull, nzin) :: emlin_ssp
   REAL(SP), DIMENSION(nemline) :: emlin_csp
-  REAL(SP), dimension(ntfull) :: mdust_ssp
   REAL(SP) :: lbol_csp, mass_csp, mdust_csp
-  REAL(SP) :: age, mdust, mass_frac, tsfr, zred, frac_linear, maxtime
-  REAL(SP), DIMENSION(nspec) :: csp1, csp2, spec_dusty, spec_csp
+  REAL(SP) :: age, mass_frac, tsfr, zred, frac_linear, maxtime
+  REAL(SP), DIMENSION(nspec) :: spec_csp
   REAL(SP), DIMENSION(nbands)  :: mags
   REAL(SP), DIMENSION(nindx)   :: indx
   INTEGER :: i, nage
