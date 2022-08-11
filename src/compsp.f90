@@ -129,6 +129,9 @@ SUBROUTINE COMPSP(write_compsp, nzin, outfile,&
         tsfr = tsfr / mass_frac
         mass_frac = 1.0
      endif
+     if ((pset%sfh.eq.2).or.(pset%sfh)) then
+        ! get mass formed from sum of SSP weights
+        mass_frac = sum(weight_ssp)
 
      ! -------
      ! Now do a bunch of stuff with the spectrum
