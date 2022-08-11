@@ -203,7 +203,7 @@ SUBROUTINE COMPSP_WARNING(maxtime,pset,nzin,write_compsp)
 
   !the isochrones don't go past 10**10.15 yrs, so warn the user
   !that this will be an extrapolation
-  IF (maxtime.GT.10**10.2.AND.isoc_type.NE.'mist') THEN
+  IF ((maxtime.GT.10**10.2).AND.(isoc_type.NE.'mist').AND.(isoc_type.NE.'bpss')) THEN
      WRITE(*,*) 'COMPSP WARNING: log(Tmax)>10.2 yrs -'//&
           ' linear extrapolation beyond this point for log(Tmax)=:',&
           LOG10(maxtime)
