@@ -37,24 +37,24 @@ subroutine sfhinfo(pset, age, mfrac, sfr, frac_linear)
   real(SP), intent(in) :: age
 
   real(SP), intent(out) :: mfrac, sfr, frac_linear
-  
+
   real(SP) :: Tmax, Tprime, Tz, Ttrunc, Thi
   real(SP) :: m, gammainc
   real(SP) :: mass_tau, mass_linear, mfrac_burst
   real(SP) :: total_mass_tau, total_mass_linear
-  real(SP) :: sfr_tau, sfr_linear, sfr_trunc, sfr_const
+  real(SP) :: sfr_tau, sfr_trunc, sfr_const
   integer :: power, itab
 
   ! Defaults
   mfrac = 1.
   sfr = 0.
   frac_linear = 0.
-  
+
   if (pset%sfh.eq.0) then
      ! SSPs
      mfrac = 1.0
      sfr = 0. ! actually the sfr is infinity
-     
+
   else if ((pset%sfh.eq.1).or.(pset%sfh.eq.4).or.(pset%sfh.eq.5)) then
      ! Compute tau model component, for SFH=1,4,5
      !
@@ -181,10 +181,10 @@ subroutine sfhinfo(pset, age, mfrac, sfr, frac_linear)
      sfr = sfh_tab(2, itab) + m * (age*1e9 - sfh_tab(1, itab))
      sfr = max(sfr, 0.0) * 1e9 ! convert to per Gyr
   endif
-  
+
   ! Convert SFR from per Gyr to per year
   sfr = sfr / 1e9
-  
+
 end subroutine sfhinfo
 
 function gammainc(power, arg)
