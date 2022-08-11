@@ -40,7 +40,7 @@ MODULE SPS_VARS
 #endif
 
 !note that in the case of BPASS the SSPs are already pre-computed
-!so the spectral library, IMF, etc. is fixed in this case.  
+!so the spectral library, IMF, etc. is fixed in this case.
 #ifndef BPASS
 #define BPASS 0
 #endif
@@ -53,7 +53,7 @@ MODULE SPS_VARS
 #ifndef THEMIS
 #define THEMIS 0
 #endif
-  
+
   !--------------------------------------------------------------!
   !--------------------------------------------------------------!
 
@@ -414,7 +414,7 @@ MODULE SPS_VARS
 
   !array holding the Gordon et al. (2003) SMC extinction
   REAL(SP), DIMENSION(nspec) :: g03smcextn=0.
-  
+
   !Index for P(Z) distribution.  1=closed box;
   !P(Z) = z^zpow*exp(-z/pmetals)  (see pz_convol.f90)
   !pmetals set in PARAMS structure
@@ -491,7 +491,6 @@ MODULE SPS_VARS
   REAL(SP), DIMENSION(ndim_dustem,numin_dustem*2) :: dustem_dustem=0.
   REAL(SP), DIMENSION(nspec,nqpah_dustem,numin_dustem*2) :: dustem2_dustem=0.
 
-  
   !circumstellar AGB dust model (Villaume et al. 2015)
   REAL(SP), DIMENSION(nspec,2,nteff_dagb,ntau_dagb) :: flux_dagb=0.
   REAL(SP), DIMENSION(2,ntau_dagb)                  :: tau1_dagb=0.
@@ -531,10 +530,13 @@ MODULE SPS_VARS
 
   REAL(SP), DIMENSION(ntfull) :: time_full=0.
 
+  !array for ssp weights
+  REAL(SP), DIMENSION(ntfull,nz)       :: weight_ssp=0.
+
   !array for full BPASS SSPs
   REAL(SP), DIMENSION(nspec,nt,nz) :: bpass_spec_ssp=0.
   REAL(SP), DIMENSION(nt,nz)       :: bpass_mass_ssp=0.
-  
+
   !------------Define TYPE structures-------------!
 
   !structure for the set of parameters necessary to generate a model
