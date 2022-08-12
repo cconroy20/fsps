@@ -180,7 +180,23 @@ FUNCTION READ_MAGS1, file, allow_old=allow_old
          ps1_r:0.0,$
          ps1_i:0.0,$
          ps1_z:0.0,$
-         ps1_y:0.0 }
+         ps1_y:0.0,$
+         lsst_u:0.0,$
+         lsst_g:0.0,$
+         lsst_r:0.0,$
+         lsst_i:0.0,$
+         lsst_z:0.0,$
+         lsst_y:0.0,$
+         Euclid_VIS:0.0,$
+         Euclid_Y:0.0,$
+         Euclid_J:0.0,$
+         Euclid_H:0.0,$
+         Roman_F062:0.0,$
+         Roman_F087:0.0,$
+         Roman_F106:0.0,$
+         Roman_F129:0.0,$
+         Roman_F158:0.0,$
+         Roman_F184:0.0        }
 
 
   str = replicate(str,nn)

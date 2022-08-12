@@ -373,7 +373,8 @@ SUBROUTINE SPS_SETUP(zin)
           LOG10(zlegend(z)/zsol)),1),nzwmb-1)
      dz = (LOG10(zlegend(z)/zsol)-LOG10(zwmb(i1)/zsol_spec)) / &
           (LOG10(zwmb(i1+1)/zsol_spec)-LOG10(zwmb(i1)/zsol_spec))
-
+     dz = MIN(MAX(dz,0.0),1.0) !no extrapolation!
+     
      wmb_spec(:,z,:,:) = (1-dz)*LOG10(wmbsi(:,i1,:,:)+tiny_number) + &
           dz*LOG10(wmbsi(:,i1+1,:,:)+tiny_number)
      wmb_spec(:,z,:,:) = 10**wmb_spec(:,z,:,:)
