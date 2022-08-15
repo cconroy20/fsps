@@ -22,8 +22,6 @@ SUBROUTINE ADD_NEBULAR(pset,sspi,sspo,nebemline)
   !right now we only include nebular emission for ages<2x10^7 yr
   nti = locate(time_full,nebem_age(nebnage))
 
-  !nti = ntfull
-  
   !set up the interpolation variables for logZ and logU
   z1 = MAX(MIN(locate(nebem_logz,pset%gas_logz),nebnz-1),1)
   dz = (pset%gas_logz-nebem_logz(z1))/(nebem_logz(z1+1)-nebem_logz(z1))
@@ -69,14 +67,12 @@ SUBROUTINE ADD_NEBULAR(pset,sspi,sspo,nebemline)
 
      !set up age interpolant
      a1 = MAX(MIN(locate(nebem_age,time_full(t)),nebnage-1),1)
-   !  a1 = MAX(MIN(locate(nebem_age,6.d0),nebnage-1),1)
      da = (time_full(t)-nebem_age(a1))/(nebem_age(a1+1)-nebem_age(a1))
      da = MAX(MIN(da,1.0),0.0) !no extrapolations
 
-  !  qq = tsum(spec_nu(:whlylim),sspi(:whlylim,40)/spec_nu(:whlylim))/&
-  !        hplank*lsun / 10.
- 
-     
+     qq = tsum(spec_nu(:whlylim),sspi(:whlylim,40)/spec_nu(:whlylim))/&
+          hplank*lsun / 10.
+      
      !add nebular continuum emission
      IF (add_neb_continuum.EQ.1) THEN
         tmpnebcont = &   !interpolate in Zgas, logU, age
