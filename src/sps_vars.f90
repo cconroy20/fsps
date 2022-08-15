@@ -7,7 +7,7 @@ MODULE SPS_VARS
 
 !-------set the spectral library------!
 #ifndef MILES
-#define MILES 0
+#define MILES 1
 #endif
 
 #ifndef BASEL
@@ -15,7 +15,7 @@ MODULE SPS_VARS
 #endif
 
 #ifndef C3K
-#define C3K 1
+#define C3K 0
 #endif
 
 !------set the isochrone library------!
