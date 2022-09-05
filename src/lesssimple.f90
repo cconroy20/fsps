@@ -1,7 +1,8 @@
 PROGRAM LESSSIMPLE
 
   !set up modules
-  USE sps_vars; USE sps_utils
+  USE sps_vars
+  USE sps_utils
   
   IMPLICIT NONE
 

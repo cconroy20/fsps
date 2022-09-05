@@ -4,7 +4,8 @@ FUNCTION GET_LUMDIST(z)
   !assumes flat universe w/ only matter and lambda
   !assumes om0,ol0,H0 set in sps_vars.f90
   
-  USE sps_vars; USE sps_utils, ONLY : tsum
+  USE sps_vars
+  USE sps_utils, ONLY : tsum
   IMPLICIT NONE
   INTEGER :: i
   INTEGER, PARAMETER :: ii=10000

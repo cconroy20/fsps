@@ -4,7 +4,8 @@ FUNCTION AIRTOVAC(lam)
   !see Morton (1991 Ap.J. Suppl. 77, 119)
   !this code was adapted from the IDL routine airtovac.pro
 
-  USE sps_vars; USE sps_utils, ONLY : locate
+  USE sps_vars
+  USE sps_utils, ONLY : locate
   IMPLICIT NONE
 
   INTEGER :: vv,nn
@@ -43,7 +44,8 @@ FUNCTION VACTOAIR(lam)
   !see Morton (1991 Ap.J. Suppl. 77, 119)
   !this code was adapted from the IDL routine vactoair.pro
 
-  USE sps_vars; USE sps_utils, ONLY : locate
+  USE sps_vars
+  USE sps_utils, ONLY : locate
   IMPLICIT NONE
 
   INTEGER :: vv,nn

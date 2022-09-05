@@ -1,6 +1,7 @@
 FUNCTION AGN_DUST(lam,spec,pset,lbol_csp)
 
-  USE sps_vars; USE sps_utils, ONLY: locate,attn_curve
+  USE sps_vars
+  USE sps_utils, ONLY: locate,attn_curve
   IMPLICIT NONE
 
   REAL(SP), DIMENSION(nspec), INTENT(in) :: lam,spec

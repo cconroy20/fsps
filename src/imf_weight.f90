@@ -10,7 +10,8 @@ SUBROUTINE IMF_WEIGHT(mini,wght,nmass)
   !mass+/-0.5dm, rather than just the values at point i.
   !Then every intergral over mass is just a sum.
 
-  USE sps_vars; USE sps_utils, ONLY : imf, funcint
+  USE sps_vars
+  USE sps_utils, ONLY : imf, funcint
   IMPLICIT NONE
 
   REAL(SP), INTENT(inout), DIMENSION(nm) :: wght
