@@ -7,7 +7,8 @@ SUBROUTINE PZ_CONVOL(yield,zave,spec_pz,lbol_pz,mass_pz)
   !variables spec_ssp_zz, mass_ssp_zz, and lbol_ssp_zz
   !The average metallicity is returned as zave
 
-  USE sps_vars; USE sps_utils, ONLY : linterp
+  USE sps_vars
+  USE sps_utils, ONLY : linterp
   IMPLICIT NONE
   
   INTEGER  :: i,t,z

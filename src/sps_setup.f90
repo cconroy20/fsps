@@ -9,7 +9,8 @@ SUBROUTINE SPS_SETUP(zin)
   !is read.  Specifying only the metallicity of interest results
   !in a much faster setup.
 
-  USE sps_vars; USE sps_utils
+  USE sps_vars
+  USE sps_utils
   IMPLICIT NONE
   INTEGER, INTENT(in) :: zin
   INTEGER :: stat=1,n,i,j,m,jj,k,i1,i2

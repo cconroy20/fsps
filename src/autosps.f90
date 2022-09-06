@@ -1,6 +1,7 @@
 PROGRAM AUTOSPS
 
-  USE sps_vars; USE sps_utils
+  USE sps_vars
+  USE sps_utils
   
   IMPLICIT NONE
 

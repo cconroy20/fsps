@@ -5,7 +5,8 @@ SUBROUTINE ZTINTERP(zpos,spec,lbol,mass,tpos,zpow)
   !2) integrate over an MDF (zpos,zpow) for a grid of ages
   !3) single metallicity (zpos) for a grid of ages
 
-  USE sps_vars; USE sps_utils, ONLY : locate, tsum
+  USE sps_vars
+  USE sps_utils, ONLY : locate, tsum
   IMPLICIT NONE
 
   REAL(SP),INTENT(in) :: zpos

@@ -3,7 +3,8 @@ SUBROUTINE ADD_NEBULAR(pset,sspi,sspo,nebemline)
   !routine to add nebular emission (both line and continuum)
   !to input SSPs (sspi).  Returns SSPs as output (sspo).
 
-  USE sps_vars; USE sps_utils, ONLY : locate,tsum
+  USE sps_vars
+  USE sps_utils, ONLY : locate,tsum
   IMPLICIT NONE
 
   INTEGER :: t,i,nti,a1,z1,u1

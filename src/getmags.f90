@@ -6,7 +6,8 @@ SUBROUTINE GETMAGS(zred,spec,mags,mag_compute)
   !magnitudes defined in accordance with Fukugita et al. 1996, Eqn 7
   !This routine also redshifts the spectrum, if necessary.
 
-  USE sps_vars; USE sps_utils, ONLY : linterp, tsum
+  USE sps_vars
+  USE sps_utils, ONLY : linterp, tsum
   IMPLICIT NONE
 
   INTEGER  :: i
