@@ -8,7 +8,7 @@ SUBROUTINE COMPSP(write_compsp, nzin, outfile,&
   use sps_utils, only: write_isochrone, add_nebular, setup_tabular_sfh, &
                        csp_gen, sfhinfo, linterp, agn_dust, &
                        smoothspec, igm_absorb, getindx, getmags
-                       
+
   implicit none
 
   INTEGER, INTENT(in) :: write_compsp,nzin
@@ -22,10 +22,9 @@ SUBROUTINE COMPSP(write_compsp, nzin, outfile,&
   REAL(SP), DIMENSION(nspec, ntfull, nzin)   :: spec_ssp
   REAL(SP), DIMENSION(nemline, ntfull, nzin) :: emlin_ssp
   REAL(SP), DIMENSION(nemline) :: emlin_csp
-  REAL(SP), dimension(ntfull) :: mdust_ssp
   REAL(SP) :: lbol_csp, mass_csp, mdust_csp
-  REAL(SP) :: age, mdust, mass_frac, tsfr, zred, frac_linear, maxtime
-  REAL(SP), DIMENSION(nspec) :: csp1, csp2, spec_dusty, spec_csp
+  REAL(SP) :: age, mass_frac, tsfr, zred, frac_linear, maxtime
+  REAL(SP), DIMENSION(nspec) :: spec_csp
   REAL(SP), DIMENSION(nbands)  :: mags
   REAL(SP), DIMENSION(nindx)   :: indx
   INTEGER :: i, nage
@@ -52,7 +51,7 @@ SUBROUTINE COMPSP(write_compsp, nzin, outfile,&
   else
      maxtime = 10**time_full(ntfull)
   endif
-  
+
   CALL COMPSP_WARNING(maxtime, pset, nzin, write_compsp)
 
   ! Setup output files
@@ -82,7 +81,7 @@ SUBROUTINE COMPSP(write_compsp, nzin, outfile,&
   if (add_neb_emission.EQ.1) then
      if (nzin.GT.1) then
         WRITE(*,*) 'COMPSP ERROR: cannot handle both nebular '//&
-             'emission and mult-metallicity SSPs in compsp'
+             'emission and multi-metallicity SSPs in compsp'
         STOP
      endif
      call add_nebular(pset, tspec_ssp(:,:,1), spec_ssp(:,:,1), emlin_ssp(:,:,1))
@@ -92,7 +91,7 @@ SUBROUTINE COMPSP(write_compsp, nzin, outfile,&
 
 
   ! --- Get CSP spectra -------
-  
+
   ! Loop over output ages.
   do i=1,ntfull
      ! ------
@@ -116,9 +115,9 @@ SUBROUTINE COMPSP(write_compsp, nzin, outfile,&
      call csp_gen(mass_ssp, lbol_ssp, spec_ssp, &
           pset, age, nzin, mass_csp, lbol_csp, spec_csp,&
           mdust_csp,emlin_ssp,emlin_csp)
-     
+
      call sfhinfo(pset, age, mass_frac, tsfr, frac_linear)
-     if (pset%tage.le.0) then   
+     if (pset%tage.le.0) then
         mass_csp  = mass_csp * mass_frac
         lbol_csp  = log10(10**lbol_csp * mass_frac)
         spec_csp  = spec_csp * mass_frac
@@ -128,6 +127,10 @@ SUBROUTINE COMPSP(write_compsp, nzin, outfile,&
         ! Renormalize the SFR to be appropriate for one solar mass formed.
         tsfr = tsfr / mass_frac
         mass_frac = 1.0
+     endif
+     if ((pset%sfh.eq.2).OR.(pset%sfh.eq.3)) then
+        ! get mass formed from sum of SSP weights
+        mass_frac = sum(weight_ssp)
      endif
 
      ! -------
@@ -200,7 +203,7 @@ SUBROUTINE COMPSP_WARNING(maxtime,pset,nzin,write_compsp)
 
   !the isochrones don't go past 10**10.15 yrs, so warn the user
   !that this will be an extrapolation
-  IF (maxtime.GT.10**10.2.AND.isoc_type.NE.'mist') THEN
+  IF ((maxtime.GT.10**10.2).AND.(isoc_type.NE.'mist').AND.(isoc_type.NE.'bpss')) THEN
      WRITE(*,*) 'COMPSP WARNING: log(Tmax)>10.2 yrs -'//&
           ' linear extrapolation beyond this point for log(Tmax)=:',&
           LOG10(maxtime)
@@ -233,7 +236,6 @@ SUBROUTINE COMPSP_WARNING(maxtime,pset,nzin,write_compsp)
           ' sf_trunc will be ignored.'
   ENDIF
 
-  
   !set limits on the parameters tau and const
   IF (pset%sfh.EQ.1.OR.pset%sfh.EQ.4) THEN
      IF (pset%tau.LE.0.1.AND.pset%tau.GE.0.0) THEN
@@ -299,7 +301,7 @@ SUBROUTINE COMPSP_WARNING(maxtime,pset,nzin,write_compsp)
      WRITE(*,*) 'COMPSP WARNING: compute_light_ages does not take into'//&
           ' account age-dependent dust (dust1 > 0)'
   ENDIF
-     
+
 
 END SUBROUTINE COMPSP_WARNING
 
@@ -324,7 +326,7 @@ SUBROUTINE COMPSP_SETUP_OUTPUT(write_compsp,pset,outfile,imin,imax)
           STATUS='REPLACE')
      CALL COMPSP_HEADER(10,pset)
   ENDIF
-  
+
   !open output file for spectra
   IF (write_compsp.EQ.2.OR.write_compsp.EQ.3) THEN
      OPEN(20,FILE=TRIM(SPS_HOME)//'/OUTPUTS/'//TRIM(outfile)//'.spec',&

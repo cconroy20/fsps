@@ -19,14 +19,14 @@ subroutine setup_tabular_sfh(pset, nzin)
   type(PARAMS), intent(in) :: pset
   integer, intent(in) :: nzin
   integer :: stat, n
-  
+
   IF (pset%sfh.EQ.2) THEN
 
-     if (pset%sf_start.gt.tiny_number) then 
+     if (pset%sf_start.gt.tiny_number) then
         WRITE(*,*) 'COMPSP ERROR: Tabular sfh, but sf_start > 0'
         STOP
      endif
-     
+
      ! Read the sfh file
      IF (TRIM(pset%sfh_filename).EQ.'') THEN
         OPEN(3,FILE=TRIM(SPS_HOME)//'/data/sfh.dat',ACTION='READ',STATUS='OLD')
@@ -49,18 +49,17 @@ subroutine setup_tabular_sfh(pset, nzin)
 29   CONTINUE
      CLOSE(3)
 
-     
      ntabsfh = n-1
-     sfh_tab(1,1:ntabsfh) = sfh_tab(1,1:ntabsfh)*1E9 !convert to yrs        
-     
+     sfh_tab(1,1:ntabsfh) = sfh_tab(1,1:ntabsfh)*1E9 !convert to yrs
+
      !special switch to compute only the last time output
      !in the tabulated file
      ! IF (pset%tage.EQ.-99.) imin=imax
 
-  ELSE IF (pset%sfh.EQ.3) THEN 
+  ELSE IF (pset%sfh.EQ.3) THEN
 
      !sfh_tab array is supposed to already be filled in, check that it is
-     IF (ntabsfh.EQ.0) THEN 
+     IF (ntabsfh.EQ.0) THEN
         WRITE(*,*) 'COMPSP ERROR: sfh=3 but sfh_tab array not initialized!'
         STOP
      ENDIF
@@ -71,5 +70,5 @@ subroutine setup_tabular_sfh(pset, nzin)
   do n=1, ntabsfh
      sfh_tab(2, n) = max(sfh_tab(2, n), tiny30)
   enddo
-  
+
 end subroutine setup_tabular_sfh

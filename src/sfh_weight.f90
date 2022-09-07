@@ -27,17 +27,17 @@ function sfh_weight(sfh, imin, imax)
                       SFHPARAMS, SP
   use sps_utils, only: intsfwght, sfhlimit, locate
   implicit none
-  
+
   type(SFHPARAMS), intent(in) :: sfh
   integer, intent(in) :: imin, imax
 
   real(SP), dimension(ntfull) ::sfh_weight
-  
+
   integer :: i, istart
   real(SP), dimension(2) :: tlim
   real(SP) :: dt, delta_time, log_tb
   real(SP), dimension(ntfull) :: tmp_wght=0. !left=0., right=0.
-  
+
 
   ! Check if this is an SSP.  If so, do simple weights and return.
   if (sfh%type.eq.-1) then
@@ -70,7 +70,7 @@ function sfh_weight(sfh, imin, imax)
      if (i.gt.1) then
         ! There is a younger (`left`) bin, and we calculate its contribution to
         ! the weight.
-        ! First calculate actual limits for the younger bin.  
+        ! First calculate actual limits for the younger bin.
         tlim(1) = sfhlimit(time_full(i-1), sfh)
         tlim(2) = sfhlimit(time_full(i), sfh)
         ! The elements of `tlim` will be equal if there is no valid SFR in the
@@ -117,7 +117,7 @@ function sfh_weight(sfh, imin, imax)
 
 end function sfh_weight
 
-  
+
 function delta_time(logt1, logt2)
   ! Dumb function to properly calculate dt based on interpolation type.
   !

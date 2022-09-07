@@ -1,6 +1,6 @@
 subroutine csp_gen(mass_ssp, lbol_ssp, spec_ssp, &
      pset, tage, nzin, mass_csp, lbol_csp, spec_csp, &
-     mdust_csp,emlin_ssp,emlin_csp)
+     mdust_csp,emlin_ssp,emlin_csp)!,total_weights)
   !
   ! Return the spectrum (and mass and lbol) of a composite stellar population.
   !
@@ -18,16 +18,25 @@ subroutine csp_gen(mass_ssp, lbol_ssp, spec_ssp, &
   !   The age (in Gyr of forward time) at which the spectrum is desired.  Note
   !   that this can be different than pset%tage if the latter is 0.
   !
+  ! emlin_ssp:
+  !   The emission line luminosities for each SSP
+  !
   ! Outputs
   ! ---------
   !
   ! mass_csp, lbol_csp, spec_csp:
   !   The (surviving) stellar masses, bolometric luminosity, and spectrum of
   !   the composite stellar population at tage, normalized to 1 M_sun *formed*.
-  
+  !
+  ! emlin_csp:
+  !   The emission line luminosities for the CSP
+  !
+  ! total_weights:
+  !    The weights(masses) for each SSP in the composite
+
   use sps_vars, only: ntfull, nspec, time_full, tiny_number, tiny_logt, &
                       zlegend, nz, sfh_tab, ntabsfh, compute_light_ages, &
-                      SFHPARAMS, PARAMS, SP, nemline, dust_type
+                      SFHPARAMS, PARAMS, SP, nemline, dust_type, weight_ssp
   use sps_utils, only: locate, sfh_weight, sfhinfo, add_dust
   implicit none
 
@@ -36,12 +45,14 @@ subroutine csp_gen(mass_ssp, lbol_ssp, spec_ssp, &
   type(PARAMS), intent(in) :: pset
   real(SP), intent(in) :: tage
   integer, intent(in) :: nzin
-  
+
   real(SP), intent(out) :: mass_csp, lbol_csp, mdust_csp
   real(SP), intent(out), dimension(nspec) :: spec_csp
 
   real(SP), DIMENSION(nemline, ntfull, nzin), intent(in) :: emlin_ssp
   real(SP), DIMENSION(nemline), intent(out) :: emlin_csp
+
+  !real(SP), intent(out), dimension(ntfull, nzin) :: total_weights
 
   real(SP), dimension(nspec) :: csp1, csp2, lw_age
   real(SP), dimension(nemline) :: ncsp1, ncsp2, nlw_age
@@ -67,6 +78,7 @@ subroutine csp_gen(mass_ssp, lbol_ssp, spec_ssp, &
   ! ----- Get SFH weights -----
 
   total_weights = 0.
+  weight_ssp = 0.
 
   ! SSP.
   if (pset%sfh.eq.0) then
@@ -94,7 +106,7 @@ subroutine csp_gen(mass_ssp, lbol_ssp, spec_ssp, &
      total_weights(:, 1) = total_weights(:, 1) / m1
   endif
 
-  
+
   ! Add constant and burst weights for SFH=1,4
   if (((pset%sfh.eq.1).or.(pset%sfh.eq.4)).and.&
        ((pset%const.gt.0).or.(pset%fburst.gt.tiny_number))) then
@@ -122,7 +134,7 @@ subroutine csp_gen(mass_ssp, lbol_ssp, spec_ssp, &
                           fburst * w2
   endif
 
-  
+
   ! Simha
   if (pset%sfh.eq.5) then
      imin = 0
@@ -238,6 +250,7 @@ subroutine csp_gen(mass_ssp, lbol_ssp, spec_ssp, &
   do i=max(imin, 1), imax
      do k=1,nzin
         if (total_weights(i, k).gt.tiny_number) then
+           weight_ssp(i, k) = total_weights(i, k)  ! copy to common variable
            if (i.le.i_tesc) then
               csp1  = csp1  + total_weights(i, k) * spec_ssp(:, i, k)
               ncsp1 = ncsp1 + total_weights(i, k) * emlin_ssp(:, i, k)
@@ -311,10 +324,10 @@ subroutine convert_sfhparams(pset, tage, sfh)
   !
   use sps_vars, only: tiny_number, SFHPARAMS, PARAMS, SP
   implicit none
-  
+
   type(PARAMS), intent(in) :: pset
   real(SP), intent(in) :: tage
-  
+
   type(SFHPARAMS), intent(inout) :: sfh
 
   real(SP) :: start
@@ -337,7 +350,7 @@ subroutine convert_sfhparams(pset, tage, sfh)
 
   ! convert tburst to lookback time
   sfh%tb = sfh%tage - sfh%tburst
-  
+
   ! convert sf_trunc to to lookback time
   if ((sfh%sf_trunc.le.0).or.(sfh%sf_trunc.gt.sfh%tage)) then
      sfh%tq = 0.
