@@ -436,6 +436,8 @@ MODULE SPS_VARS
   REAL(SP), DIMENSION(nspec)  :: vega_spec=0.,sun_spec=0.
   !common wavelength and frequench arrays
   REAL(SP), DIMENSION(nspec)  :: spec_lambda=0.,spec_nu=0.0
+  !common wavelength and frequency arrays for dummy resolution files
+  REAL(SP), DIMENSION(nspec)  :: spec_res=0.
 
   !arrays for stellar spectral information in HR diagram
   REAL(SP), DIMENSION(ndim_logt) :: speclib_logt=0.
