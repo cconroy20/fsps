@@ -8,13 +8,13 @@ SUBROUTINE ADD_NEBULAR(pset,sspi,sspo,nebemline)
   IMPLICIT NONE
 
   INTEGER :: t,i,nti,a1,z1,u1
-  REAL(SP) :: da,dz,du,sigma,dlam,qq,compute_q
+  REAL(SP) :: da,dz,du,dlam,qq
   TYPE(PARAMS), INTENT(in) :: pset
   REAL(SP), INTENT(in), DIMENSION(nspec,ntfull)    :: sspi
   REAL(SP), INTENT(inout), DIMENSION(nspec,ntfull) :: sspo
   REAL(SP), INTENT(inout), DIMENSION(nemline,ntfull), OPTIONAL :: nebemline
   REAL(SP), DIMENSION(nemline) :: tmpnebline
-  REAL(SP), DIMENSION(nspec)   :: tmpnebcont,nu
+  REAL(SP), DIMENSION(nspec)   :: tmpnebcont
 
   !-----------------------------------------------------------!
   !-----------------------------------------------------------!
@@ -42,7 +42,7 @@ SUBROUTINE ADD_NEBULAR(pset,sspi,sspo,nebemline)
            !smoothing variable is A
            dlam = pset%sigma_smooth
         ENDIF
-        !broaden the line to at least the resolution element 
+        !broaden the line to at least the resolution element
         !of the spectrum (x2).
         dlam = MAX(dlam,neb_res_min(i)*2)
         gaussnebarr(:,i) = 1/SQRT(2*mypi)/dlam*&
@@ -53,7 +53,7 @@ SUBROUTINE ADD_NEBULAR(pset,sspi,sspo,nebemline)
 
   sspo = sspi
   nebemline = 0.0
-  
+
   DO t=1,nti
 
      !remove ionizing photons from the stellar source
@@ -71,9 +71,6 @@ SUBROUTINE ADD_NEBULAR(pset,sspi,sspo,nebemline)
      da = (time_full(t)-nebem_age(a1))/(nebem_age(a1+1)-nebem_age(a1))
      da = MAX(MIN(da,1.0),0.0) !no extrapolations
 
-     qq = tsum(spec_nu(:whlylim),sspi(:whlylim,40)/spec_nu(:whlylim))/&
-          hplank*lsun / 10.
-      
      !add nebular continuum emission
      IF (add_neb_continuum.EQ.1) THEN
         tmpnebcont = &   !interpolate in Zgas, logU, age
@@ -106,7 +103,7 @@ SUBROUTINE ADD_NEBULAR(pset,sspi,sspo,nebemline)
            sspo(:,t) = sspo(:,t) + 10**tmpnebline(i)*qq*gaussnebarr(:,i)
         ENDDO
      ENDIF
-        
+
   ENDDO
 
 
