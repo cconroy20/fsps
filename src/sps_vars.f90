@@ -287,7 +287,7 @@ MODULE SPS_VARS
   !unless you are changing the libraries
 
   !max dimension of array for each isochrone
-  INTEGER, PARAMETER :: nm=2000  !10000
+  INTEGER, PARAMETER :: nm=2000
   !max number of lines to read in
   INTEGER, PARAMETER ::  nlines=1000000
   !max number of lines in tabulated SFH, LSF

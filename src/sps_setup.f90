@@ -47,7 +47,8 @@ SUBROUTINE SPS_SETUP(zin)
   REAL(SP), DIMENSION(nspec_aringer,n_agb_car) :: aringer_specinit=0.
   REAL(SP), DIMENSION(nagndust_spec)           :: agndust_lam=0.
   REAL(SP), DIMENSION(nagndust_spec,nagndust)  :: agndust_specinit=0.
-  REAL(KIND(1.0)), DIMENSION(nspec,nzinit,ndim_logt,ndim_logg) :: speclibinit=0.
+  !REAL(KIND(1.0)), DIMENSION(nspec,nzinit,ndim_logt,ndim_logg) :: speclibinit=0.
+  REAL(KIND(1.0)), allocatable :: speclibinit(:,:,:,:)
   REAL(SP), DIMENSION(nspec,nzwmb,ndim_wmb_logt,ndim_wmb_logg) :: wmbsi=0.
   REAL(SP), DIMENSION(nzwmb)     :: zwmb=0.
   REAL(SP), DIMENSION(nspec_wmb) :: wmb_lam=0.
@@ -248,10 +249,12 @@ SUBROUTINE SPS_SETUP(zin)
   ENDDO
   CLOSE(91)
 
+  !read in spectral resolution
   DO i=1,nspec
      READ(94,*) spec_res(i)
   ENDDO
-  CLOSE(94)  
+  CLOSE(94)
+  
   !read in primary logg and logt arrays
   !NB: these are the same for all spectral libraries
   OPEN(91,FILE=TRIM(SPS_HOME)//'/SPECTRA/BaSeL3.1/basel_logt.dat',&
@@ -267,6 +270,9 @@ SUBROUTINE SPS_SETUP(zin)
   ENDDO
   CLOSE(91)
 
+  ALLOCATE(speclibinit(nspec,nzinit,ndim_logt,ndim_logg))
+  speclibinit = 0.0
+  
   !read in each metallicity
   DO z=1,nzinit
 
@@ -321,6 +327,8 @@ SUBROUTINE SPS_SETUP(zin)
 
   ENDDO
 
+  DEALLOCATE(speclibinit)
+  
   !--------------Read WMBasic Grid from JJ Eldridge----------------;
 
   !read in Teff array
