@@ -22,6 +22,7 @@ SUBROUTINE SPS_SETUP(zin)
   CHARACTER(5) :: zstype5
   REAL(SP) :: dumr1,d1,d2,logage,x,a,zero=0.0,d,one=1.0,dz,dlam
   CHARACTER(5), DIMENSION(nz) :: zlegend_str=''
+  CHARACTER(5), DIMENSION(nzinit) :: zlegend_str2=''
   REAL(SP), DIMENSION(nspec) :: tspec=0.
   REAL(SP), DIMENSION(ntlam) :: tvega_lam=0.,tvega_spec=0.
   REAL(SP), DIMENSION(ntlam) :: tsun_lam=0.,tsun_spec=0.
@@ -101,11 +102,6 @@ SUBROUTINE SPS_SETUP(zin)
   CALL getenv('SPS_HOME',SPS_HOME)
   IF (LEN_TRIM(SPS_HOME).EQ.0) THEN
      WRITE(*,*) 'SPS_SETUP ERROR: spsdir environment variable not set!'
-     STOP
-  ENDIF
-
-  IF (basel_str.NE.'pdva'.AND.basel_str.NE.'wlbc') THEN
-     WRITE(*,*) 'SPS_SETUP ERROR: basel_str var set to invalid type: ',basel_str
      STOP
   ENDIF
 
@@ -220,20 +216,15 @@ SUBROUTINE SPS_SETUP(zin)
   IF (isoc_type.NE.'bpss') THEN
   
   !read in wavelength array and spectral metallicity grid
-  IF (spec_type.EQ.'basel') THEN
-     OPEN(91,FILE=TRIM(SPS_HOME)//'/SPECTRA/BaSeL3.1/basel.lambda',&
-          STATUS='OLD',iostat=stat,ACTION='READ')
-     OPEN(93,FILE=TRIM(SPS_HOME)//'/SPECTRA/BaSeL3.1/zlegend.dat',&
-          STATUS='OLD',iostat=stat,ACTION='READ')
-  ELSE IF (spec_type.EQ.'miles') THEN
+  IF (spec_type.EQ.'miles') THEN
      OPEN(91,FILE=TRIM(SPS_HOME)//'/SPECTRA/MILES/miles.lambda',&
           STATUS='OLD',iostat=stat,ACTION='READ')
      OPEN(93,FILE=TRIM(SPS_HOME)//'/SPECTRA/MILES/zlegend.dat',&
           STATUS='OLD',iostat=stat,ACTION='READ')
   ELSE IF (spec_type(1:3).EQ.'c3k') THEN
-     OPEN(91,FILE=TRIM(SPS_HOME)//'/SPECTRA/C3K/c3k.lambda',&
+     OPEN(91,FILE=TRIM(SPS_HOME)//'/SPECTRA/C3K/'//TRIM(spec_type)//'.lambda',&
           STATUS='OLD',iostat=stat,ACTION='READ')
-     OPEN(93,FILE=TRIM(SPS_HOME)//'/SPECTRA/C3K/zlegend.dat',&
+     OPEN(93,FILE=TRIM(SPS_HOME)//'/SPECTRA/C3K/'//TRIM(spec_type)//'_zlegend.dat',&
           STATUS='OLD',iostat=stat,ACTION='READ')
   ENDIF
   IF (stat.NE.0) THEN
@@ -247,13 +238,13 @@ SUBROUTINE SPS_SETUP(zin)
 
   !read in primary logg and logt arrays
   !NB: these are the same for all spectral libraries
-  OPEN(91,FILE=TRIM(SPS_HOME)//'/SPECTRA/BaSeL3.1/basel_logt.dat',&
+  OPEN(91,FILE=TRIM(SPS_HOME)//'/SPECTRA/logt.dat',&
        STATUS='OLD',iostat=stat,ACTION='READ')
   DO i=1,ndim_logt
      READ(91,*) speclib_logt(i)
   ENDDO
   CLOSE(91)
-  OPEN(91,FILE=TRIM(SPS_HOME)//'/SPECTRA/BaSeL3.1/basel_logg.dat',&
+  OPEN(91,FILE=TRIM(SPS_HOME)//'/SPECTRA/logg.dat',&
        STATUS='OLD',iostat=stat,ACTION='READ')
   DO i=1,ndim_logg
      READ(91,*) speclib_logg(i)
@@ -267,24 +258,27 @@ SUBROUTINE SPS_SETUP(zin)
      DO z=1,nzinit
 
         IF (aa.EQ.1) THEN
-           READ(93,*) zlegendinit(z)
+
+           IF (spec_type(1:3).EQ.'c3k') THEN
+              READ(93,'(A5)') zlegend_str2(z)
+              READ(zlegend_str2(z),'(F4.2)') zlegendinit(z)
+              zlegendinit(z) = 10**zlegendinit(z)*zsol_spec
+           ELSE
+              READ(93,*) zlegendinit(z)
+           ENDIF
         ENDIF
         WRITE(zstype,'(F6.4)') zlegendinit(z)
 
         !read in the spectral library
-        IF (spec_type.EQ.'basel') THEN
-           OPEN(92,FILE=TRIM(SPS_HOME)//'/SPECTRA/BaSeL3.1/basel_'//basel_str//&
-                '_z'//zstype//'.spectra.bin',FORM='UNFORMATTED',&
-                STATUS='OLD',iostat=stat,ACTION='READ',access='direct',&
-                recl=nspec*ndim_logg*ndim_logt*4)
-        ELSE IF (spec_type.EQ.'miles') THEN
+        IF (spec_type.EQ.'miles') THEN
            OPEN(92,FILE=TRIM(SPS_HOME)//'/SPECTRA/MILES/imiles_z'&
                 //zstype//'.spectra.bin',FORM='UNFORMATTED',&
                 STATUS='OLD',iostat=stat,ACTION='READ',access='direct',&
                 recl=nspec*ndim_logg*ndim_logt*4)
         ELSE IF (spec_type(1:3).EQ.'c3k') THEN
-           OPEN(92,FILE=TRIM(SPS_HOME)//'/SPECTRA/C3K/'//spec_type//&
-                afe_str(aa)//'_z'//zstype//'.spectra.bin',FORM='UNFORMATTED',&
+           OPEN(92,FILE=TRIM(SPS_HOME)//'/SPECTRA/C3K/'//TRIM(spec_type)//&
+                '_feh'//zlegend_str2(z)//'_afe'//afe_str(aa)//'.spec.bin',&
+                FORM='UNFORMATTED',&
                 STATUS='OLD',iostat=stat,ACTION='READ',access='direct',&
                 recl=nspec*ndim_logg*ndim_logt*4)
         ENDIF
@@ -313,7 +307,7 @@ SUBROUTINE SPS_SETUP(zin)
              LOG10(zlegend(z)/zsol)),1),nzinit-1)
         dz = (LOG10(zlegend(z)/zsol)-LOG10(zlegendinit(i1)/zsol_spec)) / &
              (LOG10(zlegendinit(i1+1)/zsol_spec)-LOG10(zlegendinit(i1)/zsol_spec))
-        dz = MIN(MAX(dz,0.0),1.0) !no extrapolation!
+        dz = MIN(MAX(dz,0.0),1.0) !no extrapolation
 
         !both isochrones and spectra are solar-scaled
         IF (nafe.EQ.1.AND.nafeinit.EQ.1) THEN

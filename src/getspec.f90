@@ -203,8 +203,6 @@ SUBROUTINE GETSPEC(pset,mact,logt,lbol,logg,phase,ffco,lmdot,wght,spec)
   spec = MAX(spec,tiny_number)
   
   IF (verbose.EQ.1) THEN
-     !IF (flag.EQ.0.AND.(spec_type.EQ.'basel'.OR.spec_type.EQ.'ckc14').AND.&
-     !     phase.NE.6.AND.phase.NE.9) THEN
      IF (flag.EQ.0..AND.wght.GT.0.0) THEN
         WRITE(*,'(" GETSPEC WARNING: point entirely off the grid: Z=",I2,'//&
              '" logT=",F5.2," logg=",F5.2," phase=",I2," lg IMF*L=",F5.2)') &

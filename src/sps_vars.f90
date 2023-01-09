@@ -6,16 +6,16 @@ MODULE SPS_VARS
   SAVE
 
 !-------set the spectral library------!
+#ifndef C3K_LR
+#define C3K_LR 1
+#endif
+
+#ifndef C3K_HR
+#define C3K_HR 0
+#endif
+
 #ifndef MILES
 #define MILES 0
-#endif
-
-#ifndef BASEL
-#define BASEL 0
-#endif
-
-#ifndef C3K
-#define C3K 1
 #endif
 
 !------set the isochrone library------!
@@ -231,7 +231,7 @@ MODULE SPS_VARS
   INTEGER, PARAMETER :: nz=5
   INTEGER, PARAMETER :: nafe=1
 #elif (MIST)
-  REAL(SP), PARAMETER :: zsol = 0.0142
+  REAL(SP), PARAMETER :: zsol = 0.0191
   CHARACTER(4), PARAMETER :: isoc_type = 'mist'
   INTEGER, PARAMETER :: nt=107
   INTEGER, PARAMETER :: nz=12
@@ -281,9 +281,27 @@ MODULE SPS_VARS
   CHARACTER(4), DIMENSION(nafeinit), PARAMETER :: afe_str=''
   REAL(SP), DIMENSION(nafeinit), PARAMETER     :: afe_val=0.0
   INTEGER, PARAMETER :: afe_sol_indx=1
-#elif (C3K)
+#elif (C3K_LR)
+  REAL(SP), PARAMETER     :: zsol_spec = 0.0134
+  CHARACTER(7), PARAMETER :: spec_type = 'c3k_lr'
+  INTEGER, PARAMETER      :: nzinit=11
+  INTEGER, PARAMETER      :: nspec=1936
+#if (AFE_FLAG)
+  INTEGER, PARAMETER :: nafeinit=5
+  CHARACTER(4), DIMENSION(nafeinit), PARAMETER :: &
+       afe_str=(/'-0.2','+0.0','+0.2','+0.4','+0.6'/)
+  REAL(SP), DIMENSION(nafeinit), PARAMETER     :: &
+       afe_val=(/-0.2,0.0,0.2,0.4,0.6/)
+  INTEGER, PARAMETER :: afe_sol_indx=2
+#else
+  INTEGER, PARAMETER :: nafeinit=1
+  CHARACTER(4), DIMENSION(nafeinit), PARAMETER :: afe_str='+0.0'
+  REAL(SP), DIMENSION(nafeinit), PARAMETER     :: afe_val=0.0
+  INTEGER, PARAMETER :: afe_sol_indx=1
+#endif  
+#elif (C3K_HR)
   REAL(SP), PARAMETER :: zsol_spec = 0.0134
-  CHARACTER(7), PARAMETER :: spec_type = 'c3k_afe'
+  CHARACTER(7), PARAMETER :: spec_type = 'c3k_hr'
   INTEGER, PARAMETER :: nzinit=11
   INTEGER, PARAMETER :: nspec=8737  !11149
 #if (AFE_FLAG)
@@ -292,30 +310,16 @@ MODULE SPS_VARS
        afe_str=(/'-0.2','+0.0','+0.2','+0.4','+0.6'/)
   REAL(SP), DIMENSION(nafeinit), PARAMETER     :: &
        afe_val=(/-0.2,0.0,0.2,0.4,0.6/)
-  INTEGER, PARAMETER      :: afe_sol_indx=2
+  INTEGER, PARAMETER :: afe_sol_indx=2
 #else
   INTEGER, PARAMETER :: nafeinit=1
   CHARACTER(4), DIMENSION(nafeinit), PARAMETER :: afe_str='+0.0'
   REAL(SP), DIMENSION(nafeinit), PARAMETER     :: afe_val=0.0
   INTEGER, PARAMETER :: afe_sol_indx=1
 #endif
-#elif (BASEL)
-  REAL(SP), PARAMETER :: zsol_spec = 0.020
-  CHARACTER(5), PARAMETER :: spec_type = 'basel'
-  INTEGER, PARAMETER :: nzinit=6
-  INTEGER, PARAMETER :: nspec=1963
-  INTEGER, PARAMETER :: nafeinit=1
-  CHARACTER(4), DIMENSION(nafeinit), PARAMETER :: afe_str=''
-  REAL(SP), DIMENSION(nafeinit), PARAMETER     :: afe_val=0.0
-  INTEGER, PARAMETER :: afe_sol_indx=1
 #endif
 #endif
 
-  !flag indicating the type of normalization used in the BaSeL library
-  !pdva = normalized to Padova isochrones
-  !wlbc = normalized to Teff-color relations
-  !NB: currently only the wlbc option is included in the public release
-  CHARACTER(4), PARAMETER :: basel_str = 'wlbc'
 
   !---------Dimensions of various arrays----------!
 
@@ -335,7 +339,7 @@ MODULE SPS_VARS
   !max number of lines in tabulated SFH, LSF
   INTEGER, PARAMETER :: ntabmax=20000
   !dimensions of BaSeL library
-  INTEGER, PARAMETER :: ndim_logt=68, ndim_logg=19
+  INTEGER, PARAMETER :: ndim_logt=80, ndim_logg=14
   !number of O-rich, C-rich AGB spectra (and Aringer C-rich spec)
   INTEGER, PARAMETER :: n_agb_o=9, n_agb_c=5, n_agb_car=9
   !number of post-AGB spectra
