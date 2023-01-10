@@ -126,7 +126,7 @@ MODULE SPS_VARS
 
   !Use Eldridge 2017 WMBasic library for stars hotter than 25,000 K
   !or this value, whichever is larger
-  real(SP) :: logt_wmb_hot = 0.0
+  REAL(SP) :: logt_wmb_hot = 10.0
 
   !turn on/off a Cloudy-based nebular emission model (cont+lines)
   !if set to 2, then the nebular emission lines are added at the SSP
@@ -361,11 +361,12 @@ MODULE SPS_VARS
 
   !------------IMF-related Constants--------------!
 
-  !Salpeter IMF index
-  REAL(SP) :: salp_ind= 2.35
   !min/max masses for the IMF
   REAL(SP) :: imf_lower_limit = 0.08, imf_upper_limit=120.
   REAL(SP) :: imf_lower_bound
+
+  !Salpeter IMF index
+  REAL(SP) :: salp_ind= 2.35
   !Chabrier 2003 IMF parameters
   REAL(SP), PARAMETER :: chab_mc=0.08, chab_sigma2=0.69*0.69,&
        chab_ind=1.3

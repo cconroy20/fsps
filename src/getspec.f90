@@ -125,7 +125,7 @@ SUBROUTINE GETSPEC(pset,mact,logt,lbol,logg,phase,ffco,lmdot,wght,spec)
              ( (1-t)*agb_spec_c(:,jlo) + t*(agb_spec_c(:,jlo+1)) )
      ENDIF
 
-  !use WMBasic grid from JJ Eldridge for T>25,000K MS stars
+  !use WMBasic grid from JJ Eldridge for T>T_cut MS stars
   ELSE IF (phase.EQ.0.0.AND.logt.GT.logt_cut) THEN
 
      flag = flag+1

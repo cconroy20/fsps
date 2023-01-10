@@ -204,7 +204,7 @@ SUBROUTINE SSP_GEN(pset,mass_ssp,lbol_ssp,spec_ssp)
               !dilute the C star fraction
               !IF (1.0.GE.pset%fcstar) tco = 1.0
            ENDIF
-           
+
            CALL GETSPEC(pset,mact(i,j),logt(i,j),&
                 10**logl(i,j),logg(i,j),phase(i,j),tco,lmdot(i,j),&
                 wght(j)/MAXVAL(wght(1:nmass(i))*10**logl(i,1:nmass(i))),tspec)
