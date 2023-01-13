@@ -106,6 +106,10 @@ MODULE SPS_VARS
   !otherwise use Lancon & Wood (2002) empirical spectra
   INTEGER, PARAMETER :: cstar_aringer=1
 
+  !Use Lancon & Wood (2002) empirical library for TP-AGB
+  !stars if this is turned on; else use main grid
+  INTEGER, PARAMETER :: use_lw_tpagb=0
+  
   !turn on/off computation of light-weighted stellar ages
   !NB: currently only works with sfh=1,4 options
   INTEGER :: compute_light_ages=0
@@ -269,6 +273,7 @@ MODULE SPS_VARS
   INTEGER, PARAMETER :: nspec=15000
   INTEGER, PARAMETER :: nafeinit=1
   CHARACTER(4), DIMENSION(nafeinit), PARAMETER :: afe_str=''
+  CHARACTER(2), DIMENSION(nafeinit), PARAMETER :: afe_str_iso=''
   REAL(SP), DIMENSION(nafeinit), PARAMETER     :: afe_val=0.0
   INTEGER, PARAMETER :: afe_sol_indx=1
 #else
@@ -279,6 +284,7 @@ MODULE SPS_VARS
   INTEGER, PARAMETER :: nspec=5994
   INTEGER, PARAMETER :: nafeinit=1
   CHARACTER(4), DIMENSION(nafeinit), PARAMETER :: afe_str=''
+  CHARACTER(2), DIMENSION(nafeinit), PARAMETER :: afe_str_iso=''
   REAL(SP), DIMENSION(nafeinit), PARAMETER     :: afe_val=0.0
   INTEGER, PARAMETER :: afe_sol_indx=1
 #elif (C3K_LR)
@@ -287,7 +293,11 @@ MODULE SPS_VARS
   INTEGER, PARAMETER      :: nzinit=11
   INTEGER, PARAMETER      :: nspec=1936
 #if (AFE_FLAG)
+  ! the assumption here is that the iso and spec afe
+  ! grids are identical
   INTEGER, PARAMETER :: nafeinit=5
+  CHARACTER(2), DIMENSION(nafeinit), PARAMETER :: &
+       afe_str_iso=(/'m2','p0','p2','p4','p6'/)
   CHARACTER(4), DIMENSION(nafeinit), PARAMETER :: &
        afe_str=(/'-0.2','+0.0','+0.2','+0.4','+0.6'/)
   REAL(SP), DIMENSION(nafeinit), PARAMETER     :: &
@@ -295,6 +305,7 @@ MODULE SPS_VARS
   INTEGER, PARAMETER :: afe_sol_indx=2
 #else
   INTEGER, PARAMETER :: nafeinit=1
+  CHARACTER(2), DIMENSION(nafeinit), PARAMETER :: afe_str_iso='p0'
   CHARACTER(4), DIMENSION(nafeinit), PARAMETER :: afe_str='+0.0'
   REAL(SP), DIMENSION(nafeinit), PARAMETER     :: afe_val=0.0
   INTEGER, PARAMETER :: afe_sol_indx=1
@@ -306,6 +317,8 @@ MODULE SPS_VARS
   INTEGER, PARAMETER :: nspec=8737  !11149
 #if (AFE_FLAG)
   INTEGER, PARAMETER :: nafeinit=5
+  CHARACTER(2), DIMENSION(nafeinit), PARAMETER :: &
+       afe_str_iso=(/'m2','p0','p2','p4','p6'/)
   CHARACTER(4), DIMENSION(nafeinit), PARAMETER :: &
        afe_str=(/'-0.2','+0.0','+0.2','+0.4','+0.6'/)
   REAL(SP), DIMENSION(nafeinit), PARAMETER     :: &
@@ -313,6 +326,7 @@ MODULE SPS_VARS
   INTEGER, PARAMETER :: afe_sol_indx=2
 #else
   INTEGER, PARAMETER :: nafeinit=1
+  CHARACTER(2), DIMENSION(nafeinit), PARAMETER :: afe_str_iso='p0'
   CHARACTER(4), DIMENSION(nafeinit), PARAMETER :: afe_str='+0.0'
   REAL(SP), DIMENSION(nafeinit), PARAMETER     :: afe_val=0.0
   INTEGER, PARAMETER :: afe_sol_indx=1

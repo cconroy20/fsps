@@ -137,14 +137,8 @@ SUBROUTINE SPS_SETUP(zin)
   ! the MIST zlegend.dat file is in a different format; convert
   IF (isoc_type.EQ.'mist') THEN
      DO z=1,nz
-        READ(90,'(A5)') zlegend_str(z)
-        zstype5 = zlegend_str(z)
-        READ(zstype5(2:5),'(F4.2)') zlegend(z)
-        IF (zstype5(1:1).EQ.'m') THEN
-           zlegend(z) = 10**(-1*zlegend(z)) * zsol
-        ELSE
-           zlegend(z) = 10**(1*zlegend(z)) * zsol
-        ENDIF
+        READ(90,'(A4,F6.2)') zlegend_str(z), zlegend(z)
+        zlegend(z) = 10**(-1*zlegend(z)) * zsol
      ENDDO
   ELSE
      DO z=1,nz
@@ -682,8 +676,9 @@ SUBROUTINE SPS_SETUP(zin)
              zstype//'.dat',STATUS='OLD', IOSTAT=stat,ACTION='READ')
         !open MIST isochrones
         IF (isoc_type.EQ.'mist') OPEN(97,FILE=TRIM(SPS_HOME)//&
-             '/ISOCHRONES/MIST/isoc_MIST2_z'//zlegend_str(z)//'_afe'//afe_str(aa)//&
-             '.dat',STATUS='OLD',IOSTAT=stat,ACTION='READ')
+             '/ISOCHRONES/MIST/isoc_feh_'//TRIM(zlegend_str(z))//'_afe_'&
+             //afe_str_iso(aa)//'_vvcrit0.4_full.dat',STATUS='OLD',&
+             IOSTAT=stat,ACTION='READ')
         !open BaSTI isochrones
         IF (isoc_type.EQ.'bsti') OPEN(97,FILE=TRIM(SPS_HOME)//&
              '/ISOCHRONES/BaSTI/isoc_z'//zstype//'.dat',STATUS='OLD',&
