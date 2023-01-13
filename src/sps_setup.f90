@@ -134,11 +134,11 @@ SUBROUTINE SPS_SETUP(zin)
      STOP 
   ENDIF
 
-  ! the MIST zlegend.dat file is in a different format; convert
+  ! the MIST zlegend.dat file is in a different format
   IF (isoc_type.EQ.'mist') THEN
      DO z=1,nz
         READ(90,'(A4,F6.2)') zlegend_str(z), zlegend(z)
-        zlegend(z) = 10**(-1*zlegend(z)) * zsol
+        zlegend(z) = 10**zlegend(z) * zsol !convert to linear units
      ENDDO
   ELSE
      DO z=1,nz
