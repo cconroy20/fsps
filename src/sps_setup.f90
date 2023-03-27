@@ -223,7 +223,7 @@ SUBROUTINE SPS_SETUP(zin)
           STATUS='OLD',iostat=stat,ACTION='READ')
      OPEN(93,FILE=TRIM(SPS_HOME)//'/SPECTRA/BaSeL3.1/zlegend.dat',&
           STATUS='OLD',iostat=stat,ACTION='READ')
-     OPEN(94,FILE=TRIM(SPS_HOME)//'SPECTRA/BaSeL3.1/basel.res',&
+     OPEN(94,FILE=TRIM(SPS_HOME)//'/SPECTRA/BaSeL3.1/basel.res',&
           STATUS='OLD',iostat=stat,ACTION='READ')
   ELSE IF (spec_type.EQ.'miles') THEN
      OPEN(91,FILE=TRIM(SPS_HOME)//'/SPECTRA/MILES/miles.lambda',&
