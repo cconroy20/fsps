@@ -134,7 +134,7 @@ MODULE SPS_VARS
   !turn on/off IGM absorption a la Madau (1995)
   INTEGER :: add_igm_absorption=0
 
-  !turn on/off the X-ray binary (ULX) model from 
+  !turn on/off the X-ray binary (ULX) model from Garofali et al. (in prep)
   INTEGER :: add_xrb_emission=0
 
   !turn on/off the addition of stellar remnants to the
