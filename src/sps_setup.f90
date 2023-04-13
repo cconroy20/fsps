@@ -23,6 +23,7 @@ SUBROUTINE SPS_SETUP(zin)
   CHARACTER(5) :: zstype5
   REAL(SP) :: dumr1,d1,d2,logage,x,a,zero=0.0,d,one=1.0,dz,dlam
   CHARACTER(5), DIMENSION(nz) :: zlegend_str=''
+  CHARACTER(5), DIMENSION(nz_xrb) :: zz_str_xrb=''
   REAL(SP), DIMENSION(nspec) :: tspec=0.
   REAL(SP), DIMENSION(ntlam) :: tvega_lam=0.,tvega_spec=0.
   REAL(SP), DIMENSION(ntlam) :: tsun_lam=0.,tsun_spec=0.
@@ -55,6 +56,7 @@ SUBROUTINE SPS_SETUP(zin)
   REAL(SP), DIMENSION(nspec_wmb,ndim_wmb_logt,ndim_wmb_logg) :: wmb_specinit=0.
   REAL(SP), DIMENSION(ntabmax)   :: lsflam=0.,lsfsig=0.
   REAL(SP), DIMENSION(30) :: g03lam=0., g03smc=0.
+  REAL(SP), DIMENSION(nspec_xrb) :: tspec_xrb
   
   !---------------------------------------------------------------!
   !---------------------------------------------------------------!
@@ -887,7 +889,7 @@ SUBROUTINE SPS_SETUP(zin)
           LOG10(agndust_specinit(:,i)+tiny30),LOG10(spec_lambda(i1:i2)))-tiny30
   ENDDO
 
-
+  
   !----------------------------------------------------------------!
   !----------------Set up nebular emission arrays------------------!
   !----------------------------------------------------------------!
@@ -984,7 +986,48 @@ SUBROUTINE SPS_SETUP(zin)
 
   ENDIF
 
- 
+
+  !----------------------------------------------------------------!
+  !------------------Set up X-ray binary arrays--------------------!
+  !----------------------------------------------------------------!
+
+  OPEN(98,FILE=TRIM(SPS_HOME)//'/SPECTRA/xrb/xsp.lambda',&
+       STATUS='OLD',iostat=stat,ACTION='READ')
+  IF (stat.NE.0) THEN
+     WRITE(*,*) 'SPS_SETUP ERROR: xsp.lambda cannot be opened'
+     STOP 
+  ENDIF  
+
+  DO i=1,nspec_xrb
+     READ(98,*) lam_xrb(i)
+  ENDDO
+
+  CLOSE(98)
+
+  ages_xrb = LOG10((/1.0,3.0,5.0,8.0,10.0,15.0,20.0/))+6.0
+  zmet_xrb = (/-2.0,-1.0,0.0/)
+
+  zz_str_xrb = (/'-2.00','-1.00','+0.00'/)
+
+  DO j=1,3
+     OPEN(98,FILE=TRIM(SPS_HOME)//'/SPECTRA/xrb/xsp_feh'//zz_str_xrb(j)&
+          //'.spec',STATUS='OLD',iostat=stat,ACTION='READ')
+     IF (stat.NE.0) THEN
+        WRITE(*,*) 'SPS_SETUP ERROR: xsp_feh'//zz_str_xrb(j)//&
+             '.spec cannot be opened'
+        STOP 
+     ENDIF
+     DO i=1,nt_xrb
+        READ(98,*) tspec_xrb
+        !interpolate to the main wavelength array
+        spec_xrb(:,i,j) = MAX(linterparr(lam_xrb,tspec_xrb,spec_lambda),tiny_number)
+     ENDDO
+     CLOSE(98)
+  ENDDO
+
+  !convert to Lsun/Hz/Msun
+  spec_xrb = spec_xrb * lsun
+  
   !----------------------------------------------------------------!
   !-------------------Set up magnitude info------------------------!
   !----------------------------------------------------------------!

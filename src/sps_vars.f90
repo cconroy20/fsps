@@ -134,6 +134,9 @@ MODULE SPS_VARS
   !turn on/off IGM absorption a la Madau (1995)
   INTEGER :: add_igm_absorption=0
 
+  !turn on/off the X-ray binary (ULX) model from 
+  INTEGER :: add_xrb_emission=0
+
   !turn on/off the addition of stellar remnants to the
   !computation of stellar masses
   INTEGER :: add_stellar_remnants=1
@@ -313,6 +316,10 @@ MODULE SPS_VARS
   !number of spectral points in the input library
   INTEGER, PARAMETER :: nagndust_spec=125
 
+  INTEGER, PARAMETER :: nspec_xrb=15000
+  INTEGER, PARAMETER :: nt_xrb=7
+  INTEGER, PARAMETER :: nz_xrb=3
+  
   !------------IMF-related Constants--------------!
 
   !Salpeter IMF index
@@ -539,6 +546,12 @@ MODULE SPS_VARS
   REAL(SP), DIMENSION(nspec,nt,nz) :: bpass_spec_ssp=0.
   REAL(SP), DIMENSION(nt,nz)       :: bpass_mass_ssp=0.
 
+  !arrays for X-ray binaries
+  REAL(SP), DIMENSION(nspec_xrb) :: lam_xrb=0.
+  REAL(SP), DIMENSION(nspec,nt_xrb,nz_xrb) :: spec_xrb=0.
+  REAL(SP), DIMENSION(nt_xrb) :: ages_xrb=0.0
+  REAL(SP), DIMENSION(nz_xrb) :: zmet_xrb=0.0
+  
   !------------Define TYPE structures-------------!
 
   !structure for the set of parameters necessary to generate a model
@@ -552,7 +565,7 @@ MODULE SPS_VARS
           duste_gamma=0.01,duste_umin=1.0,duste_qpah=3.5,fcstar=1.0,&
           masscut=150.0,sigma_smooth=0.,agb_dust=1.0,min_wave_smooth=1E3,&
           max_wave_smooth=1E4,gas_logu=-2.0,gas_logz=0.,igm_factor=1.0,&
-          fagn=0.0,agn_tau=10.0
+          fagn=0.0,agn_tau=10.0,frac_xrb=1.0
      INTEGER :: zmet=1,sfh=0,wgp1=1,wgp2=1,wgp3=1,evtype=-1
      INTEGER, DIMENSION(nbands) :: mag_compute=1
      INTEGER, DIMENSION(nt) :: ssp_gen_age=1

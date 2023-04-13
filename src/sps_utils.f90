@@ -41,8 +41,16 @@ MODULE SPS_UTILS
        REAL(SP), INTENT(in), DIMENSION(nspec,ntfull)    :: sspi
        REAL(SP), INTENT(inout), DIMENSION(nspec,ntfull) :: sspo
        REAL(SP), INTENT(inout), DIMENSION(nemline,ntfull), OPTIONAL :: nebemline
-
      END SUBROUTINE ADD_NEBULAR
+  END INTERFACE
+
+  INTERFACE
+     SUBROUTINE ADD_XRB(pset,sspi,sspo)
+       USE sps_vars
+       TYPE(PARAMS), INTENT(in) :: pset
+       REAL(SP), INTENT(in), DIMENSION(nspec,ntfull)    :: sspi
+       REAL(SP), INTENT(inout), DIMENSION(nspec,ntfull) :: sspo
+     END SUBROUTINE ADD_XRB
   END INTERFACE
 
   INTERFACE
