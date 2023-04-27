@@ -1,5 +1,36 @@
 SUBROUTINE ADD_DUST(pset,csp1,csp2,specdust,mdust,ncsp1,ncsp2,nebdust)
 
+  ! Inputs
+  ! ---------
+  !
+  ! pset:
+  !   A `PARAMS` structure containing the dust parameters
+  !
+  !  csp1:
+  !   The spectrum of the young stars
+  !
+  !  csp2:
+  !   The spectrum of the old stars
+  !
+  !  ncsp1:
+  !   The nebular fluxes for the young stars
+  !
+  !  ncsp2:
+  !   The nebular fluxes for the old stars
+  !
+  ! Outputs
+  ! ---------
+  !
+  ! specdust:
+  !  The combined spectrum including dust attenuation and dust emission
+  !
+  ! nebdust:
+  !   The combined nebular emission line fluxes including dust absorption
+  !
+  ! mdust:
+  !  The dust mass required to produce the absorbed luminosity for the given dust emission parameters
+
+
   USE sps_vars
   USE sps_utils, ONLY : tsum, locate, attn_curve, linterparr
   IMPLICIT NONE
@@ -11,7 +42,7 @@ SUBROUTINE ADD_DUST(pset,csp1,csp2,specdust,mdust,ncsp1,ncsp2,nebdust)
   REAL(SP), DIMENSION(nemline), INTENT(in) :: ncsp1,ncsp2
   REAL(SP), DIMENSION(nemline), INTENT(out) :: nebdust
   INTEGER :: i,qlo,ulo,iself=0
-  REAL(SP), DIMENSION(nspec)  :: diff_dust,tau2,cspi
+  REAL(SP), DIMENSION(nspec)  :: diff_dust,tau_diff,cspi
   REAL(SP), DIMENSION(nemline)  :: diff_dust_neb,ncspi
   REAL(SP), DIMENSION(nspec)  :: nu,dumin,dumax
   REAL(SP), DIMENSION(nspec)  :: mduste,duste,oduste,sduste,tduste
@@ -53,17 +84,26 @@ SUBROUTINE ADD_DUST(pset,csp1,csp2,specdust,mdust,ncsp1,ncsp2,nebdust)
   !---------------------------------------------------------------!
 
   !compute attenuation curve for diffuse dust
-  diff_dust = EXP(-attn_curve(spec_lambda,dust_type,pset))
- 
+  tau_diff = attn_curve(spec_lambda,dust_type,pset)
+
   !combine old and young stars, attenuating the young
   !with a fixed power-law attn curve, and allowing a fraction
   !of the young stars to be dust-free ("OB runaways")
+  !and an extra attenuation towards old stars (patchy dust)
   cspi = csp1 * EXP(-pset%dust1*(spec_lambda/5500.)**(pset%dust1_index))*&
-       (1-pset%frac_obrun) + csp1*pset%frac_obrun + csp2
-  
+       (1-pset%frac_obrun) + csp1*pset%frac_obrun + &
+       csp2 * EXP(-pset%dust3*tau_diff)
+
+  !normalize diffuse dust curve unless Witt & Gordon
+  IF (dust_type.EQ.3) THEN
+    diff_dust = EXP(-tau_diff)
+  ELSE
+    diff_dust = EXP(-pset%dust2 * tau_diff)
+  ENDIF
+
   !allow a fraction of the diffuse dust spectrum to be dust-free
-  specdust  = cspi*diff_dust*(1-pset%frac_nodust) + &
-       cspi*pset%frac_nodust
+  specdust  = (1-pset%frac_nodust) * cspi*diff_dust + &
+               cspi*pset%frac_nodust
 
   !as above, for nebular line luminosities
   diff_dust_neb = linterparr(spec_lambda,diff_dust,nebem_line_pos)
@@ -75,14 +115,14 @@ SUBROUTINE ADD_DUST(pset,csp1,csp2,specdust,mdust,ncsp1,ncsp2,nebdust)
   !---------------------------------------------------------------!
   !----------------------Add dust emission------------------------!
   !---------------------------------------------------------------!
-  
+
   ! The dust spectrum is computed according to Draine & Li 2007
   ! we are computing the integral of the dust spectrum over P(U)dU
-  ! by considering two components, a delta function at Umin and 
+  ! by considering two components, a delta function at Umin and
   ! a power-law distribution from Umin to Umax=1E6 and alpha=2
   ! the relative weights of the two components are given by gamma
-  
-  IF (add_dust_emission.EQ.1) THEN 
+
+  IF (add_dust_emission.EQ.1) THEN
 
      !only add dust emission if there is absorption
      IF (pset%dust2.GT.tiny_number.OR.pset%dust1.GT.tiny_number) THEN
@@ -101,7 +141,7 @@ SUBROUTINE ADD_DUST(pset,csp1,csp2,specdust,mdust,ncsp1,ncsp2,nebdust)
         qlo = MAX(MIN(locate(qpaharr,pset%duste_qpah),nqpah_dustem-1),1)
         dq  = (pset%duste_qpah-qpaharr(qlo))/(qpaharr(qlo+1)-qpaharr(qlo))
         dq  = MIN(MAX(dq,0.0),1.0)  !no extrapolation
-        
+
         !set up Umin interpolation
         !set limits on Umin: 0.1<Umin<25.0
         ulo = MAX(MIN(locate(uminarr,pset%duste_umin),numin_dustem),1)
@@ -141,12 +181,12 @@ SUBROUTINE ADD_DUST(pset,csp1,csp2,specdust,mdust,ncsp1,ncsp2,nebdust)
            oduste = duste
            duste  = duste * diff_dust
            tduste = tduste + duste
-           
+
            lbold = TSUM(nu,duste)  !after  self-abs
            lboln = TSUM(nu,oduste) !before self-abs
 
            duste = MAX(mduste/norm*(lboln-lbold),tiny_number)
-           
+
            iself=1
 
         ENDDO
@@ -158,7 +198,7 @@ SUBROUTINE ADD_DUST(pset,csp1,csp2,specdust,mdust,ncsp1,ncsp2,nebdust)
 
         !add the dust emission to the stellar spectrum
         specdust = specdust + tduste
-        
+
      ELSE
         mdust = tiny_number
      ENDIF

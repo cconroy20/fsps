@@ -1,9 +1,8 @@
 FUNCTION ATTN_CURVE(lambda,dtype,pset)
 
-  ! Routine to generate and return the attenuation curve for a chosen 
-  ! dust type.  The V-band optical depth (dust2) is passed via the 
-  ! pset variable.  Option 3 (Witt & Gordon models) do not use the
-  ! dust2 option as those grids fully predict the actual attn curves.
+  ! Routine to generate and return the attenuation curve for a chosen dust type.
+  ! The V-band optical depth is 1 unless option 3 (Witt & Gordon models) is
+  ! selected as those grids fully predict the actual attn curves.
 
   USE sps_vars
   USE sps_utils, ONLY : locate
@@ -11,12 +10,13 @@ FUNCTION ATTN_CURVE(lambda,dtype,pset)
 
   INTEGER, INTENT(in) :: dtype
   TYPE(PARAMS), INTENT(in) :: pset
+  REAL(SP) :: tauv=1.0
   INTEGER  :: w63,w1,w2
   REAL(SP) :: eb,zero=0.0,dd63=6300.00,lamv=5500.0,dlam=350.0,lamuvb=2175.0
   REAL(SP), INTENT(in), DIMENSION(nspec) :: lambda
   REAL(SP), DIMENSION(nspec) :: x,a,b,y,fa,fb,hack,cal00,reddy
   REAL(SP), DIMENSION(nspec) :: attn_curve,drude,tmp
- 
+
   !---------------------------------------------------------------------!
 
   attn_curve = 0.0
@@ -25,18 +25,18 @@ FUNCTION ATTN_CURVE(lambda,dtype,pset)
      WRITE(*,*) 'ATTN_CURVE ERROR: dust_type out of range:',dtype
      STOP
   ENDIF
-  
+
   !-------------------------power-law attenuation-----------------------!
 
   !power-law attenuation
-  IF (dtype.EQ.0) THEN 
+  IF (dtype.EQ.0) THEN
 
-     attn_curve = (lambda/lamv)**pset%dust_index * pset%dust2
+     attn_curve = (lambda/lamv)**pset%dust_index * tauv
 
   !-----------------CCM89 MW curve w/ variable UV bump------------------!
 
   !MW extinction law w/ UV bump
-  ELSE IF (dtype.EQ.1) THEN 
+  ELSE IF (dtype.EQ.1) THEN
 
      tmp = 0.0
 
@@ -99,12 +99,12 @@ FUNCTION ATTN_CURVE(lambda,dtype,pset)
      tmp(:mwdindex(6)) = &
           a(:mwdindex(6)) + b(:mwdindex(6))/pset%mwr
 
-     attn_curve = pset%dust2*tmp
+     attn_curve = tauv*tmp
 
 
   !------------------Calzetti et al. 2000 attenuation-------------------!
 
-  ELSE IF (dtype.EQ.2) THEN 
+  ELSE IF (dtype.EQ.2) THEN
 
      w63   = locate(lambda,dd63)
      cal00 = 0.0
@@ -117,13 +117,13 @@ FUNCTION ATTN_CURVE(lambda,dtype,pset)
      IF (w63.NE.nspec) THEN
         cal00(w63+1:) = 0.0
      ENDIF
- 
-     attn_curve = cal00 * pset%dust2
+
+     attn_curve = cal00 * tauv
 
   !------------------Witt & Gordon 2000 attenuation--------------------!
 
   ELSE IF (dtype.EQ.3) THEN
-  
+
      attn_curve = wgdust(:,pset%wgp1,pset%wgp2,pset%wgp3)
 
   !------------------Kriek & Conroy 2013 attenuation-------------------!
@@ -138,7 +138,7 @@ FUNCTION ATTN_CURVE(lambda,dtype,pset)
           0.198*(1E4/lambda(1:w63))**2 + &
           0.011*(1E4/lambda(1:w63))**3) + 1.78
      !R=4.05 NB: I'm not sure I have this normalization correct...
-     cal00 = cal00/0.44/4.05 
+     cal00 = cal00/0.44/4.05
      w63   = locate(cal00,zero)
      IF (w63.NE.nspec) THEN
         cal00(w63+1:) = 0.0
@@ -150,7 +150,7 @@ FUNCTION ATTN_CURVE(lambda,dtype,pset)
      drude = eb*(lambda*dlam)**2 / &
           ( (lambda**2-lamuvb**2)**2 + (lambda*dlam)**2 )
 
-     attn_curve = pset%dust2*(cal00+drude/4.05)*&
+     attn_curve = tauv*(cal00+drude/4.05)*&
           (lambda/lamv)**pset%dust_index
 
 
@@ -158,8 +158,8 @@ FUNCTION ATTN_CURVE(lambda,dtype,pset)
 
   ELSE IF (dtype.EQ.5) THEN
 
-     attn_curve = pset%dust2*g03smcextn
-     
+     attn_curve = tauv*g03smcextn
+
   !------------------Reddy et al. (2015) attenuation-------------------!
 
   ELSE IF (dtype.EQ.6) THEN
@@ -185,7 +185,7 @@ FUNCTION ATTN_CURVE(lambda,dtype,pset)
      ! convert k_lam to A_lam/A_V assuming Rv=2.505
      reddy = reddy/2.505
 
-     attn_curve = pset%dust2*reddy
+     attn_curve = tauv*reddy
      
   ENDIF
 
