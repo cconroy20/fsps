@@ -536,11 +536,13 @@ MODULE SPS_VARS
   !arrays for the full Z-dep SSP spectra
   REAL(SP), DIMENSION(nspec,ntfull,nz) :: spec_ssp_zz=0.
   REAL(SP), DIMENSION(ntfull,nz)       :: mass_ssp_zz=0.,lbol_ssp_zz=0.
-
-  REAL(SP), DIMENSION(ntfull) :: time_full=0.
+  REAL(SP), DIMENSION(ntfull)          :: time_full=0.
 
   !array for ssp weights
   REAL(SP), DIMENSION(ntfull,nz)       :: weight_ssp=0.
+
+  !array for young and old ages
+  REAL(SP), DIMENSION(nspec) :: spec_young=0.,spec_old=0.
 
   !array for full BPASS SSPs
   REAL(SP), DIMENSION(nspec,nt,nz) :: bpass_spec_ssp=0.
