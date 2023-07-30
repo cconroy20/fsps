@@ -56,7 +56,7 @@ subroutine csp_gen(mass_ssp, lbol_ssp, spec_ssp, &
   !real(SP), intent(out), dimension(ntfull, nzin) :: total_weights
   !real(SP), intent(out), dimension(nspec) :: spec_young,spec_old
 
-  real(SP), dimension(nspec) :: lw_age !,csp1, csp2
+  real(SP), dimension(nspec) :: lw_age, temp_spec !,csp1, csp2
   real(SP), dimension(nemline) :: ncsp1, ncsp2, nlw_age
   real(SP), dimension(ntfull, nzin) :: total_weights
   real(SP), dimension(ntfull) :: w1=0., w2=0.
@@ -253,11 +253,13 @@ subroutine csp_gen(mass_ssp, lbol_ssp, spec_ssp, &
      do k=1,nzin
         if (total_weights(i, k).gt.tiny_number) then
            weight_ssp(i, k) = total_weights(i, k)  ! copy to common variable
+           temp_spec = total_weights(i, k) * spec_ssp(:, i, k)
+           temp_spec = max(temp_spec, tiny_number)
            if (i.le.i_tesc) then
-              spec_young  = spec_young  + total_weights(i, k) * spec_ssp(:, i, k)
+              spec_young = spec_young + temp_spec
               ncsp1 = ncsp1 + total_weights(i, k) * emlin_ssp(:, i, k)
            else
-              spec_old  = spec_old  + total_weights(i, k) * spec_ssp(:, i, k)
+              spec_old = spec_old + temp_spec
               ncsp2 = ncsp2 + total_weights(i, k) * emlin_ssp(:, i, k)
            endif
            ! Now do numerator in case of light and mass weighted ages.
