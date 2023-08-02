@@ -57,7 +57,7 @@ subroutine csp_gen(mass_ssp, lbol_ssp, spec_ssp, &
   !real(SP), intent(out), dimension(nspec) :: spec_young,spec_old
 
   real(SP), dimension(nspec) :: lw_age, temp_spec !,csp1, csp2
-  real(SP), dimension(nemline) :: ncsp1, ncsp2, nlw_age
+  real(SP), dimension(nemline) :: ncsp1, ncsp2, nlw_age, temp_lin
   real(SP), dimension(ntfull, nzin) :: total_weights
   real(SP), dimension(ntfull) :: w1=0., w2=0.
   integer :: i, j, k, imin, imax, i_tesc
@@ -253,21 +253,21 @@ subroutine csp_gen(mass_ssp, lbol_ssp, spec_ssp, &
      do k=1,nzin
         if (total_weights(i, k).gt.tiny_number) then
            weight_ssp(i, k) = total_weights(i, k)  ! copy to common variable
-           temp_spec = total_weights(i, k) * spec_ssp(:, i, k)
-           temp_spec = max(temp_spec, tiny_number)
+           temp_spec = max(total_weights(i, k) * spec_ssp(:, i, k), tiny_number)
+           temp_lin = max(total_weights(i, k) * emlin_ssp(:, i, k), tiny_number)
            if (i.le.i_tesc) then
               spec_young = spec_young + temp_spec
-              ncsp1 = ncsp1 + total_weights(i, k) * emlin_ssp(:, i, k)
+              ncsp1 = ncsp1 + temp_lin
            else
               spec_old = spec_old + temp_spec
-              ncsp2 = ncsp2 + total_weights(i, k) * emlin_ssp(:, i, k)
+              ncsp2 = ncsp2 + temp_lin
            endif
            ! Now do numerator in case of light and mass weighted ages.
            if (compute_light_ages.eq.1) then
-              nlw_age = nlw_age + total_weights(i, k) * emlin_ssp(:, i, k) &
-                       * 10**(time_full(i)-9)
-              lw_age = lw_age + total_weights(i, k) * spec_ssp(:, i, k) &
-                       * 10**(time_full(i)-9)
+              temp_spec = max(temp_spec * 10**(time_full(i)-9), tiny_number)
+              temp_lin = max(temp_lin * 10**(time_full(i)-9), tiny_number)
+              nlw_age = nlw_age + temp_lin
+              lw_age = lw_age + temp_spec
               lbol_age = lbol_age + 10**lbol_ssp(i, k) * total_weights(i, k) &
                          * 10**(time_full(i)-9)
               mass_age = mass_age + mass_ssp(i, k) * total_weights(i, k) &
