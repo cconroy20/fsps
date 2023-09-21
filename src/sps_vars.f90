@@ -317,8 +317,8 @@ MODULE SPS_VARS
   INTEGER, PARAMETER :: nagndust_spec=125
 
   INTEGER, PARAMETER :: nspec_xrb=15000
-  INTEGER, PARAMETER :: nt_xrb=7
-  INTEGER, PARAMETER :: nz_xrb=3
+  INTEGER, PARAMETER :: nt_xrb=10
+  INTEGER, PARAMETER :: nz_xrb=11
   
   !------------IMF-related Constants--------------!
 

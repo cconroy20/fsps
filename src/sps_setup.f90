@@ -1004,12 +1004,12 @@ SUBROUTINE SPS_SETUP(zin)
 
   CLOSE(98)
 
-  ages_xrb = LOG10((/1.0,3.0,5.0,8.0,10.0,15.0,20.0/))+6.0
-  zmet_xrb = (/-2.0,-1.0,0.0/)
+  ages_xrb = LOG10((/1.0,2.0,3.0,4.0,5.0,8.0,10.0,12.6,16.0,20.0/))+6.0
+  zmet_xrb = (/-1.3,-1.0,-0.8,-0.7,-0.5,-0.4,-0.3,-0.2,+0.0,+0.2,+0.3/)
 
-  zz_str_xrb = (/'-2.00','-1.00','+0.00'/)
+  zz_str_xrb = (/'-1.30','-1.00','-0.80','-0.70','-0.50','-0.40','-0.30','-0.20','+0.00','+0.20','+0.30'/)
 
-  DO j=1,3
+  DO j=1,nz_xrb
      OPEN(98,FILE=TRIM(SPS_HOME)//'/SPECTRA/xrb/xsp_feh'//zz_str_xrb(j)&
           //'.spec',STATUS='OLD',iostat=stat,ACTION='READ')
      IF (stat.NE.0) THEN
