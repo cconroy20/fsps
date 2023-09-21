@@ -20,7 +20,7 @@ SUBROUTINE ADD_NEBULAR(pset,sspi,sspo,nebemline)
   !-----------------------------------------------------------!
 
   !locate the maximum nebular age point in the full time array
-  !right now we only include nebular emission for ages<2x10^7 yr
+  !right now we only include nebular emission for ages<=2x10^7 yr
   nti = locate(time_full,nebem_age(nebnage))
 
   !set up the interpolation variables for logZ and logU
@@ -63,7 +63,7 @@ SUBROUTINE ADD_NEBULAR(pset,sspi,sspo,nebemline)
      !some fraction of the stars are "runaways" which means
      !that they are not embedded in the HII region
      qq = tsum(spec_nu(:whlylim),sspi(:whlylim,t)/spec_nu(:whlylim))/&
-          hplank*lsun 
+          hplank*lsun
      qq = qq * (1-pset%frac_obrun)
 
      !set up age interpolant
@@ -71,22 +71,49 @@ SUBROUTINE ADD_NEBULAR(pset,sspi,sspo,nebemline)
      da = (time_full(t)-nebem_age(a1))/(nebem_age(a1+1)-nebem_age(a1))
      da = MAX(MIN(da,1.0),0.0) !no extrapolations
 
-     !add nebular continuum emission
+
      IF (add_neb_continuum.EQ.1) THEN
-        tmpnebcont = &   !interpolate in Zgas, logU, age
-             (1-dz)*(1-da)*(1-du)* nebem_cont(:,z1,a1,u1)+&
-             (1-dz)*(1-da)*(du)*   nebem_cont(:,z1,a1,u1+1)+&
-             (1-dz)*(da)*(1-du)*   nebem_cont(:,z1,a1+1,u1)+&
-             (1-dz)*(da)*(du)*     nebem_cont(:,z1,a1+1,u1+1)+&
-             (dz)*(1-da)*(1-du)*   nebem_cont(:,z1+1,a1,u1)+&
-             (dz)*(1-da)*(du)*     nebem_cont(:,z1+1,a1,u1+1)+&
-             (dz)*(da)*(1-du)*     nebem_cont(:,z1+1,a1+1,u1)+&
-             (dz)*(da)*(du)*       nebem_cont(:,z1+1,a1+1,u1+1)
-        sspo(:,t) = sspo(:,t) + 10**tmpnebcont * qq
+      !add nebular continuum emission
+        IF ((isoc_type.EQ.'bpss').AND.(add_xrb_emission.EQ.1)) THEN
+         !add nebular continuum emission including contribution from xray stellar population
+            tmpnebcont = &   !interpolate in Zgas, logU, age
+               (1-dz)*(1-da)*(1-du)* xnebem_cont(:,z1,a1,u1)+&
+               (1-dz)*(1-da)*(du)*   xnebem_cont(:,z1,a1,u1+1)+&
+               (1-dz)*(da)*(1-du)*   xnebem_cont(:,z1,a1+1,u1)+&
+               (1-dz)*(da)*(du)*     xnebem_cont(:,z1,a1+1,u1+1)+&
+               (dz)*(1-da)*(1-du)*   xnebem_cont(:,z1+1,a1,u1)+&
+               (dz)*(1-da)*(du)*     xnebem_cont(:,z1+1,a1,u1+1)+&
+               (dz)*(da)*(1-du)*     xnebem_cont(:,z1+1,a1+1,u1)+&
+               (dz)*(da)*(du)*       xnebem_cont(:,z1+1,a1+1,u1+1)
+            sspo(:,t) = sspo(:,t) + 10**tmpnebcont * qq
+         ELSE
+            tmpnebcont = &   !interpolate in Zgas, logU, age
+                  (1-dz)*(1-da)*(1-du)* nebem_cont(:,z1,a1,u1)+&
+                  (1-dz)*(1-da)*(du)*   nebem_cont(:,z1,a1,u1+1)+&
+                  (1-dz)*(da)*(1-du)*   nebem_cont(:,z1,a1+1,u1)+&
+                  (1-dz)*(da)*(du)*     nebem_cont(:,z1,a1+1,u1+1)+&
+                  (dz)*(1-da)*(1-du)*   nebem_cont(:,z1+1,a1,u1)+&
+                  (dz)*(1-da)*(du)*     nebem_cont(:,z1+1,a1,u1+1)+&
+                  (dz)*(da)*(1-du)*     nebem_cont(:,z1+1,a1+1,u1)+&
+                  (dz)*(da)*(du)*       nebem_cont(:,z1+1,a1+1,u1+1)
+            sspo(:,t) = sspo(:,t) + 10**tmpnebcont * qq
+         ENDIF
      ENDIF
 
-     !add line emission
-     tmpnebline = &    !interpolate in Zgas, logU, age
+     !add line emission including contribution from xray stellar population
+     IF ((isoc_type.EQ.'bpss').AND.(add_xrb_emission.EQ.1)) THEN
+         tmpnebline = &    !interpolate logLum in Zgas, logU, age
+           (1-dz)*(1-da)*(1-du)* xnebem_line(:,z1,a1,u1)+&
+           (1-dz)*(1-da)*(du)*   xnebem_line(:,z1,a1,u1+1)+&
+           (1-dz)*(da)*(1-du)*   xnebem_line(:,z1,a1+1,u1)+&
+           (1-dz)*(da)*(du)*     xnebem_line(:,z1,a1+1,u1+1)+&
+           (dz)*(1-da)*(1-du)*   xnebem_line(:,z1+1,a1,u1)+&
+           (dz)*(1-da)*(du)*     xnebem_line(:,z1+1,a1,u1+1)+&
+           (dz)*(da)*(1-du)*     xnebem_line(:,z1+1,a1+1,u1)+&
+           (dz)*(da)*(du)*       xnebem_line(:,z1+1,a1+1,u1+1)
+     ELSE
+      !add line emission
+       tmpnebline = &    !interpolate logLum in Zgas, logU, age
           (1-dz)*(1-da)*(1-du)* nebem_line(:,z1,a1,u1)+&
           (1-dz)*(1-da)*(du)*   nebem_line(:,z1,a1,u1+1)+&
           (1-dz)*(da)*(1-du)*   nebem_line(:,z1,a1+1,u1)+&
@@ -95,6 +122,7 @@ SUBROUTINE ADD_NEBULAR(pset,sspi,sspo,nebemline)
           (dz)*(1-da)*(du)*     nebem_line(:,z1+1,a1,u1+1)+&
           (dz)*(da)*(1-du)*     nebem_line(:,z1+1,a1+1,u1)+&
           (dz)*(da)*(du)*       nebem_line(:,z1+1,a1+1,u1+1)
+     ENDIF
 
      IF (PRESENT(nebemline)) nebemline(:,t) = 10**tmpnebline*qq
 

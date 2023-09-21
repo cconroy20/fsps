@@ -507,8 +507,8 @@ MODULE SPS_VARS
 
   !nebular emission model
   REAL(SP), DIMENSION(nemline) :: nebem_line_pos=0.
-  REAL(SP), DIMENSION(nemline,nebnz,nebnage,nebnip) :: nebem_line=0.!,xnebem_line=0.
-  REAL(SP), DIMENSION(nspec,nebnz,nebnage,nebnip) :: nebem_cont=0.!,xnebem_cont=0.
+  REAL(SP), DIMENSION(nemline,nebnz,nebnage,nebnip) :: nebem_line=0.,xnebem_line=0.
+  REAL(SP), DIMENSION(nspec,nebnz,nebnage,nebnip) :: nebem_cont=0.,xnebem_cont=0.
   REAL(SP), DIMENSION(nebnz)   :: nebem_logz=0.
   REAL(SP), DIMENSION(nebnage) :: nebem_age=0.
   REAL(SP), DIMENSION(nebnip)  :: nebem_logu=0.
