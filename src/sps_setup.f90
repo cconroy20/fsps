@@ -57,12 +57,12 @@ SUBROUTINE SPS_SETUP(zin)
   REAL(SP), DIMENSION(ntabmax)   :: lsflam=0.,lsfsig=0.
   REAL(SP), DIMENSION(30) :: g03lam=0., g03smc=0.
   REAL(SP), DIMENSION(nspec_xrb) :: tspec_xrb
-  
+
   !---------------------------------------------------------------!
   !---------------------------------------------------------------!
 
-  IF (verbose.EQ.1) THEN 
-     WRITE(*,*) 
+  IF (verbose.EQ.1) THEN
+     WRITE(*,*)
      WRITE(*,*) '    Setting up SPS...'
   ENDIF
 
@@ -94,11 +94,11 @@ SUBROUTINE SPS_SETUP(zin)
   n_isoc        = 0
   m             = 1
 
- 
+
   !----------------------------------------------------------------!
   !--------------Confirm that variables are properly set-----------!
   !----------------------------------------------------------------!
- 
+
   CALL getenv('SPS_HOME',SPS_HOME)
   IF (LEN_TRIM(SPS_HOME).EQ.0) THEN
      WRITE(*,*) 'SPS_SETUP ERROR: spsdir environment variable not set!'
@@ -136,7 +136,7 @@ SUBROUTINE SPS_SETUP(zin)
   ENDIF
   IF (stat.NE.0) THEN
      WRITE(*,*) 'SPS_SETUP ERROR: zlegend.dat cannot be opened'
-     STOP 
+     STOP
   ENDIF
 
   IF (isoc_type.EQ.'mist') THEN
@@ -176,12 +176,12 @@ SUBROUTINE SPS_SETUP(zin)
         WRITE(*,*) 'SPS_SETUP ERROR: cannot have time_res_incr>1 w/ BPASS models'
         STOP
      ENDIF
-     
+
      OPEN(91,FILE=TRIM(SPS_HOME)//'/ISOCHRONES/BPASS/bpass.lambda',&
           STATUS='OLD',iostat=stat,ACTION='READ')
      IF (stat.NE.0) THEN
         WRITE(*,*) 'SPS_SETUP ERROR: wavelength grid cannot be opened'
-        STOP 
+        STOP
      ENDIF
      DO i=1,nspec
         READ(91,*) spec_lambda(i)
@@ -192,7 +192,7 @@ SUBROUTINE SPS_SETUP(zin)
           STATUS='OLD',iostat=stat,ACTION='READ')
      IF (stat.NE.0) THEN
         WRITE(*,*) 'SPS_SETUP ERROR: wavelength grid cannot be opened'
-        STOP 
+        STOP
      ENDIF
      DO i=1,nt
         READ(92,*) time_full(i),bpass_mass_ssp(i,:)
@@ -203,22 +203,22 @@ SUBROUTINE SPS_SETUP(zin)
           //'.ssp.bin',FORM='UNFORMATTED',&
           STATUS='OLD',iostat=stat,ACTION='READ',access='direct',&
           recl=nspec*nt*nz*8)
-     IF (stat.NE.0) THEN 
+     IF (stat.NE.0) THEN
         WRITE(*,*) 'SPS_SETUP ERROR: failed to find bpass ssp models'
-        STOP 
+        STOP
      ENDIF
 
      READ(93,rec=1) bpass_spec_ssp
      CLOSE(93)
 
   ENDIF
-  
+
   !----------------------------------------------------------------!
   !-----------------Read in spectral libraries---------------------!
   !----------------------------------------------------------------!
 
   IF (isoc_type.NE.'bpss') THEN
-  
+
   !read in wavelength array and spectral metallicity grid
   IF (spec_type.EQ.'basel') THEN
      OPEN(91,FILE=TRIM(SPS_HOME)//'/SPECTRA/BaSeL3.1/basel.lambda',&
@@ -244,7 +244,7 @@ SUBROUTINE SPS_SETUP(zin)
   ENDIF
   IF (stat.NE.0) THEN
      WRITE(*,*) 'SPS_SETUP ERROR: wavelength grid cannot be opened'
-     STOP 
+     STOP
   ENDIF
   DO i=1,nspec
      READ(91,*) spec_lambda(i)
@@ -256,7 +256,7 @@ SUBROUTINE SPS_SETUP(zin)
      READ(94,*) spec_res(i)
   ENDDO
   CLOSE(94)
-  
+
   !read in primary logg and logt arrays
   !NB: these are the same for all spectral libraries
   OPEN(91,FILE=TRIM(SPS_HOME)//'/SPECTRA/BaSeL3.1/basel_logt.dat',&
@@ -274,7 +274,7 @@ SUBROUTINE SPS_SETUP(zin)
 
   ALLOCATE(speclibinit(nspec,nzinit,ndim_logt,ndim_logg))
   speclibinit = 0.0
-  
+
   !read in each metallicity
   DO z=1,nzinit
 
@@ -298,10 +298,10 @@ SUBROUTINE SPS_SETUP(zin)
              STATUS='OLD',iostat=stat,ACTION='READ',access='direct',&
              recl=nspec*ndim_logg*ndim_logt*4)
      ENDIF
-     IF (stat.NE.0) THEN 
+     IF (stat.NE.0) THEN
         WRITE(*,*) 'SPS_SETUP ERROR: '//spec_type//&
              ' spectral library cannot be opened Z=', zstype
-        STOP 
+        STOP
      ENDIF
 
      READ(92,rec=1) speclibinit(:,z,:,:)
@@ -313,7 +313,7 @@ SUBROUTINE SPS_SETUP(zin)
 
   !interpolate the input spectral library to the isochrone grid
   !notice that we're interpolating at fixed Z/Zsol even in cases
-  !where the isochrones and spectra might have different Zsol. This might 
+  !where the isochrones and spectra might have different Zsol. This might
   !in fact be the best thing to do.  Either way, its not ideal.
   DO z=1,nz
 
@@ -330,7 +330,7 @@ SUBROUTINE SPS_SETUP(zin)
   ENDDO
 
   DEALLOCATE(speclibinit)
-  
+
   !--------------Read WMBasic Grid from JJ Eldridge----------------;
 
   !read in Teff array
@@ -339,7 +339,7 @@ SUBROUTINE SPS_SETUP(zin)
   IF (stat.NE.0) THEN
      WRITE(*,*) 'SPS_SETUP ERROR: /SPECTRA/Hot_spectra/'//&
           'WMBASIC.teff cannot be opened'
-     STOP 
+     STOP
   ENDIF
   DO i=1,ndim_wmb_logt
      READ(93,*) wmb_logt(i)
@@ -362,7 +362,7 @@ SUBROUTINE SPS_SETUP(zin)
      IF (stat.NE.0) THEN
         WRITE(*,*) 'SPS_SETUP ERROR: /Hot_spectra/'//&
           'WMBASIC_z'//zstype//'.spec '//'cannot be opened'
-        STOP 
+        STOP
      ENDIF
      DO i=1,nspec_wmb
         READ(95,*) wmb_lam(i),wmb_specinit(i,:,1),wmb_specinit(i,:,2),&
@@ -386,7 +386,7 @@ SUBROUTINE SPS_SETUP(zin)
 
   !Now interpolate the input spectral library to the isochrone grid
   !notice that we're interpolating at fixed Z/Zsol even in cases
-  !where the isochrones and spectra might have different Zsol. This might 
+  !where the isochrones and spectra might have different Zsol. This might
   !in fact be the best thing to do.  Either way, its not ideal.
   DO z=1,nz
 
@@ -395,7 +395,7 @@ SUBROUTINE SPS_SETUP(zin)
      dz = (LOG10(zlegend(z)/zsol)-LOG10(zwmb(i1)/zsol_spec)) / &
           (LOG10(zwmb(i1+1)/zsol_spec)-LOG10(zwmb(i1)/zsol_spec))
      dz = MIN(MAX(dz,0.0),1.0) !no extrapolation!
-     
+
      wmb_spec(:,z,:,:) = (1-dz)*LOG10(wmbsi(:,i1,:,:)+tiny_number) + &
           dz*LOG10(wmbsi(:,i1+1,:,:)+tiny_number)
      wmb_spec(:,z,:,:) = 10**wmb_spec(:,z,:,:)
@@ -410,7 +410,7 @@ SUBROUTINE SPS_SETUP(zin)
   IF (stat.NE.0) THEN
      WRITE(*,*) 'SPS_SETUP ERROR: /SPECTRA/AGB_spectra/'//&
           'Orich.teff cannot be opened'
-     STOP 
+     STOP
   ENDIF
   !burn the header
   READ(93,*) char
@@ -436,7 +436,7 @@ SUBROUTINE SPS_SETUP(zin)
   IF (stat.NE.0) THEN
      WRITE(*,*) 'SPS_SETUP ERROR: /SPECTRA/AGB_spectra/'//&
           'Crich.teff cannot be opened'
-     STOP 
+     STOP
   ENDIF
   !burn the header
   READ(94,*) char
@@ -445,14 +445,14 @@ SUBROUTINE SPS_SETUP(zin)
   ENDDO
   CLOSE(94)
   agb_logt_c = LOG10(agb_logt_c)
-  
+
   !read in TP-AGB O-rich spectra
   OPEN(95,FILE=TRIM(SPS_HOME)//'/SPECTRA/AGB_spectra/Orich.spec',&
        STATUS='OLD',iostat=stat,ACTION='READ')
   IF (stat.NE.0) THEN
      WRITE(*,*) 'SPS_SETUP ERROR: /AGB_spectra/'//&
           'Orich.spec '//'cannot be opened'
-     STOP 
+     STOP
   ENDIF
   DO i=1,nspec_agb
      READ(95,*) agb_lam(i),agb_specinit_o(i,:)
@@ -470,7 +470,7 @@ SUBROUTINE SPS_SETUP(zin)
   IF (stat.NE.0) THEN
      WRITE(*,*) 'SPS_SETUP ERROR: /AGB_spectra/'//&
           'Crich.spec '//'cannot be opened'
-     STOP 
+     STOP
   ENDIF
   DO i=1,nspec_agb
      READ(96,*) agb_lam(i),agb_specinit_c(i,:)
@@ -490,7 +490,7 @@ SUBROUTINE SPS_SETUP(zin)
   IF (stat.NE.0) THEN
      WRITE(*,*) 'SPS_SETUP ERROR: /SPECTRA/AGB_spectra/'//&
           'Crich_Aringer.teff cannot be opened'
-     STOP 
+     STOP
   ENDIF
   !burn the header
   DO i=1,n_agb_car
@@ -506,7 +506,7 @@ SUBROUTINE SPS_SETUP(zin)
   IF (stat.NE.0) THEN
      WRITE(*,*) 'SPS_SETUP ERROR: /AGB_spectra/'//&
           'Crich_Aringer.spec '//'cannot be opened'
-     STOP 
+     STOP
   ENDIF
   DO i=1,nspec_aringer
      READ(96,*) aringer_lam(i),aringer_specinit(i,:)
@@ -525,7 +525,7 @@ SUBROUTINE SPS_SETUP(zin)
        STATUS='OLD',iostat=stat,ACTION='READ')
   IF (stat.NE.0) THEN
      WRITE(*,*) 'SPS_SETUP ERROR: Hot_spectra/ipagb.teff cannot be opened'
-     STOP 
+     STOP
   ENDIF
   DO i=1,ndim_pagb
      READ(94,*) pagb_logt(i)
@@ -540,7 +540,7 @@ SUBROUTINE SPS_SETUP(zin)
   IF (stat.NE.0) THEN
      WRITE(*,*) 'SPS_SETUP ERROR: /SPECTRA/Hot_spectra/'//&
           'ipagb.spec_solar cannot be opened'
-     STOP 
+     STOP
   ENDIF
   DO i=1,nspec_pagb
      READ(97,*) pagb_lam(i),pagb_specinit(i,:,2)
@@ -554,13 +554,13 @@ SUBROUTINE SPS_SETUP(zin)
   IF (stat.NE.0) THEN
      WRITE(*,*) 'SPS_SETUP ERROR: /SPECTRA/Hot_spectra/'//&
           'ipagb.spec_halo cannot be opened'
-     STOP 
+     STOP
   ENDIF
   DO i=1,nspec_pagb
      READ(97,*) pagb_lam(i),pagb_specinit(i,:,1)
   ENDDO
   CLOSE(97)
-  
+
   !interpolate to the main spectral array
   DO j=1,2
      DO i=1,ndim_pagb
@@ -576,7 +576,7 @@ SUBROUTINE SPS_SETUP(zin)
        STATUS='OLD',iostat=stat,ACTION='READ')
   IF (stat.NE.0) THEN
      WRITE(*,*) 'SPS_SETUP ERROR: Hot_spectra/CMFGEN_WN.teff cannot be opened'
-     STOP 
+     STOP
   ENDIF
   DO i=1,ndim_wr
      READ(94,*) wrn_logt(i)
@@ -588,20 +588,20 @@ SUBROUTINE SPS_SETUP(zin)
        STATUS='OLD',iostat=stat,ACTION='READ')
   IF (stat.NE.0) THEN
      WRITE(*,*) 'SPS_SETUP ERROR: Hot_spectra/CMFGEN_WC.teff cannot be opened'
-     STOP 
+     STOP
   ENDIF
   DO i=1,ndim_wr
      READ(94,*) wrc_logt(i)
   ENDDO
   CLOSE(94)
-  
+
   !read in WR-N spectra
   OPEN(97,FILE=TRIM(SPS_HOME)//'/SPECTRA/Hot_spectra/CMFGEN_WN_Zall'//&
        '.spec',STATUS='OLD',iostat=stat,ACTION='READ')
   IF (stat.NE.0) THEN
      WRITE(*,*) 'SPS_SETUP ERROR: Hot_spectra/CMFGEN_WN_*.spec '//&
           'cannot be opened'
-     STOP 
+     STOP
   ENDIF
   READ(97,*) tlamwr
   DO j=1,5
@@ -612,7 +612,7 @@ SUBROUTINE SPS_SETUP(zin)
   ENDDO
   CLOSE(97)
   twrzmet = LOG10(twrzmet/zsol_spec)
-  
+
   !interpolate to the main array
   DO j=1,nz
      i1 = MIN(MAX(locate(twrzmet,LOG10(zlegend(j)/zsol_spec)),1),SIZE(twrzmet)-1)
@@ -632,7 +632,7 @@ SUBROUTINE SPS_SETUP(zin)
   IF (stat.NE.0) THEN
      WRITE(*,*) 'SPS_SETUP ERROR: Hot_spectra/CMFGEN_WC_*.spec '//&
           'cannot be opened'
-     STOP 
+     STOP
   ENDIF
   READ(97,*) tlamwr
   DO j=1,5
@@ -690,18 +690,18 @@ SUBROUTINE SPS_SETUP(zin)
 
      IF (stat.NE.0) THEN
         WRITE(*,*) 'SPS_SETUP ERROR: isochrone files cannot be opened'
-        STOP 
+        STOP
      END IF
-        
+
      DO i=1,nlines
-           
+
         READ(97,*,IOSTAT=stat) char
         IF (stat.NE.0) GOTO 20
-        
-        IF (char.EQ.'#') THEN 
+
+        IF (char.EQ.'#') THEN
            m = 1
-        ELSE 
-           
+        ELSE
+
            IF (m.EQ.1) n_isoc = n_isoc+1
            BACKSPACE(97)
            IF (m.GT.nm) THEN
@@ -725,18 +725,18 @@ SUBROUTINE SPS_SETUP(zin)
            IF (m.EQ.1) timestep_isoc(z,n_isoc) = logage
            nmass_isoc(z,n_isoc) = nmass_isoc(z,n_isoc)+1
            m = m+1
-           
+
         ENDIF
-        
+
      ENDDO
 
      WRITE(*,*) 'SPS_SETUP ERROR: didnt finish reading in the isochrones!'
      STOP
-     
+
 20   CONTINUE
      CLOSE(97)
 
-     IF (n_isoc.NE.nt) THEN 
+     IF (n_isoc.NE.nt) THEN
         WRITE(*,*) 'SPS_SETUP ERROR: number of isochrones NE nt',n_isoc,nt
         STOP
      ENDIF
@@ -751,12 +751,12 @@ SUBROUTINE SPS_SETUP(zin)
      imf_lower_bound = imf_lower_limit
   ENDIF
 
-  ENDIF  
+  ENDIF
 
   !----------------------------------------------------------------!
   !--------Read in dust emission spectra from Draine & Li----------!
   !----------------------------------------------------------------!
-  
+
   DO k=1,nqpah_dustem
      WRITE(sqpah,'(I1)') k-1
      IF (k-1.EQ.10) THEN
@@ -766,7 +766,7 @@ SUBROUTINE SPS_SETUP(zin)
         OPEN(99,FILE=TRIM(SPS_HOME)//'/dust/dustem/'//TRIM(str_dustem)//&
              '_MW3.1_'//sqpah//'0.dat',STATUS='OLD',iostat=stat,ACTION='READ')
      ENDIF
-     IF (stat.NE.0) THEN 
+     IF (stat.NE.0) THEN
         WRITE(*,*) 'SPS_SETUP ERROR: error opening dust emission file'
         STOP
      ENDIF
@@ -775,14 +775,14 @@ SUBROUTINE SPS_SETUP(zin)
      ENDDO
      DO i=1,ndim_dustem
         READ(99,*,IOSTAT=stat) lambda_dustem(i),dustem_dustem(i,:)
-        IF (stat.NE.0) THEN 
+        IF (stat.NE.0) THEN
            WRITE(*,*) 'SPS_SETUP ERROR: error during dust emission read'
            STOP
         ENDIF
      ENDDO
      CLOSE(99)
      lambda_dustem = lambda_dustem*1E4  !convert to Ang
-  
+
      !now interpolate the dust spectra onto the master wavelength array
      DO j=1,numin_dustem*2
         !the dust models only extend to 1um
@@ -800,7 +800,7 @@ SUBROUTINE SPS_SETUP(zin)
   !O-rich spectra
   OPEN(99,FILE=TRIM(SPS_HOME)//'/dust/dusty/Orich_dusty.spec',&
        STATUS='OLD',iostat=stat,ACTION='READ')
-  IF (stat.NE.0) THEN 
+  IF (stat.NE.0) THEN
      WRITE(*,*) 'SPS_SETUP ERROR: error opening dusty models'
      STOP
   ENDIF
@@ -816,7 +816,7 @@ SUBROUTINE SPS_SETUP(zin)
      DO j=1,ntau_dagb
         READ(99,*,IOSTAT=stat) teff_dagb(1,i), tau1_dagb(1,j)
         READ(99,*,IOSTAT=stat) fluxin_dagb(1:nlam)
-        IF (stat.NE.0) THEN 
+        IF (stat.NE.0) THEN
            WRITE(*,*) 'SPS_SETUP ERROR: error reading dusty models'
            STOP
         ENDIF
@@ -831,7 +831,7 @@ SUBROUTINE SPS_SETUP(zin)
   !C-rich spectra
   OPEN(99,FILE=TRIM(SPS_HOME)//'/dust/dusty/Crich_dusty.spec',&
        STATUS='OLD',iostat=stat,ACTION='READ')
-  IF (stat.NE.0) THEN 
+  IF (stat.NE.0) THEN
      WRITE(*,*) 'SPS_SETUP ERROR: error opening dusty models'
      STOP
   ENDIF
@@ -845,7 +845,7 @@ SUBROUTINE SPS_SETUP(zin)
      DO j=1,ntau_dagb
         READ(99,*,IOSTAT=stat) teff_dagb(2,i), tau1_dagb(2,j)
         READ(99,*,IOSTAT=stat) fluxin_dagb(1:nlam)
-        IF (stat.NE.0) THEN 
+        IF (stat.NE.0) THEN
            WRITE(*,*) 'SPS_SETUP ERROR: error reading dusty models'
            STOP
         ENDIF
@@ -865,7 +865,7 @@ SUBROUTINE SPS_SETUP(zin)
 
   OPEN(99,FILE=TRIM(SPS_HOME)//'/dust/Nenkova08_y010_torusg_n10_q2.0.dat',&
        STATUS='OLD',iostat=stat,ACTION='READ')
-  IF (stat.NE.0) THEN 
+  IF (stat.NE.0) THEN
      WRITE(*,*) 'SPS_SETUP ERROR: error opening AGN dust models'
      STOP
   ENDIF
@@ -889,14 +889,14 @@ SUBROUTINE SPS_SETUP(zin)
           LOG10(agndust_specinit(:,i)+tiny30),LOG10(spec_lambda(i1:i2)))-tiny30
   ENDDO
 
-  
+
   !----------------------------------------------------------------!
   !----------------Set up nebular emission arrays------------------!
   !----------------------------------------------------------------!
 
   IF (isoc_type.EQ.'mist'.OR.isoc_type.EQ.'pdva'.OR.&
      isoc_type.EQ.'prsc'.OR.isoc_type.EQ.'bpss') THEN
-  
+
      !read in nebular continuum arrays.  Units are Lsun/Hz/Q
      IF (cloudy_dust.EQ.1) THEN
         OPEN(99,FILE=TRIM(SPS_HOME)//'/nebular/ZAU_WD_'//isoc_type//'.cont',&
@@ -926,7 +926,7 @@ SUBROUTINE SPS_SETUP(zin)
         ENDDO
      ENDDO
      CLOSE(99)
-     
+
      !read in nebular emission line luminosities.  Units are Lsun/Q
      IF (cloudy_dust.EQ.1) THEN
         OPEN(99,FILE=TRIM(SPS_HOME)//'/nebular/ZAU_WD_'//isoc_type//'.lines',&
@@ -940,7 +940,7 @@ SUBROUTINE SPS_SETUP(zin)
         STOP
      ENDIF
      !burn the header
-     READ(99,*) 
+     READ(99,*)
      !read the wavelength array
      READ(99,*) nebem_line_pos
      DO i=1,nebnz
@@ -952,18 +952,18 @@ SUBROUTINE SPS_SETUP(zin)
         ENDDO
      ENDDO
      CLOSE(99)
-     
+
      !convert the nebem_age array to log(age), and log the emission arrays
      nebem_age  = LOG10(nebem_age)
      nebem_line = LOG10(nebem_line)
-     
+
      !define the minimum resolution of the emission lines
      !based on the resolution of the spectral library
      DO i=1,nemline
         j = MIN(MAX(locate(spec_lambda,nebem_line_pos(i)),1),nspec-1)
         neb_res_min(i) = spec_lambda(j+1)-spec_lambda(j)
      ENDDO
-     
+
      !set up a "master" array of normalized Gaussians
      !this makes the code much faster
      IF (setup_nebular_gaussians.EQ.1) THEN
@@ -975,7 +975,7 @@ SUBROUTINE SPS_SETUP(zin)
               !smoothing variable is A
               dlam = nebular_smooth_init
            ENDIF
-           !broaden the line to at least the resolution element 
+           !broaden the line to at least the resolution element
            !of the spectrum (x2).
            dlam = MAX(dlam,neb_res_min(i)*2)
            gaussnebarr(:,i) = 1/SQRT(2*mypi)/dlam*&
@@ -995,8 +995,8 @@ SUBROUTINE SPS_SETUP(zin)
        STATUS='OLD',iostat=stat,ACTION='READ')
   IF (stat.NE.0) THEN
      WRITE(*,*) 'SPS_SETUP ERROR: xsp.lambda cannot be opened'
-     STOP 
-  ENDIF  
+     STOP
+  ENDIF
 
   DO i=1,nspec_xrb
      READ(98,*) lam_xrb(i)
@@ -1015,7 +1015,7 @@ SUBROUTINE SPS_SETUP(zin)
      IF (stat.NE.0) THEN
         WRITE(*,*) 'SPS_SETUP ERROR: xsp_feh'//zz_str_xrb(j)//&
              '.spec cannot be opened'
-        STOP 
+        STOP
      ENDIF
      DO i=1,nt_xrb
         READ(98,*) tspec_xrb
@@ -1027,7 +1027,7 @@ SUBROUTINE SPS_SETUP(zin)
 
   !convert to Lsun/Hz/Msun
   spec_xrb = spec_xrb * lsun
-  
+
   !----------------------------------------------------------------!
   !-------------------Set up magnitude info------------------------!
   !----------------------------------------------------------------!
@@ -1038,8 +1038,8 @@ SUBROUTINE SPS_SETUP(zin)
        STATUS='OLD',iostat=stat,ACTION='READ')
   IF (stat.NE.0) THEN
      WRITE(*,*) 'SPS_SETUP ERROR: SPECTRA/A0V_KURUCZ_92.SED cannot be opened'
-     STOP 
-  ENDIF  
+     STOP
+  ENDIF
   !burn the header
   READ(98,*)
   DO i=1,ntlam
@@ -1056,14 +1056,14 @@ SUBROUTINE SPS_SETUP(zin)
   vega_spec(jj+1:) = tiny_number
 
   !read in Solar spectrum; units are fnu, flux is appropriate for
-  !deriving absolute magnitudes.  spectrum from STScI, extrapolated 
+  !deriving absolute magnitudes.  spectrum from STScI, extrapolated
   !beyond 2.5um with a blackbody.
   OPEN(98,FILE=TRIM(SPS_HOME)//'/SPECTRA/SUN_STScI.SED',&
        STATUS='OLD',iostat=stat,ACTION='READ')
   IF (stat.NE.0) THEN
      WRITE(*,*) 'SPS_SETUP ERROR: SPECTRA/SUN_STScI.SED cannot be opened'
-     STOP 
-  END IF  
+     STOP
+  END IF
   DO i=1,ntlam
      READ(98,*) tsun_lam(i), tsun_spec(i)
   ENDDO
@@ -1131,7 +1131,7 @@ SUBROUTINE SPS_SETUP(zin)
      !normalize
      dumr1 = TSUM(spec_lambda,bands(:,i)/spec_lambda)
      !in this case the band is entirely outside the wavelength array
-     IF (dumr1.LE.tiny_number) dumr1=1.0 
+     IF (dumr1.LE.tiny_number) dumr1=1.0
      bands(:,i) = bands(:,i) / dumr1
      bands(:,i) = MAX(bands(:,i),0.0)  !force no negative values
 
@@ -1146,11 +1146,11 @@ SUBROUTINE SPS_SETUP(zin)
      !compute mags of Vega
      magvega(i) = TSUM(spec_lambda,vega_spec*bands(:,i)/spec_lambda)
      IF (magvega(i).LE.tiny_number) THEN
-        magvega(i) = 99.0 
+        magvega(i) = 99.0
      ELSE
         magvega(i) = -2.5 * LOG10(magvega(i)) - 48.60
      ENDIF
-     
+
      !put Sun magnitudes in the Vega system if keyword is set
      IF (compute_vega_mags.EQ.1.AND.magsun(i).NE.99.0) &
           magsun(i) = (magsun(i)-magsun(1)) - &
@@ -1176,7 +1176,7 @@ SUBROUTINE SPS_SETUP(zin)
              spec_lambda)
         bands(:,ind(j)) = bands(:,ind(j)) / MAX(d,tiny_number)
      ENDDO
-     
+
      !normalize the MIPS photometry to a BB (beta=2)
      !this part is *not* irrelevant.
      lami(1:3) = (/23.68,71.42,155.9/)*1E4
@@ -1309,12 +1309,12 @@ SUBROUTINE SPS_SETUP(zin)
   ENDDO
   DO i=1,nindx
      READ(99,*,IOSTAT=stat) indexdefined(:,i)
-     IF (stat.NE.0) THEN 
+     IF (stat.NE.0) THEN
         WRITE(*,*) 'SPS_SETUP ERROR: error during index defintion read'
         STOP
      ENDIF
      !convert the Lick indices from air to vacuum wavelengths
-     IF (i.LE.25) THEN 
+     IF (i.LE.25) THEN
         indexdefined(1:6,i) = airtovac(indexdefined(1:6,i))
      ENDIF
   ENDDO
@@ -1325,14 +1325,14 @@ SUBROUTINE SPS_SETUP(zin)
   !----------------------------------------------------------------!
 
   IF (isoc_type.NE.'bpss') THEN
-  
+
      DO i=1,ntfull
         IF (MOD(i-1,time_res_incr).EQ.0) THEN
            time_full(i) = timestep_isoc(zmin,(i-1)/time_res_incr+1)
         ELSE
            IF ((i-1)/time_res_incr+2.LT.nt) THEN
               d1 = (timestep_isoc(zmin,(i-1)/time_res_incr+2)-&
-                   timestep_isoc(zmin,(i-1)/time_res_incr+1))/time_res_incr 
+                   timestep_isoc(zmin,(i-1)/time_res_incr+1))/time_res_incr
            ENDIF
            time_full(i) = timestep_isoc(zmin,(i-1)/time_res_incr+1)+d1
            time_full(i) = time_full(i-1)+d1
@@ -1351,7 +1351,7 @@ SUBROUTINE SPS_SETUP(zin)
        STATUS='OLD',iostat=stat,ACTION='READ')
      IF (stat.NE.0) THEN
         WRITE(*,*) 'SPS_SETUP ERROR: lsf.dat cannot be opened'
-        STOP 
+        STOP
      ENDIF
 
      DO i=1,ntabmax
@@ -1364,7 +1364,7 @@ SUBROUTINE SPS_SETUP(zin)
      STOP
 
 910  CONTINUE
-     
+
      lsfinfo%maxlam = lsflam(i-1)
 
      !interpolate onto the main wavelength array
@@ -1388,7 +1388,7 @@ SUBROUTINE SPS_SETUP(zin)
   !define the frequency array
   spec_nu   = clight / spec_lambda
 
-  !set flag indicating that sps_setup has been run, initializing 
+  !set flag indicating that sps_setup has been run, initializing
   !important common block vars/arrays
   check_sps_setup = 1
 
