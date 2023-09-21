@@ -308,7 +308,7 @@ MODULE SPS_VARS
   !parameters for circumstellar dust models
   INTEGER, PARAMETER :: ntau_dagb=50, nteff_dagb=6
   !number of emission lines and continuum emission points
-  INTEGER, PARAMETER :: nemline=128, nlam_nebcont=1963
+  INTEGER, PARAMETER :: nemline=166, nlam_nebcont=1963
   !number of metallicity, age, and ionization parameter points
   INTEGER, PARAMETER :: nebnz=11, nebnage=10, nebnip=7
   !number of optical depths for AGN dust models
@@ -319,7 +319,7 @@ MODULE SPS_VARS
   INTEGER, PARAMETER :: nspec_xrb=15000
   INTEGER, PARAMETER :: nt_xrb=10
   INTEGER, PARAMETER :: nz_xrb=11
-  
+
   !------------IMF-related Constants--------------!
 
   !Salpeter IMF index
@@ -507,8 +507,8 @@ MODULE SPS_VARS
 
   !nebular emission model
   REAL(SP), DIMENSION(nemline) :: nebem_line_pos=0.
-  REAL(SP), DIMENSION(nemline,nebnz,nebnage,nebnip) :: nebem_line=0.
-  REAL(SP), DIMENSION(nspec,nebnz,nebnage,nebnip) :: nebem_cont=0.
+  REAL(SP), DIMENSION(nemline,nebnz,nebnage,nebnip) :: nebem_line=0.!,xnebem_line=0.
+  REAL(SP), DIMENSION(nspec,nebnz,nebnage,nebnip) :: nebem_cont=0.!,xnebem_cont=0.
   REAL(SP), DIMENSION(nebnz)   :: nebem_logz=0.
   REAL(SP), DIMENSION(nebnage) :: nebem_age=0.
   REAL(SP), DIMENSION(nebnip)  :: nebem_logu=0.
