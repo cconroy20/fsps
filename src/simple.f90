@@ -47,6 +47,8 @@
   pset%fbhb  = 0.0   !fraction of blue HB stars
   pset%sbss  = 0.0   !specific frequency of BS stars
 
+  add_neb_emission=1
+
   !compute the SSP
   CALL SSP_GEN(pset,mass_ssp,lbol_ssp,spec_ssp)
   !compute mags and write out mags and spec for SSP
