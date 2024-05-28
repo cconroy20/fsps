@@ -23,7 +23,8 @@ SUBROUTINE ADD_REMNANTS(mass,maxmass)
 
   !BH remnants
   !40<M<imf_up leave behind a 0.5*M BH
-  minmass = MAXVAL((/mlim_bh,maxmass/))
+  !if imf_upper_limit < 40, add no mass
+  minmass = MIN(MAXVAL((/mlim_bh,maxmass/)), imf_upper_limit)
   imf_type = imf_type+10
   mass = mass + 0.5*funcint(imf,minmass,imf_upper_limit)/imfnorm
   imf_type = imf_type-10
@@ -32,15 +33,15 @@ SUBROUTINE ADD_REMNANTS(mass,maxmass)
   !8.5<M<40 leave behind 1.4 Msun NS
   IF (maxmass.LE.mlim_bh) THEN
      minmass = MAXVAL((/mlim_ns,maxmass/))
-     mass = mass + 1.4*funcint(imf,minmass,mlim_bh)/imfnorm
+     mass = mass + 1.4*funcint(imf,minmass,MIN(mlim_bh, imf_upper_limit))/imfnorm
   ENDIF
 
   !WD remnants
   !M<8.5 leave behind 0.077*M+0.48 WD
   IF (maxmass.LE.8.5) THEN
-     mass = mass + 0.48*funcint(imf,maxmass,mlim_ns)/imfnorm
+     mass = mass + 0.48*funcint(imf,maxmass,MIN(mlim_ns, imf_upper_limit))/imfnorm
      imf_type = imf_type+10
-     mass = mass + 0.077*funcint(imf,maxmass,mlim_ns)/imfnorm
+     mass = mass + 0.077*funcint(imf,maxmass,MIN(mlim_ns, imf_upper_limit))/imfnorm
      imf_type = imf_type-10
 
   ENDIF
