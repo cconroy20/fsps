@@ -1,9 +1,9 @@
 SUBROUTINE ADD_REMNANTS(mass,maxmass)
 
   !add remnant (WD, NS, BH) masses back into the total mass
-  !of the SSP.  These initial-mass-dependent remnant 
+  !of the SSP.  These initial-mass-dependent remnant
   !formulae are taken from Renzini & Ciotti 1993.
-  
+
   USE sps_vars
   USE sps_utils, ONLY : imf, funcint
   IMPLICIT NONE
@@ -21,26 +21,30 @@ SUBROUTINE ADD_REMNANTS(mass,maxmass)
   imfnorm  = funcint(imf,imf_lower_limit,imf_upper_limit)
   imf_type = imf_type-10
 
-  !BH remnants
-  !40<M<imf_up leave behind a 0.5*M BH
-  minmass = MAXVAL((/mlim_bh,maxmass/))
+  !BH remnants if any
+  !40<M_max<imf_up leave behind a 0.5*M BH
+  !if imf_upper_limit < 40 or < maxmass, add no mass since no stars could make BH and mlo=mhi=imf_upper_limit
+  minmass = MIN(MAXVAL((/mlim_bh,maxmass/)), imf_upper_limit)
   imf_type = imf_type+10
   mass = mass + 0.5*funcint(imf,minmass,imf_upper_limit)/imfnorm
   imf_type = imf_type-10
 
-  !NS remnants
-  !8.5<M<40 leave behind 1.4 Msun NS
+  !Add NS remnants
+  !8.5<M_max<40 also eave behind 1.4 Msun NS
+  !if imf_upper_limit < 8.5 , add no mass since no stars could make NS, and mlo=mhi=imf_upper_limit
   IF (maxmass.LE.mlim_bh) THEN
-     minmass = MAXVAL((/mlim_ns,maxmass/))
-     mass = mass + 1.4*funcint(imf,minmass,mlim_bh)/imfnorm
+     minmass = MIN(MAXVAL((/mlim_ns,maxmass/)), imf_upper_limit)
+     mass = mass + 1.4*funcint(imf,minmass,MIN(mlim_bh, imf_upper_limit))/imfnorm
   ENDIF
 
-  !WD remnants
-  !M<8.5 leave behind 0.077*M+0.48 WD
+  !Add WD remnants
+  !M_max<8.5 also leave behind 0.077*M+0.48 WD
+  !if imf_upper_limit < 8.5, only add mass if maxmass < imf_upper_limit since otherwise no stars have evolved and mlo=mhi=imf_upper_limit
   IF (maxmass.LE.8.5) THEN
-     mass = mass + 0.48*funcint(imf,maxmass,mlim_ns)/imfnorm
+     minmass = MIN(maxmass, imf_upper_limit)
+     mass = mass + 0.48*funcint(imf,minmass,MIN(mlim_ns, imf_upper_limit))/imfnorm
      imf_type = imf_type+10
-     mass = mass + 0.077*funcint(imf,maxmass,mlim_ns)/imfnorm
+     mass = mass + 0.077*funcint(imf,minmass,MIN(mlim_ns, imf_upper_limit))/imfnorm
      imf_type = imf_type-10
 
   ENDIF
