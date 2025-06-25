@@ -239,6 +239,7 @@ SUBROUTINE SPS_SETUP(zin)
   CLOSE(91)
 
   !read in spectral resolution
+  ! units are km/s (sigma)
   DO i=1,nspec
      READ(94,*) spec_res(i)
   ENDDO
@@ -991,28 +992,37 @@ SUBROUTINE SPS_SETUP(zin)
      nebem_line = LOG10(nebem_line + 10**(-95.d0))
 
      !define the minimum resolution of the emission lines
-     !based on the resolution of the spectral library
+     !based on the resolution of the spectral library,
+     !but at least 2 pixels. Units are sigma in AA
      DO i=1,nemline
         j = MIN(MAX(locate(spec_lambda,nebem_line_pos(i)),1),nspec-1)
-        neb_res_min(i) = spec_lambda(j+1)-spec_lambda(j)
+        dlam = spec_lambda(j+1)-spec_lambda(j) ! pixel size in AA
+        ! minimum sigma corresponds to 2 pixels per fwhm (i.e. 2/2.35 pixels per sigma)
+        dlam = dlam*2/2.355*nebular_smooth_factor
+        neb_res_min(i) = max(dlam, nebem_line_pos(i) * ABS(spec_res(j))/clight*1E13)
+        !write(*, *) i, dlam, neb_res_min(i), spec_res(j)
      ENDDO
 
      !set up a "master" array of normalized Gaussians
      !this makes the code much faster
      IF (setup_nebular_gaussians.EQ.1) THEN
         DO i=1,nemline
-           IF (smooth_velocity.EQ.1) THEN
-              !smoothing variable is km/s
-              dlam = nebem_line_pos(i)*nebular_smooth_init/clight*1E13
-           ELSE
-              !smoothing variable is A
-              dlam = nebular_smooth_init
-           ENDIF
-           !broaden the line to at least the resolution element
-           !of the spectrum (x2).
-           dlam = MAX(dlam,neb_res_min(i)*2)
+         ! Smoothing is handled by smoothspec on the combined stars+neb after the SSP/CSP is generated!
+         !   IF (smooth_velocity.EQ.1) THEN
+         !      !smoothing variable is km/s
+         !      dlam = nebem_line_pos(i)*nebular_smooth_init/clight*1E13
+         !   ELSE
+         !      !smoothing variable is A
+         !      dlam = nebular_smooth_init
+         !   ENDIF
+         !  !broaden the line to at least the pixel width
+         !  !of the spectrum (x2).
+         !  dlam = MAX(dlam,neb_res_min(i)*2)
+           !broaden the line by the library resolution at this wavelength
+           !or by the sigma corresponding to 2 pixels/FWHM, whichever is larger.
+           dlam = neb_res_min(i)
            gaussnebarr(:,i) = 1/SQRT(2*mypi)/dlam*&
-                EXP(-(spec_lambda-nebem_line_pos(i))**2/2/dlam**2)  / &
+                EXP(-(spec_lambda-nebem_line_pos(i))**2/2/dlam**2) / &
                 clight*nebem_line_pos(i)**2
         ENDDO
      ENDIF

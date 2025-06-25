@@ -213,9 +213,9 @@ MODULE SPS_VARS
   !nebular emission lines should be set up on initialization
   INTEGER :: setup_nebular_gaussians=0
 
-  !Width of Gaussian kernels for initial nebular smoothing
-  !if setup_nebular_gaussians=1 (units=km/s if smooth_velocity=1)
-  REAL(SP) :: nebular_smooth_init=100.
+  !Minimum width of Gaussian kernels for initial nebular line widths,
+  !in units of pix/HWHM. Make larger for better sampling of the line.
+  REAL(SP) :: nebular_smooth_factor=1.
 
   !flag to include emission lines in the spectrum
   !if not set, the line luminosities are still computed
@@ -508,7 +508,7 @@ MODULE SPS_VARS
   REAL(SP), DIMENSION(nspec)  :: vega_spec=0.,sun_spec=0.
   !common wavelength and frequench arrays
   REAL(SP), DIMENSION(nspec)  :: spec_lambda=0.,spec_nu=0.0
-  !common wavelength and frequency arrays for dummy resolution files
+  !common arrays for resolution (sigma in km/s)
   REAL(SP), DIMENSION(nspec)  :: spec_res=0.
 
   !arrays for stellar spectral information in HR diagram
@@ -577,7 +577,7 @@ MODULE SPS_VARS
   REAL(SP), DIMENSION(nebnz)   :: nebem_logz=0.
   REAL(SP), DIMENSION(nebnage) :: nebem_age=0.
   REAL(SP), DIMENSION(nebnip)  :: nebem_logu=0.
-  !minimum resolution for nebular lines, based
+  !minimum resolution (sigma in AA) for nebular lines, based
   !on the resolution of the spectral libraries.
   REAL(SP), DIMENSION(nspec)   :: neb_res_min=0.0
   REAL(SP), DIMENSION(nspec,nemline) :: gaussnebarr=0.0
