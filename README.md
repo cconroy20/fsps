@@ -5,8 +5,8 @@ version 3.2
 References
 ---------
 When using this code please cite the following papers:
- * Conroy, Gunn, & White 2009, ApJ, 699, 486
- * Conroy & Gunn 2010, ApJ, 712, 833
+ * [Conroy, Gunn, & White 2009, ApJ, 699, 486](https://ui.adsabs.harvard.edu/abs/2009ApJ...699..486C)
+ * [Conroy & Gunn 2010, ApJ, 712, 833](https://ui.adsabs.harvard.edu/abs/2010ApJ...712..833C)
 
 Installation
 ----------
