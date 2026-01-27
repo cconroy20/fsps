@@ -1,0 +1,69 @@
+name: FSPS Regression Tests
+
+on:
+  push:
+    branches: [ master, refactor/allocatable-arrays ]
+  pull_request:
+    branches: [ master, refactor/allocatable-arrays ]
+
+jobs:
+  test-matrix:
+    runs-on: ubuntu-latest
+    
+    env:
+      SPS_HOME: ${{ github.workspace }}
+      FSPS_TEST_RTOL: 1.0E-5  # Set global relative tolerance here
+
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          # Define the configurations to test.
+          # 'flags': The FFLAGS passed to the compiler.
+          # 'ref_suffix': The suffix of the reference file in tests/data/
+          
+          # 1. Standard (Default)
+          - name: Standard (MILES+MIST)
+            flags: "-DMILES=1 -DMIST=1"
+            ref_suffix: "MILES-1_MIST-1"
+
+          # 2. BaSeL+Padova
+          - name: Legacy (BASEL+PADOVA)
+            flags: "-DMILES=0 -DMIST=0 -DBASEL=1 -DPADOVA=1"
+            ref_suffix: "MILES-0_MIST-0_BASEL-1_PADOVA-1"
+
+          # 3. Dust Model (THEMIS)
+          - name: Dust (THEMIS)
+            flags: "-DMILES=1 -DMIST=1 -DTHEMIS=1 -DDL07=0"
+            ref_suffix: "MILES-1_MIST-1_THEMIS-1_DL07-0"
+
+          # 4. C3K
+          - name: C3K
+            flags: "-DMILES=0 -DC3K=1 -DMIST=1"
+            ref_suffix: "MILES-0_C3K-1_MIST-1"
+
+          # 5. BPASS (Different logic path)
+          - name: BPASS
+            flags: "-DMIST=0 -DBPASS=1"
+            ref_suffix: "MIST-0_BPASS-1"
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v3
+
+    - name: Install GFortran
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y gfortran
+
+    - name: Compile FSPS and Test Runner
+      working-directory: src
+      # We force F90FLAGS to include the matrix flags + standard flags + silence underflows
+      run: |
+        make clean
+        make test_runner F90FLAGS="-cpp -O3 -fPIC -ffpe-summary=invalid,zero,overflow ${{ matrix.flags }}"
+
+    - name: Run Test
+      working-directory: src
+      run: |
+        ./test_runner ../tests/data/sps_ref_${{ matrix.ref_suffix }}.bin

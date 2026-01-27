@@ -2,6 +2,8 @@
 # when building this code, you may have to increase the default memory 
 # allocation.
 
+.PHONY: all clean
+
 #======================
 # Fortran 90 compiler
 # (Uncomment only one)
@@ -73,3 +75,16 @@ sps_utils.o : sps_utils.f90 sps_vars.o
 %.o : %.f90 sps_vars.o sps_utils.o
 	$(F90) $(F90FLAGS) -o $@ -c $<
 
+#======================
+# Test Targets
+#======================
+# These targets build test executables from ../tests/
+# They depend on FSPS library objects and require -I. to find .mod files
+
+TEST_DIR = ../tests
+
+generate_test_data : $(TEST_DIR)/generate_test_data.f90 $(COMMON)
+	$(F90) $(F90FLAGS) -o generate_test_data $(TEST_DIR)/generate_test_data.f90 $(COMMON) -I.
+
+test_runner : $(TEST_DIR)/test_runner.f90 $(COMMON)
+	$(F90) $(F90FLAGS) -o test_runner $(TEST_DIR)/test_runner.f90 $(COMMON) -I.
