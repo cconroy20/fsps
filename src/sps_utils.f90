@@ -1,6 +1,16 @@
 MODULE SPS_UTILS
 
   INTERFACE
+     SUBROUTINE SPS_SETUP(zin, isoc_type_in, spec_type_in, dust_type_in)
+       USE sps_vars
+       INTEGER, INTENT(in) :: zin
+       CHARACTER(LEN=*), INTENT(in), OPTIONAL :: isoc_type_in
+       CHARACTER(LEN=*), INTENT(in), OPTIONAL :: spec_type_in
+       CHARACTER(LEN=*), INTENT(in), OPTIONAL :: dust_type_in
+     END SUBROUTINE SPS_SETUP
+  END INTERFACE
+
+  INTERFACE
      SUBROUTINE ADD_AGB_DUST(weight,tspec,mact,logt,logl,logg,&
           zz,tco,lmdot)
        USE sps_vars

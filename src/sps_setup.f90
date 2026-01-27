@@ -1,4 +1,4 @@
-SUBROUTINE SPS_SETUP(zin)
+SUBROUTINE SPS_SETUP(zin, isoc_type_in, spec_type_in, dust_type_in)
 
   !read in isochrones and spectral libraries for all metallicities.
   !read in band-pass info and the spectrum for Vega.
@@ -10,9 +10,14 @@ SUBROUTINE SPS_SETUP(zin)
   !in a much faster setup.
 
   USE sps_vars
-  USE sps_utils
+  USE sps_utils, ONLY: locate, linterparr, linterp, tsum, get_tuniv, &
+       get_lumdist, airtovac
   IMPLICIT NONE
   INTEGER, INTENT(in) :: zin
+  CHARACTER(LEN=*), INTENT(in), OPTIONAL :: isoc_type_in
+  CHARACTER(LEN=*), INTENT(in), OPTIONAL :: spec_type_in
+  CHARACTER(LEN=*), INTENT(in), OPTIONAL :: dust_type_in
+
   INTEGER :: stat=1,n,i,j,m,jj,k,i1,i2,stat2=1
   INTEGER, PARAMETER :: ntlam=1221,nspec_agb=6146,nspec_aringer=9032
   INTEGER, PARAMETER :: nlamwr=1963,nspec_pagb=9281
@@ -22,9 +27,10 @@ SUBROUTINE SPS_SETUP(zin)
   CHARACTER(6) :: zstype
   CHARACTER(5) :: zstype5
   REAL(SP) :: dumr1,d1,d2,logage,x,a,zero=0.0,d,one=1.0,dz,dlam
-  CHARACTER(5), DIMENSION(nz) :: zlegend_str=''
-  CHARACTER(5), DIMENSION(nz_xrb) :: zz_str_xrb=''
-  REAL(SP), DIMENSION(nspec) :: tspec=0.
+  
+  CHARACTER(5), ALLOCATABLE :: zlegend_str(:)
+  CHARACTER(5), ALLOCATABLE :: zz_str_xrb(:)
+  REAL(SP), ALLOCATABLE :: tspec(:)
   REAL(SP), DIMENSION(ntlam) :: tvega_lam=0.,tvega_spec=0.
   REAL(SP), DIMENSION(ntlam) :: tsun_lam=0.,tsun_spec=0.
   REAL(SP), DIMENSION(nlamwr) :: tlamwr=0.,tspecwr=0.
@@ -48,15 +54,14 @@ SUBROUTINE SPS_SETUP(zin)
   REAL(SP), DIMENSION(nspec_aringer,n_agb_car) :: aringer_specinit=0.
   REAL(SP), DIMENSION(nagndust_spec)           :: agndust_lam=0.
   REAL(SP), DIMENSION(nagndust_spec,nagndust)  :: agndust_specinit=0.
-  !REAL(KIND(1.0)), DIMENSION(nspec,nzinit,ndim_logt,ndim_logg) :: speclibinit=0.
-  REAL(KIND(1.0)), allocatable :: speclibinit(:,:,:,:)
-  REAL(SP), DIMENSION(nspec,nzwmb,ndim_wmb_logt,ndim_wmb_logg) :: wmbsi=0.
+  REAL(KIND(1.0)), ALLOCATABLE :: speclibinit(:,:,:,:)
+  REAL(SP), ALLOCATABLE :: wmbsi(:,:,:,:)
   REAL(SP), DIMENSION(nzwmb)     :: zwmb=0.
   REAL(SP), DIMENSION(nspec_wmb) :: wmb_lam=0.
   REAL(SP), DIMENSION(nspec_wmb,ndim_wmb_logt,ndim_wmb_logg) :: wmb_specinit=0.
   REAL(SP), DIMENSION(ntabmax)   :: lsflam=0.,lsfsig=0.
   REAL(SP), DIMENSION(30) :: g03lam=0., g03smc=0.
-  REAL(SP), DIMENSION(nspec_xrb) :: tspec_xrb
+  REAL(SP), ALLOCATABLE :: tspec_xrb(:)
 
   !---------------------------------------------------------------!
   !---------------------------------------------------------------!
@@ -66,10 +71,320 @@ SUBROUTINE SPS_SETUP(zin)
      WRITE(*,*) '    Setting up SPS...'
   ENDIF
 
+  ! Initialize Library Variables
+  IF (PRESENT(isoc_type_in)) THEN
+     isoc_type = isoc_type_in
+  ELSE
+     isoc_type = 'mist'
+  END IF
+  
+  IF (PRESENT(spec_type_in)) THEN
+     spec_type = spec_type_in
+  ELSE
+     spec_type = 'miles'
+  END IF
+
+  IF (TRIM(isoc_type) == 'bpss' .AND. TRIM(spec_type) /= 'bpass') THEN
+     WRITE(*,*) 'Notice: BPASS isochrones selected; forcing spec_type="bpass"'
+     spec_type = 'bpass'
+  END IF
+
+  ! Set isochrone dimensions
+  SELECT CASE (isoc_type)
+  CASE ('mist')
+     zsol = 0.0142
+     nt=107
+     nz=12
+  CASE ('pdva')
+     zsol = 0.019
+     nt=94
+     nz=22
+  CASE ('prsc')
+     zsol = 0.01524
+     nt=93
+     nz=15
+  CASE ('bsti')
+     zsol = 0.020
+     nt=94
+     nz=10
+  CASE ('gnva')
+     zsol = 0.020
+     nt=51
+     nz=5
+  CASE ('bpss')
+     zsol = 0.020
+     nt=43
+     nz=12
+  CASE DEFAULT
+      WRITE(*,*) 'SPS_SETUP ERROR: Unknown isoc_type: ', isoc_type
+      STOP
+  END SELECT
+  
+  ! Set spectral library dimensions
+  SELECT CASE (spec_type)
+  CASE ('miles')
+     zsol_spec = 0.019
+     nzinit=5
+     nspec=5994
+  CASE ('basel')
+     zsol_spec = 0.020
+     nzinit=6
+     nspec=1963
+  CASE ('bpass')
+     zsol_spec = 0.020
+     nzinit=1
+     nspec=15000
+  CASE DEFAULT
+     ! Check for C3K
+     IF (spec_type(1:3).EQ.'c3k') THEN
+        zsol_spec = 0.0134
+        nzinit=11
+        nspec=11149
+     ELSE
+        WRITE(*,*) 'SPS_SETUP ERROR: Unknown spec_type: ', spec_type
+        STOP
+     END IF
+  END SELECT
+
+  ! Set other dimensions
+  nbands = 159
+  nindx = 30
+  ntfull = time_res_incr * nt
+  
+  ! Set XRB dimensions
+  nspec_xrb=15000
+  nt_xrb=10
+  nz_xrb=11
+
+  ! Set Dust Emission Model
+  IF (PRESENT(dust_type_in)) THEN
+     ! Case insensitive comparison would be better but keeping it simple as per spec_type
+     IF (dust_type_in == 'themis' .OR. dust_type_in == 'THEMIS') THEN
+        str_dustem = 'THEMIS'
+        ndim_dustem = 576
+        numin_dustem = 37
+        nqpah_dustem = 11
+     ELSE
+        ! Default to DL07
+        str_dustem = 'DL07'
+        ndim_dustem = 1001
+        numin_dustem = 22
+        nqpah_dustem = 7
+     END IF
+  ELSE
+     str_dustem = 'DL07'
+     ndim_dustem = 1001
+     numin_dustem = 22
+     nqpah_dustem = 7
+  END IF
+
   IF (zin.GT.nz) THEN
      WRITE(*,*) 'SPS_SETUP ERROR: zin GT nz', zin,nz
      STOP
   ENDIF
+  
+  ! Deallocate arrays if they are already allocated
+  IF (ALLOCATED(indexdefined)) DEALLOCATE(indexdefined)
+  IF (ALLOCATED(wgdust)) DEALLOCATE(wgdust)
+  IF (ALLOCATED(g03smcextn)) DEALLOCATE(g03smcextn)
+  IF (ALLOCATED(bands)) DEALLOCATE(bands)
+  IF (ALLOCATED(magsun)) DEALLOCATE(magsun)
+  IF (ALLOCATED(magvega)) DEALLOCATE(magvega)
+  IF (ALLOCATED(filter_leff)) DEALLOCATE(filter_leff)
+  IF (ALLOCATED(vega_spec)) DEALLOCATE(vega_spec)
+  IF (ALLOCATED(sun_spec)) DEALLOCATE(sun_spec)
+  IF (ALLOCATED(spec_lambda)) DEALLOCATE(spec_lambda)
+  IF (ALLOCATED(spec_nu)) DEALLOCATE(spec_nu)
+  IF (ALLOCATED(spec_res)) DEALLOCATE(spec_res)
+  IF (ALLOCATED(speclib)) DEALLOCATE(speclib)
+  IF (ALLOCATED(wmb_spec)) DEALLOCATE(wmb_spec)
+  IF (ALLOCATED(agb_spec_o)) DEALLOCATE(agb_spec_o)
+  IF (ALLOCATED(agb_logt_o)) DEALLOCATE(agb_logt_o)
+  IF (ALLOCATED(agb_spec_c)) DEALLOCATE(agb_spec_c)
+  IF (ALLOCATED(agb_logt_c)) DEALLOCATE(agb_logt_c)
+  IF (ALLOCATED(agb_spec_car)) DEALLOCATE(agb_spec_car)
+  IF (ALLOCATED(pagb_spec)) DEALLOCATE(pagb_spec)
+  IF (ALLOCATED(wrn_spec)) DEALLOCATE(wrn_spec)
+  IF (ALLOCATED(wrc_spec)) DEALLOCATE(wrc_spec)
+  IF (ALLOCATED(dustem2_dustem)) DEALLOCATE(dustem2_dustem)
+  IF (ALLOCATED(qpaharr)) DEALLOCATE(qpaharr)
+  IF (ALLOCATED(uminarr)) DEALLOCATE(uminarr)
+  IF (ALLOCATED(lambda_dustem)) DEALLOCATE(lambda_dustem)
+  IF (ALLOCATED(dustem_dustem)) DEALLOCATE(dustem_dustem)
+  IF (ALLOCATED(flux_dagb)) DEALLOCATE(flux_dagb)
+  IF (ALLOCATED(nebem_cont)) DEALLOCATE(nebem_cont)
+  IF (ALLOCATED(xnebem_cont)) DEALLOCATE(xnebem_cont)
+  IF (ALLOCATED(neb_res_min)) DEALLOCATE(neb_res_min)
+  IF (ALLOCATED(gaussnebarr)) DEALLOCATE(gaussnebarr)
+  IF (ALLOCATED(agndust_spec)) DEALLOCATE(agndust_spec)
+  IF (ALLOCATED(mact_isoc)) DEALLOCATE(mact_isoc)
+  IF (ALLOCATED(logl_isoc)) DEALLOCATE(logl_isoc)
+  IF (ALLOCATED(logt_isoc)) DEALLOCATE(logt_isoc)
+  IF (ALLOCATED(logg_isoc)) DEALLOCATE(logg_isoc)
+  IF (ALLOCATED(ffco_isoc)) DEALLOCATE(ffco_isoc)
+  IF (ALLOCATED(phase_isoc)) DEALLOCATE(phase_isoc)
+  IF (ALLOCATED(mini_isoc)) DEALLOCATE(mini_isoc)
+  IF (ALLOCATED(lmdot_isoc)) DEALLOCATE(lmdot_isoc)
+  IF (ALLOCATED(nmass_isoc)) DEALLOCATE(nmass_isoc)
+  IF (ALLOCATED(timestep_isoc)) DEALLOCATE(timestep_isoc)
+  IF (ALLOCATED(zlegend)) DEALLOCATE(zlegend)
+  IF (ALLOCATED(zlegendinit)) DEALLOCATE(zlegendinit)
+  IF (ALLOCATED(spec_ssp_zz)) DEALLOCATE(spec_ssp_zz)
+  IF (ALLOCATED(mass_ssp_zz)) DEALLOCATE(mass_ssp_zz)
+  IF (ALLOCATED(lbol_ssp_zz)) DEALLOCATE(lbol_ssp_zz)
+  IF (ALLOCATED(time_full)) DEALLOCATE(time_full)
+  IF (ALLOCATED(weight_ssp)) DEALLOCATE(weight_ssp)
+  IF (ALLOCATED(spec_young)) DEALLOCATE(spec_young)
+  IF (ALLOCATED(spec_old)) DEALLOCATE(spec_old)
+  IF (ALLOCATED(bpass_spec_ssp)) DEALLOCATE(bpass_spec_ssp)
+  IF (ALLOCATED(bpass_mass_ssp)) DEALLOCATE(bpass_mass_ssp)
+  IF (ALLOCATED(lam_xrb)) DEALLOCATE(lam_xrb)
+  IF (ALLOCATED(spec_xrb)) DEALLOCATE(spec_xrb)
+  IF (ALLOCATED(ages_xrb)) DEALLOCATE(ages_xrb)
+  IF (ALLOCATED(zmet_xrb)) DEALLOCATE(zmet_xrb)
+  IF (ALLOCATED(lsfinfo%lsf)) DEALLOCATE(lsfinfo%lsf)
+
+  ! Allocate arrays
+  ALLOCATE(indexdefined(7,nindx))
+  ALLOCATE(wgdust(nspec,18,6,2))
+  ALLOCATE(g03smcextn(nspec))
+  ALLOCATE(bands(nspec,nbands))
+  ALLOCATE(magsun(nbands),magvega(nbands),filter_leff(nbands))
+  ALLOCATE(vega_spec(nspec),sun_spec(nspec))
+  ALLOCATE(spec_lambda(nspec),spec_nu(nspec))
+  ALLOCATE(spec_res(nspec))
+  ALLOCATE(speclib(nspec,nz,ndim_logt,ndim_logg))
+  ALLOCATE(wmb_spec(nspec,nz,ndim_wmb_logt,ndim_wmb_logg))
+  ALLOCATE(agb_spec_o(nspec,n_agb_o))
+  ALLOCATE(agb_logt_o(nz,n_agb_o))
+  ALLOCATE(agb_spec_c(nspec,n_agb_c))
+  ALLOCATE(agb_logt_c(n_agb_c))
+  ALLOCATE(agb_spec_car(nspec,n_agb_car))
+  ALLOCATE(pagb_spec(nspec,ndim_pagb,2))
+  ALLOCATE(wrn_spec(nspec,ndim_wr,nz),wrc_spec(nspec,ndim_wr,nz))
+  
+  ! Dust models
+  ALLOCATE(qpaharr(nqpah_dustem))
+  ALLOCATE(uminarr(numin_dustem))
+  ALLOCATE(lambda_dustem(ndim_dustem))
+  ALLOCATE(dustem_dustem(ndim_dustem,numin_dustem*2))
+  ALLOCATE(dustem2_dustem(nspec,nqpah_dustem,numin_dustem*2))
+  
+  ALLOCATE(flux_dagb(nspec,2,nteff_dagb,ntau_dagb))
+  ALLOCATE(nebem_cont(nspec,nebnz,nebnage,nebnip),xnebem_cont(nspec,nebnz,nebnage,nebnip))
+  ALLOCATE(neb_res_min(nspec))
+  ALLOCATE(gaussnebarr(nspec,nemline))
+  ALLOCATE(agndust_spec(nspec,nagndust))
+  ALLOCATE(mact_isoc(nz,nt,nm),logl_isoc(nz,nt,nm),logt_isoc(nz,nt,nm),logg_isoc(nz,nt,nm))
+  ALLOCATE(ffco_isoc(nz,nt,nm),phase_isoc(nz,nt,nm),mini_isoc(nz,nt,nm),lmdot_isoc(nz,nt,nm))
+  ALLOCATE(nmass_isoc(nz,nt))
+  ALLOCATE(timestep_isoc(nz,nt))
+  ALLOCATE(zlegend(nz))
+  ALLOCATE(zlegendinit(nzinit))
+  ALLOCATE(spec_ssp_zz(nspec,ntfull,nz))
+  ALLOCATE(mass_ssp_zz(ntfull,nz),lbol_ssp_zz(ntfull,nz))
+  ALLOCATE(time_full(ntfull))
+  ALLOCATE(weight_ssp(ntfull,nz))
+  ALLOCATE(spec_young(nspec),spec_old(nspec))
+  ALLOCATE(bpass_spec_ssp(nspec,nt,nz))
+  ALLOCATE(bpass_mass_ssp(nt,nz))
+  ALLOCATE(lam_xrb(nspec_xrb))
+  ALLOCATE(spec_xrb(nspec,nt_xrb,nz_xrb))
+  ALLOCATE(ages_xrb(nt_xrb))
+  ALLOCATE(zmet_xrb(nz_xrb))
+  
+  ALLOCATE(lsfinfo%lsf(nspec))
+  
+  ! Allocate local arrays
+  ALLOCATE(tspec(nspec))
+  ALLOCATE(wmbsi(nspec,nzwmb,ndim_wmb_logt,ndim_wmb_logg))
+  ALLOCATE(tspec_xrb(nspec_xrb))
+  ALLOCATE(zlegend_str(nz))
+  ALLOCATE(zz_str_xrb(nz_xrb))
+
+  ! Initialize new arrays to 0.0 or default values
+  bands = 0.0
+  magsun = 0.0
+  magvega = 0.0
+  filter_leff = 0.0
+  vega_spec = 0.0
+  sun_spec = 0.0
+  spec_lambda = 0.0
+  spec_nu = 0.0
+  spec_res = 0.0
+  speclib = 0.0
+  wmb_spec = 0.0
+  agb_spec_o = 0.0
+  agb_logt_o = 0.0
+  agb_spec_c = 0.0
+  agb_logt_c = 0.0
+  agb_spec_car = 0.0
+  pagb_spec = 0.0
+  wrn_spec = 0.0
+  wrc_spec = 0.0
+  
+  ! Dust initialization
+  dustem2_dustem = 0.0
+  
+  IF (TRIM(str_dustem) == 'THEMIS') THEN
+     qpaharr = (/0.02,0.06,0.10,0.14,0.17,0.20,0.24,0.28,0.32,0.36,0.40/)/2.2*100
+     uminarr = (/0.1,0.12,0.15,0.17,0.2,0.25,0.3,0.35,0.4,0.5,0.6,0.7,0.8,1.0,&
+       1.2,1.5,1.7, 2.0, 2.5, 3.0, 3.5, 4.0, 5.0, 6.0, 7.0, 8.0, 10.0,&
+       12.0, 15.0, 17.0, 20.0, 25.0, 30.0, 35.0, 40.0, 50.0, 80.0/)
+  ELSE
+     ! DL07
+     qpaharr = (/0.47,1.12,1.77,2.50,3.19,3.90,4.58/)
+     uminarr = (/0.1,0.15,0.2,0.3,0.4,0.5,0.7,0.8,1.0,1.2,1.5,2.0,&
+       2.5,3.0,4.0,5.0,7.0,8.0,12.0,15.0,20.0,25.0/)
+  END IF
+  
+  lambda_dustem = 0.0
+  dustem_dustem = 0.0
+  
+  flux_dagb = 0.0
+  nebem_cont = 0.0
+  xnebem_cont = 0.0
+  neb_res_min = 0.0
+  gaussnebarr = 0.0
+  agndust_spec = 0.0
+  mact_isoc = 0.0
+  logl_isoc = 0.0
+  logt_isoc = 0.0
+  logg_isoc = 0.0
+  ffco_isoc = 0.0
+  phase_isoc = 0.0
+  mini_isoc = 0.0
+  lmdot_isoc = 0.0
+  nmass_isoc = 0
+  timestep_isoc = 0.0
+  zlegend = -99.0
+  zlegendinit = -99.0
+  spec_ssp_zz = 0.0
+  mass_ssp_zz = 0.0
+  lbol_ssp_zz = 0.0
+  time_full = 0.0
+  weight_ssp = 0.0
+  spec_young = 0.0
+  spec_old = 0.0
+  bpass_spec_ssp = 0.0
+  bpass_mass_ssp = 0.0
+  lam_xrb = 0.0
+  spec_xrb = 0.0
+  ages_xrb = 0.0
+  zmet_xrb = 0.0
+  lsfinfo%lsf = 0.0
+  
+  tspec = 0.0
+  wmbsi = 0.0
+  tspec_xrb = 0.0
+  zlegend_str = ''
+  zz_str_xrb = ''
+  indexdefined = 0.0
+  mwdindex = 0
+  wgdust = 0.0
+  g03smcextn = 0.0
+  sfh_tab = 0.0
+  ntabsfh = 0
 
   !clean out all the common block arrays
   mini_isoc     = 0.

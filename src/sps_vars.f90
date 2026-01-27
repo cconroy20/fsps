@@ -5,55 +5,6 @@ MODULE SPS_VARS
   IMPLICIT NONE
   SAVE
 
-!-------set the spectral library------!
-#ifndef MILES
-#define MILES 1
-#endif
-
-#ifndef BASEL
-#define BASEL 0
-#endif
-
-#ifndef C3K
-#define C3K 0
-#endif
-
-!------set the isochrone library------!
-#ifndef MIST
-#define MIST 1
-#endif
-
-#ifndef PADOVA
-#define PADOVA 0
-#endif
-
-#ifndef PARSEC
-#define PARSEC 0
-#endif
-
-#ifndef BASTI
-#define BASTI 0
-#endif
-
-#ifndef GENEVA
-#define GENEVA 0
-#endif
-
-!note that in the case of BPASS the SSPs are already pre-computed
-!so the spectral library, IMF, etc. is fixed in this case.
-#ifndef BPASS
-#define BPASS 0
-#endif
-
-!------set the dust emission model------!
-#ifndef DL07
-#define DL07 1
-#endif
-
-#ifndef THEMIS
-#define THEMIS 0
-#endif
-
   !--------------------------------------------------------------!
   !--------------------------------------------------------------!
 
@@ -211,66 +162,21 @@ MODULE SPS_VARS
   INTEGER :: nebemlineinspec=1
 
   !------------Pre-compiler defintions------------!
+  ! Replaced by runtime variables
 
   !flag indicating type of isochrones to use
   !and number of metallicities in the set
-#if (BASTI)
-  REAL(SP), PARAMETER :: zsol = 0.020
-  CHARACTER(4), PARAMETER :: isoc_type = 'bsti'
-  INTEGER, PARAMETER :: nt=94
-  INTEGER, PARAMETER :: nz=10
-#elif (GENEVA)
-  REAL(SP), PARAMETER :: zsol = 0.020
-  CHARACTER(4), PARAMETER :: isoc_type = 'gnva'
-  INTEGER, PARAMETER :: nt=51
-  INTEGER, PARAMETER :: nz=5
-#elif (MIST)
-  REAL(SP), PARAMETER :: zsol = 0.0142
-  CHARACTER(4), PARAMETER :: isoc_type = 'mist'
-  INTEGER, PARAMETER :: nt=107
-  INTEGER, PARAMETER :: nz=12
-#elif (PARSEC)
-  REAL(SP), PARAMETER :: zsol = 0.01524
-  CHARACTER(4), PARAMETER :: isoc_type = 'prsc'
-  INTEGER, PARAMETER :: nt=93
-  INTEGER, PARAMETER :: nz=15
-#elif (PADOVA)
-  REAL(SP), PARAMETER :: zsol = 0.019
-  CHARACTER(4), PARAMETER :: isoc_type = 'pdva'
-  INTEGER, PARAMETER :: nt=94
-  INTEGER, PARAMETER :: nz=22
-#elif (BPASS)
-  REAL(SP), PARAMETER :: zsol = 0.020
-  CHARACTER(4), PARAMETER :: isoc_type = 'bpss'
-  INTEGER, PARAMETER :: nt=43
-  INTEGER, PARAMETER :: nz=12
-#endif
+  REAL(SP) :: zsol = 0.0
+  CHARACTER(LEN=:), ALLOCATABLE :: isoc_type
+  INTEGER :: nt=0
+  INTEGER :: nz=0
 
   !flag indicating type of spectral library to use
   !and number of elements per stellar spectrum
-#if (BPASS)
-  REAL(SP), PARAMETER :: zsol_spec = 0.020
-  CHARACTER(5), PARAMETER :: spec_type = 'bpass'
-  INTEGER, PARAMETER :: nzinit=1
-  INTEGER, PARAMETER :: nspec=15000
-#else
-#if (MILES)
-  REAL(SP), PARAMETER :: zsol_spec = 0.019
-  CHARACTER(5), PARAMETER :: spec_type = 'miles'
-  INTEGER, PARAMETER :: nzinit=5
-  INTEGER, PARAMETER :: nspec=5994
-#elif (C3K)
-  REAL(SP), PARAMETER :: zsol_spec = 0.0134
-  CHARACTER(11), PARAMETER :: spec_type = 'c3k_afe+0.0'
-  INTEGER, PARAMETER :: nzinit=11
-  INTEGER, PARAMETER :: nspec=11149
-#elif (BASEL)
-  REAL(SP), PARAMETER :: zsol_spec = 0.020
-  CHARACTER(5), PARAMETER :: spec_type = 'basel'
-  INTEGER, PARAMETER :: nzinit=6
-  INTEGER, PARAMETER :: nspec=1963
-#endif
-#endif
+  REAL(SP) :: zsol_spec = 0.0
+  CHARACTER(LEN=:), ALLOCATABLE :: spec_type
+  INTEGER :: nzinit=0
+  INTEGER :: nspec=0
 
   !flag indicating the type of normalization used in the BaSeL library
   !pdva = normalized to Padova isochrones
@@ -282,9 +188,9 @@ MODULE SPS_VARS
 
   !You must change the number of bands here if
   !filters are added to allfilters.dat
-  INTEGER, PARAMETER :: nbands=159
+  INTEGER :: nbands=0
   !number of indices defined in allindices.dat
-  INTEGER, PARAMETER :: nindx=30
+  INTEGER :: nindx=0
 
   !The following parameters should never be changed
   !unless you are changing the libraries
@@ -316,9 +222,9 @@ MODULE SPS_VARS
   !number of spectral points in the input library
   INTEGER, PARAMETER :: nagndust_spec=125
 
-  INTEGER, PARAMETER :: nspec_xrb=15000
-  INTEGER, PARAMETER :: nt_xrb=10
-  INTEGER, PARAMETER :: nz_xrb=11
+  INTEGER :: nspec_xrb=0
+  INTEGER :: nt_xrb=0
+  INTEGER :: nz_xrb=0
 
   !------------IMF-related Constants--------------!
 
@@ -407,20 +313,20 @@ MODULE SPS_VARS
   INTEGER :: whlam5000,whlylim
 
   !this specifies the size of the full time grid
-  INTEGER, PARAMETER :: ntfull = time_res_incr*nt
+  INTEGER :: ntfull = 0
 
   !array of index definitions
-  REAL(SP), DIMENSION(7,nindx) :: indexdefined=0.
+  REAL(SP), ALLOCATABLE :: indexdefined(:,:)
 
   !array holding MW extinction curve indices
   INTEGER, DIMENSION(6) :: mwdindex=0
 
   !array holding Witt & Gordon dust models
   !wgdust(lam,tau,model,homo/clump)
-  REAL(SP), DIMENSION(nspec,18,6,2) :: wgdust=0.
+  REAL(SP), ALLOCATABLE :: wgdust(:,:,:,:)
 
   !array holding the Gordon et al. (2003) SMC extinction
-  REAL(SP), DIMENSION(nspec) :: g03smcextn=0.
+  REAL(SP), ALLOCATABLE :: g03smcextn(:)
 
   !Index for P(Z) distribution.  1=closed box;
   !P(Z) = z^zpow*exp(-z/pmetals)  (see pz_convol.f90)
@@ -435,124 +341,109 @@ MODULE SPS_VARS
   INTEGER :: ntabsfh=0
 
   !array of bandpass filters
-  REAL(SP), DIMENSION(nspec,nbands) :: bands
+  REAL(SP), ALLOCATABLE :: bands(:,:)
   !magnitude of the Sun in all filters
-  REAL(SP), DIMENSION(nbands) :: magsun,magvega,filter_leff
+  REAL(SP), ALLOCATABLE :: magsun(:),magvega(:),filter_leff(:)
   !Vega-like star spectrum for Vega magnitude zero-point
   !spectrum of Sun, for absolute mags of Sun
-  REAL(SP), DIMENSION(nspec)  :: vega_spec=0.,sun_spec=0.
+  REAL(SP), ALLOCATABLE  :: vega_spec(:),sun_spec(:)
   !common wavelength and frequench arrays
-  REAL(SP), DIMENSION(nspec)  :: spec_lambda=0.,spec_nu=0.0
+  REAL(SP), ALLOCATABLE  :: spec_lambda(:),spec_nu(:)
   !common wavelength and frequency arrays for dummy resolution files
-  REAL(SP), DIMENSION(nspec)  :: spec_res=0.
+  REAL(SP), ALLOCATABLE  :: spec_res(:)
 
   !arrays for stellar spectral information in HR diagram
   REAL(SP), DIMENSION(ndim_logt) :: speclib_logt=0.
   REAL(SP), DIMENSION(ndim_logg) :: speclib_logg=0.
-  REAL(KIND(1.0)), DIMENSION(nspec,nz,ndim_logt,ndim_logg) :: speclib=0.
+  REAL(KIND(1.0)), ALLOCATABLE :: speclib(:,:,:,:)
 
   !arrays for the WMBasic grid
   REAL(SP), DIMENSION(ndim_wmb_logt) :: wmb_logt=0.
   REAL(SP), DIMENSION(ndim_wmb_logg) :: wmb_logg=0.
-  REAL(KIND(1.0)), DIMENSION(nspec,nz,ndim_wmb_logt,ndim_wmb_logg) :: wmb_spec=0.
+  REAL(KIND(1.0)), ALLOCATABLE :: wmb_spec(:,:,:,:)
 
   !AGB library (Lancon & Mouhcine 2002)
-  REAL(SP), DIMENSION(nspec,n_agb_o) :: agb_spec_o=0.
-  REAL(SP), DIMENSION(nz,n_agb_o)    :: agb_logt_o=0.
-  REAL(SP), DIMENSION(nspec,n_agb_c) :: agb_spec_c=0.
-  REAL(SP), DIMENSION(n_agb_c)       :: agb_logt_c=0.
+  REAL(SP), ALLOCATABLE :: agb_spec_o(:,:)
+  REAL(SP), ALLOCATABLE :: agb_logt_o(:,:)
+  REAL(SP), ALLOCATABLE :: agb_spec_c(:,:)
+  REAL(SP), ALLOCATABLE :: agb_logt_c(:)
   !C-rich library (Aringer et al. 2009)
   REAL(SP), DIMENSION(n_agb_car)       :: agb_logt_car=0.
-  REAL(SP), DIMENSION(nspec,n_agb_car) :: agb_spec_car=0.
+  REAL(SP), ALLOCATABLE :: agb_spec_car(:,:)
 
   !post-AGB library (Rauch 2003)
-  REAL(SP), DIMENSION(nspec,ndim_pagb,2) :: pagb_spec=0.
+  REAL(SP), ALLOCATABLE :: pagb_spec(:,:,:)
   REAL(SP), DIMENSION(ndim_pagb)         :: pagb_logt=0.
 
   !WR library (Smith et al. 2002)
-  REAL(SP), DIMENSION(nspec,ndim_wr,nz) :: wrn_spec=0.,wrc_spec=0.
+  REAL(SP), ALLOCATABLE :: wrn_spec(:,:,:),wrc_spec(:,:,:)
   REAL(SP), DIMENSION(ndim_wr)          :: wrn_logt=0.,wrc_logt=0.
 
-#if (DL07)
-  !dust emission model (Draine & Li 2007)
-  INTEGER, PARAMETER :: ndim_dustem=1001
-  INTEGER, PARAMETER :: numin_dustem=22, nqpah_dustem=7
-  CHARACTER(6), PARAMETER :: str_dustem='DL07'
-  REAL(SP), DIMENSION(nqpah_dustem), PARAMETER :: &
-       qpaharr = (/0.47,1.12,1.77,2.50,3.19,3.90,4.58/)
-  REAL(SP), DIMENSION(numin_dustem) :: uminarr = &
-       (/0.1,0.15,0.2,0.3,0.4,0.5,0.7,0.8,1.0,1.2,1.5,2.0,&
-       2.5,3.0,4.0,5.0,7.0,8.0,12.0,15.0,20.0,25.0/)
-#elif (THEMIS)
-  !dust emission model (THEMIS; Jones et al. 2013, 2017)
-  INTEGER, PARAMETER :: ndim_dustem=576
-  INTEGER, PARAMETER :: numin_dustem=37, nqpah_dustem=11
-  CHARACTER(6), PARAMETER :: str_dustem='THEMIS'
-  REAL(SP), DIMENSION(nqpah_dustem), PARAMETER :: &
-       qpaharr = (/0.02,0.06,0.10,0.14,0.17,0.20,0.24,0.28,0.32,0.36,0.40/)/2.2*100
-  REAL(SP), DIMENSION(numin_dustem) :: uminarr = &
-       (/0.1,0.12,0.15,0.17,0.2,0.25,0.3,0.35,0.4,0.5,0.6,0.7,0.8,1.0,&
-       1.2,1.5,1.7, 2.0, 2.5, 3.0, 3.5, 4.0, 5.0, 6.0, 7.0, 8.0, 10.0,&
-       12.0, 15.0, 17.0, 20.0, 25.0, 30.0, 35.0, 40.0, 50.0, 80.0/)
-#endif
+  !dust emission model (Draine & Li 2007 or THEMIS)
+  INTEGER :: ndim_dustem=0
+  INTEGER :: numin_dustem=0, nqpah_dustem=0
+  CHARACTER(6) :: str_dustem='DL07'
+  
+  REAL(SP), ALLOCATABLE :: qpaharr(:)
+  REAL(SP), ALLOCATABLE :: uminarr(:)
 
-  REAL(SP), DIMENSION(ndim_dustem)                :: lambda_dustem=0.
-  REAL(SP), DIMENSION(ndim_dustem,numin_dustem*2) :: dustem_dustem=0.
-  REAL(SP), DIMENSION(nspec,nqpah_dustem,numin_dustem*2) :: dustem2_dustem=0.
+  REAL(SP), ALLOCATABLE :: lambda_dustem(:)
+  REAL(SP), ALLOCATABLE :: dustem_dustem(:,:)
+  REAL(SP), ALLOCATABLE :: dustem2_dustem(:,:,:)
 
   !circumstellar AGB dust model (Villaume et al. 2015)
-  REAL(SP), DIMENSION(nspec,2,nteff_dagb,ntau_dagb) :: flux_dagb=0.
+  REAL(SP), ALLOCATABLE :: flux_dagb(:,:,:,:)
   REAL(SP), DIMENSION(2,ntau_dagb)                  :: tau1_dagb=0.
   REAL(SP), DIMENSION(2,nteff_dagb)                 :: teff_dagb=0.
 
   !nebular emission model
   REAL(SP), DIMENSION(nemline) :: nebem_line_pos=0.
   REAL(SP), DIMENSION(nemline,nebnz,nebnage,nebnip) :: nebem_line=0.,xnebem_line=0.
-  REAL(SP), DIMENSION(nspec,nebnz,nebnage,nebnip) :: nebem_cont=0.,xnebem_cont=0.
+  REAL(SP), ALLOCATABLE :: nebem_cont(:,:,:,:),xnebem_cont(:,:,:,:)
   REAL(SP), DIMENSION(nebnz)   :: nebem_logz=0.
   REAL(SP), DIMENSION(nebnage) :: nebem_age=0.
   REAL(SP), DIMENSION(nebnip)  :: nebem_logu=0.
   !minimum resolution for nebular lines, based
   !on the resolution of the spectral libraries.
-  REAL(SP), DIMENSION(nspec)   :: neb_res_min=0.0
-  REAL(SP), DIMENSION(nspec,nemline) :: gaussnebarr=0.0
+  REAL(SP), ALLOCATABLE   :: neb_res_min(:)
+  REAL(SP), ALLOCATABLE :: gaussnebarr(:,:)
 
   !arrays for AGN dust
   REAL(SP), DIMENSION(nagndust)       :: agndust_tau=0.
-  REAL(SP), DIMENSION(nspec,nagndust) :: agndust_spec=0.
+  REAL(SP), ALLOCATABLE :: agndust_spec(:,:)
 
   !arrays for the isochrone data
-  REAL(SP), DIMENSION(nz,nt,nm) :: mact_isoc=0.,logl_isoc=0.,&
-       logt_isoc=0.,logg_isoc=0.,ffco_isoc=0.,phase_isoc=0.,&
-       mini_isoc=0.,lmdot_isoc=0.
+  REAL(SP), ALLOCATABLE :: mact_isoc(:,:,:),logl_isoc(:,:,:),&
+       logt_isoc(:,:,:),logg_isoc(:,:,:),ffco_isoc(:,:,:),phase_isoc(:,:,:),&
+       mini_isoc(:,:,:),lmdot_isoc(:,:,:)
 
   !arrays holding the number of mass elements for each isochrone,
   !the age of each isochrone, and the metallicity of each isochrone
-  INTEGER, DIMENSION(nz,nt)  :: nmass_isoc=0
-  REAL(SP), DIMENSION(nz,nt) :: timestep_isoc=0.
-  REAL(SP), DIMENSION(nz)    :: zlegend=-99.
-  REAL(SP), DIMENSION(nzinit):: zlegendinit=-99.
+  INTEGER, ALLOCATABLE  :: nmass_isoc(:,:)
+  REAL(SP), ALLOCATABLE :: timestep_isoc(:,:)
+  REAL(SP), ALLOCATABLE    :: zlegend(:)
+  REAL(SP), ALLOCATABLE :: zlegendinit(:)
 
   !arrays for the full Z-dep SSP spectra
-  REAL(SP), DIMENSION(nspec,ntfull,nz) :: spec_ssp_zz=0.
-  REAL(SP), DIMENSION(ntfull,nz)       :: mass_ssp_zz=0.,lbol_ssp_zz=0.
-  REAL(SP), DIMENSION(ntfull)          :: time_full=0.
+  REAL(SP), ALLOCATABLE :: spec_ssp_zz(:,:,:)
+  REAL(SP), ALLOCATABLE :: mass_ssp_zz(:,:),lbol_ssp_zz(:,:)
+  REAL(SP), ALLOCATABLE :: time_full(:)
 
   !array for ssp weights
-  REAL(SP), DIMENSION(ntfull,nz)       :: weight_ssp=0.
+  REAL(SP), ALLOCATABLE :: weight_ssp(:,:)
 
   !array for young and old ages
-  REAL(SP), DIMENSION(nspec) :: spec_young=0.,spec_old=0.
+  REAL(SP), ALLOCATABLE :: spec_young(:),spec_old(:)
 
   !array for full BPASS SSPs
-  REAL(SP), DIMENSION(nspec,nt,nz) :: bpass_spec_ssp=0.
-  REAL(SP), DIMENSION(nt,nz)       :: bpass_mass_ssp=0.
+  REAL(SP), ALLOCATABLE :: bpass_spec_ssp(:,:,:)
+  REAL(SP), ALLOCATABLE :: bpass_mass_ssp(:,:)
 
   !arrays for X-ray binaries
-  REAL(SP), DIMENSION(nspec_xrb) :: lam_xrb=0.
-  REAL(SP), DIMENSION(nspec,nt_xrb,nz_xrb) :: spec_xrb=0.
-  REAL(SP), DIMENSION(nt_xrb) :: ages_xrb=0.0
-  REAL(SP), DIMENSION(nz_xrb) :: zmet_xrb=0.0
+  REAL(SP), ALLOCATABLE :: lam_xrb(:)
+  REAL(SP), ALLOCATABLE :: spec_xrb(:,:,:)
+  REAL(SP), ALLOCATABLE :: ages_xrb(:)
+  REAL(SP), ALLOCATABLE :: zmet_xrb(:)
   
   !------------Define TYPE structures-------------!
 
@@ -569,18 +460,18 @@ MODULE SPS_VARS
           max_wave_smooth=1E4,gas_logu=-2.0,gas_logz=0.,igm_factor=1.0,&
           fagn=0.0,agn_tau=10.0,frac_xrb=1.0,dust3=0.
      INTEGER :: zmet=1,sfh=0,wgp1=1,wgp2=1,wgp3=1,evtype=-1
-     INTEGER, DIMENSION(nbands) :: mag_compute=1
-     INTEGER, DIMENSION(nt) :: ssp_gen_age=1
+     INTEGER, ALLOCATABLE :: mag_compute(:)
+     INTEGER, ALLOCATABLE :: ssp_gen_age(:)
      CHARACTER(50) :: imf_filename='', sfh_filename=''
   END TYPE PARAMS
 
   !structure for the output of the compsp routine
   TYPE COMPSPOUT
      REAL(SP) :: age=0.,mass_csp=0.,lbol_csp=0.,sfr=0.,mdust=0.,mformed=0.
-     REAL(SP), DIMENSION(nbands)  :: mags=0.
-     REAL(SP), DIMENSION(nspec)   :: spec=0.
-     REAL(SP), DIMENSION(nindx)   :: indx=0.
-     REAL(SP), DIMENSION(nemline) :: emlines=0.
+     REAL(SP), ALLOCATABLE  :: mags(:)
+     REAL(SP), ALLOCATABLE   :: spec(:)
+     REAL(SP), ALLOCATABLE   :: indx(:)
+     REAL(SP), ALLOCATABLE :: emlines(:)
   END TYPE COMPSPOUT
 
   ! A structure to hold SFH params converted to intrinsic units
@@ -591,7 +482,7 @@ MODULE SPS_VARS
   END TYPE SFHPARAMS
 
   TYPE TLSF
-     REAL(SP), DIMENSION(nspec) :: lsf=0.
+     REAL(SP), ALLOCATABLE :: lsf(:)
      REAL(SP) :: minlam=0.,maxlam=0.
   END TYPE TLSF
 
@@ -603,8 +494,8 @@ MODULE SPS_VARS
   !structure for observational data
   TYPE OBSDAT
      REAL(SP)                    :: zred=0.,logsmass=0.
-     REAL(SP), DIMENSION(nbands) :: mags=0.,magerr=0.
-     REAL(SP), DIMENSION(nspec)  :: spec=0.,specerr=99.
+     REAL(SP), ALLOCATABLE :: mags(:),magerr(:)
+     REAL(SP), ALLOCATABLE  :: spec(:),specerr(:)
   END TYPE OBSDAT
 
   !structure for using P(z) in chi2
@@ -615,13 +506,5 @@ MODULE SPS_VARS
 
   !used for Powell minimization
   TYPE(OBSDAT) :: powell_data, sedfit_data
-
-  !used for creating a pre-tabulated grid of CSPs as a function
-  !of tau and metallicity
-  !INTEGER, PARAMETER :: ntaugrid=20
-  !REAL(SP), DIMENSION(ntaugrid) :: taugrid=0.0
-  !REAL, DIMENSION(nspec,ntfull,ntaugrid,nz) :: csp_grid=0.0
-  !INTEGER :: csp_grid_flag=0
-
 
 END MODULE SPS_VARS
