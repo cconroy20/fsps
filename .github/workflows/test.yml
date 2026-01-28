@@ -57,13 +57,11 @@ jobs:
         sudo apt-get install -y gfortran
 
     - name: Compile FSPS and Test Runner
-      working-directory: src
-      # We force F90FLAGS to include the matrix flags + standard flags + silence underflows
+      # We force FFLAGS to include the matrix flags + standard flags + silence underflows
       run: |
         make clean
-        make test_runner F90FLAGS="-cpp -O3 -fPIC -ffpe-summary=invalid,zero,overflow"
+        make test FFLAGS="-cpp -O3 -fPIC -ffpe-summary=invalid,zero,overflow"
 
     - name: Run Test
-      working-directory: src
       run: |
-        ./test_runner ../tests/data/sps_ref_${{ matrix.ref_suffix }}.bin ${{ matrix.opts }}
+        ./test_runner tests/data/sps_ref_${{ matrix.ref_suffix }}.bin ${{ matrix.opts }}

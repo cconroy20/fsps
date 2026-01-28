@@ -10,14 +10,14 @@ PROGRAM LESSSIMPLE
   !    variables not explicitly defined here are defined in sps_vars.f90
   INTEGER :: i
   !define variable for SSP spectrum
-  REAL(SP), DIMENSION(ntfull,nspec)  :: spec_pz
+  REAL(SP), ALLOCATABLE :: spec_pz(:,:)
   !define variables for Mass and Lbol info
-  REAL(SP), DIMENSION(ntfull)    :: mass_pz,lbol_pz
+  REAL(SP), ALLOCATABLE :: mass_pz(:),lbol_pz(:)
   CHARACTER(100) :: file2=''
   !structure containing all necessary parameters
   TYPE(PARAMS) :: pset
   !define structure for CSP spectrum
-  TYPE(COMPSPOUT), DIMENSION(ntfull) :: ocompsp
+  TYPE(COMPSPOUT), ALLOCATABLE :: ocompsp(:)
   REAL(SP) :: zave
 
   !---------------------------------------------------------------!
@@ -31,6 +31,14 @@ PROGRAM LESSSIMPLE
 
   !here we have to read in all the librarries
   CALL SPS_SETUP(-1)
+
+  ! Allocate memory now that SPS_SETUP has defined ntfull/nspec
+  IF (.NOT. ALLOCATED(spec_pz)) THEN
+      ALLOCATE(spec_pz(ntfull, nspec))
+      ALLOCATE(mass_pz(ntfull))
+      ALLOCATE(lbol_pz(ntfull))
+      ALLOCATE(ocompsp(ntfull))
+  END IF
 
   !compute all SSPs (i.e. at all Zs)
   !nz and the various *ssp_zz arrays are stored 
@@ -56,5 +64,10 @@ PROGRAM LESSSIMPLE
   CALL COMPSP(1,nz,file2,mass_ssp_zz,lbol_ssp_zz,&
           spec_ssp_zz,pset,ocompsp)
 
+  ! Clean up memory before exiting
+  IF (ALLOCATED(spec_pz)) DEALLOCATE(spec_pz)
+  IF (ALLOCATED(mass_pz)) DEALLOCATE(mass_pz)
+  IF (ALLOCATED(lbol_pz)) DEALLOCATE(lbol_pz)
+  IF (ALLOCATED(ocompsp))  DEALLOCATE(ocompsp)
 
 END PROGRAM LESSSIMPLE

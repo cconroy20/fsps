@@ -411,12 +411,12 @@ SUBROUTINE COMPSP_SETUP_OUTPUT(write_compsp,pset,outfile,imin,imax)
    ENDIF
 
    !formats
-30 FORMAT('#   SFH: tabulated input, dust=(',F6.2,','F6.2,')')
+30 FORMAT('#   SFH: tabulated input, dust=(',F6.2,',',F6.2,')')
 31 FORMAT('#   log(age) log(mass) Log(lbol) log(SFR) spectra')
 32 FORMAT('#   log(age) log(mass) Log(lbol) log(SFR) mags (see FILTER_LIST)')
 33 FORMAT('#   SFH: Tage=',F6.2,' Gyr, log(tau/Gyr)= ',F6.3,&
         ', const= ',F6.3,', fb= ',F6.3,', tb= ',F6.2,&
-        ' Gyr, sf_start= 'F6.3,', dust=(',F6.2,','F6.2,')')
+        ' Gyr, sf_start= ',F6.3,', dust=(',F6.2,',',F6.2,')')
 34 FORMAT('#   log(age) indices (see allindices.dat)')
 
 

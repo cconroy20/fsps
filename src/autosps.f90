@@ -6,23 +6,59 @@ PROGRAM AUTOSPS
   IMPLICIT NONE
 
   INTEGER :: z
-  REAL(SP), DIMENSION(ntfull,nspec)  :: spec_ssp
-  REAL(SP), DIMENSION(ntfull)        :: mass_ssp,lbol_ssp
+
+  REAL(SP), ALLOCATABLE :: spec_ssp(:,:)
+  REAL(SP), ALLOCATABLE :: mass_ssp(:),lbol_ssp(:)
+  TYPE(COMPSPOUT), ALLOCATABLE :: ocompsp(:)
+
   CHARACTER(100) :: file1='',aux
   CHARACTER(3)  :: str
   TYPE(PARAMS)  :: pset
-  TYPE(COMPSPOUT), DIMENSION(ntfull) :: ocompsp
+
+  ! Variables for library selection
+  CHARACTER(10) :: iso_in, spec_in
 
   !---------------------------------------------------------------!
   !---------------------------------------------------------------!
   
-  IF (isoc_type.NE.'pdva') THEN
-     WRITE(*,*) 'ERROR: autosps only works with the "Padova" isochrones'
-     WRITE(*,*) '       edit sps_vars.f90 to turn these isochrones on'
-     RETURN
+  WRITE(6,*) '=================================================='
+  WRITE(6,*) '             FSPS INTERACTIVE MODE                '
+  WRITE(6,*) '=================================================='
+
+  ! --- Ask for libraries at runtime ---
+  WRITE(6,*) 'Choose Isochrones [def: mist]:'
+  WRITE(6,*) '(mist, pdva, parsec, basti, bpass, etc.)'
+  READ(5,'(A)') aux
+  IF (LEN_TRIM(aux).EQ.0) THEN
+     iso_in = 'mist'
+  ELSE
+     READ(aux,'(A)') iso_in
+  ENDIF
+  
+  WRITE(6,*) 'Choose Spectral Library [def: miles]:'
+  WRITE(6,*) '(miles, basel, bpass, c3k_afe+0.0, etc.)'
+  READ(5,'(A)') aux
+  IF (LEN_TRIM(aux).EQ.0) THEN
+     spec_in = 'miles'
+  ELSE
+     READ(aux,'(A)') spec_in
   ENDIF
 
+  ! --- Initialize Environment Immediately ---
+  WRITE(6,*) 'Initializing libraries...'
+  ! We load ALL metallicities (-1) so we can query nz and zlegend
+  CALL SPS_SETUP(-1, TRIM(iso_in), TRIM(spec_in))
+
+  ! --- Allocate Memory ---
+  IF (.NOT. ALLOCATED(spec_ssp)) THEN
+      ALLOCATE(spec_ssp(ntfull, nspec))
+      ALLOCATE(mass_ssp(ntfull))
+      ALLOCATE(lbol_ssp(ntfull))
+      ALLOCATE(ocompsp(ntfull))
+  END IF
+
   !set IMF
+  WRITE(6,*)
   WRITE(6,*)  'enter IMF [0-5; def:0]:'
   WRITE(6,*) ' (0=Salpeter, 1=Chabrier 2003, 2=Kroupa 2001, '//&
        '3=van Dokkum 2008, 4=Dave 2008, 5=tabulated)'
@@ -37,21 +73,6 @@ PROGRAM AUTOSPS
      STOP
   ENDIF
   WRITE(6,'(" ---> Using IMF",1x,I1)') imf_type
-  
-
-  !setup directory and metallicity array
-  CALL GETENV('SPS_HOME',SPS_HOME)
-  IF (LEN_TRIM(SPS_HOME).EQ.0) THEN
-     WRITE(*,*) 'SETUP_SPS ERROR: spsdir environment variable not set!'
-     STOP
-  ENDIF
-  OPEN(90,FILE=TRIM(SPS_HOME)//'/ISOCHRONES/Padova/Padova2007/zlegend.dat',&
-       STATUS='OLD',ACTION='READ')
-  DO z=1,nz
-     READ(90,'(F6.4)') zlegend(z)
-  ENDDO
-  CLOSE(90)
-
 
   !set SFH
   WRITE(6,*)
@@ -65,7 +86,7 @@ PROGRAM AUTOSPS
   ENDIF
   IF (pset%sfh.EQ.0) WRITE(6,'(" ---> Computing an SSP")') 
   IF (pset%sfh.EQ.1) WRITE(6,'(" ---> Computing a CSP")') 
-  IF (pset%sfh.EQ.2) WRITE(6,'(" ---> Computing a tabulated SFH")') 
+  IF (pset%sfh.EQ.2) WRITE(6,'(" ---> Computing a tabulated SFH")')
 
   IF (pset%sfh.EQ.1) THEN
      WRITE(6,*)
@@ -93,10 +114,11 @@ PROGRAM AUTOSPS
   IF (pset%sfh.NE.2) THEN
      !set metallicity
      WRITE(6,*)
-     WRITE(6,*)  'enter metallicity [1-22; def:20]:'
+     ! Dynamic prompt using the loaded nz
+     WRITE(6,'("enter metallicity index [1-",I0,"; def:",I0,"]:")') nz, nz
      READ(5,'(A)')  aux
      IF (len(trim(aux)).EQ.0) THEN
-        pset%zmet = 20
+        pset%zmet = nz  ! Default to the last index (usually safest/solar-ish)
      ELSE
         READ(aux,'(I2)') pset%zmet
      ENDIF
@@ -139,17 +161,22 @@ PROGRAM AUTOSPS
   WRITE(6,'(" ---> Running model.......")')
   
   IF (pset%sfh.EQ.2) THEN
-     CALL SPS_SETUP(-1) 
+     ! We already called SPS_SETUP(-1) at the top, so variables are ready.
      DO z=1,nz
         pset%zmet=z
         CALL SSP_GEN(pset,mass_ssp_zz(:,z),lbol_ssp_zz(:,z),spec_ssp_zz(:,:,z))
      ENDDO
      CALL COMPSP(3,nz,file1,mass_ssp_zz,lbol_ssp_zz,spec_ssp_zz,pset,ocompsp)
   ELSE
-     CALL SPS_SETUP(pset%zmet)
+     ! We already called SPS_SETUP(-1), so speclib is populated.
      CALL SSP_GEN(pset,mass_ssp,lbol_ssp,spec_ssp)
      CALL COMPSP(3,1,file1,mass_ssp,lbol_ssp,spec_ssp,pset,ocompsp)
   ENDIF
 
+  ! Clean up
+  IF (ALLOCATED(spec_ssp)) DEALLOCATE(spec_ssp)
+  IF (ALLOCATED(mass_ssp)) DEALLOCATE(mass_ssp)
+  IF (ALLOCATED(lbol_ssp)) DEALLOCATE(lbol_ssp)
+  IF (ALLOCATED(ocompsp))  DEALLOCATE(ocompsp)
 
-END PROGRAM AUTOSPS 
+END PROGRAM AUTOSPS

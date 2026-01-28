@@ -25,8 +25,8 @@ declare -a configurations=(
 # Create the data directory if it doesn't exist
 mkdir -p data
 
-# Move into src directory to run Make
-cd ../src
+# Move into root directory to run Make
+cd ..
 
 echo "=========================================================="
 echo "Compiling FSPS objects and generator..."
@@ -36,7 +36,7 @@ echo "=========================================================="
 make clean > /dev/null 2>&1
 
 # Build the generator target ONCE
-make generate_test_data F90FLAGS="-cpp -fPIC -O3"
+make generate_test_data
 
 if [ ! -f ./generate_test_data ]; then
     echo "ERROR: Compilation failed."
@@ -57,7 +57,7 @@ for config in "${configurations[@]}"; do
     
     # Move and rename output to the tests/data folder
     if [ -f "sps_test_output.bin" ]; then
-        mv sps_test_output.bin "../tests/data/sps_ref_${suffix}.bin"
+        mv sps_test_output.bin "tests/data/sps_ref_${suffix}.bin"
         echo "Created: tests/data/sps_ref_${suffix}.bin"
     else
         echo "ERROR: Output file not generated for $args"
