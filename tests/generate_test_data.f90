@@ -38,9 +38,7 @@ PROGRAM GENERATE_TEST_DATA
   pset%zmet = 10        
   CALL SPS_SETUP(pset%zmet)
 
-  !-------------------------------------------------------------------
-  ! 1.5 MEMORY ALLOCATION
-  !-------------------------------------------------------------------
+  ! Memory allocation
   WRITE(*,*) 'Allocating memory (nspec:', nspec, ' ntfull:', ntfull, ')...'
   ALLOCATE(spec_ssp(ntfull,nspec))
   ALLOCATE(mass_ssp(ntfull))

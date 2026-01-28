@@ -32,11 +32,6 @@ PROGRAM SPEC_BIN
      nzinit=6
      nspec=1963
   ELSE IF (spec_type(1:5).EQ.'ckc14') THEN
-     ! Assuming CKC14 matches C3K dimensions if it was intended?
-     ! Or using values from sps_vars for C3K?
-     ! spec_bin had no #ifdef for nspec, it relied on sps_vars.
-     ! I'll use C3K values as guess or defaults if ckc14 is passed.
-     ! But wait, if spec_bin is for CKC14, it expects files in CKC14.
      nzinit=11
      nspec=11149
   ELSE IF (spec_type(1:3).EQ.'c3k') THEN

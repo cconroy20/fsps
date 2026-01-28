@@ -268,7 +268,6 @@ PROGRAM TEST_RUNNER
      CALL CHECK_ARRAY_1D("CSP Emlines", ref_ocompsp(i)%emlines, new_ocompsp(i)%emlines, nemline)
      
      ! Check Spectrum
-     ! Note: Checking 6000+ floats for 100+ steps is computationally cheap (milliseconds)
      CALL CHECK_ARRAY_1D("CSP Spec", ref_ocompsp(i)%spec, new_ocompsp(i)%spec, nspec)
   END DO
 

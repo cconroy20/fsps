@@ -160,7 +160,6 @@ SUBROUTINE SPS_SETUP(zin, isoc_type_in, spec_type_in, dust_type_in)
 
   ! Set Dust Emission Model
   IF (PRESENT(dust_type_in)) THEN
-     ! Case insensitive comparison would be better but keeping it simple as per spec_type
      IF (dust_type_in == 'themis' .OR. dust_type_in == 'THEMIS') THEN
         str_dustem = 'THEMIS'
         ndim_dustem = 576
@@ -1043,7 +1042,7 @@ SUBROUTINE SPS_SETUP(zin, isoc_type_in, spec_type_in, dust_type_in)
      !now interpolate the dust spectra onto the master wavelength array
      DO j=1,numin_dustem*2
         !the dust models only extend to 1um
-        jj = locate(spec_lambda/1E4,one)
+        jj = MAX(locate(spec_lambda/1E4,one), 1)
         dustem2_dustem(jj:,k,j) = linterparr(lambda_dustem,&
              dustem_dustem(:,j),spec_lambda(jj:))
      ENDDO
@@ -1078,7 +1077,7 @@ SUBROUTINE SPS_SETUP(zin, isoc_type_in, spec_type_in, dust_type_in)
            STOP
         ENDIF
         !interpolate the dust spectra onto the master wavelength array
-        jj = locate(spec_lambda,lambda_dagb(1))
+        jj = MAX(locate(spec_lambda,lambda_dagb(1)), 1)
         flux_dagb(jj:,1,i,j) = linterparr(lambda_dagb(1:nlam),&
              fluxin_dagb(1:nlam),spec_lambda(jj:))
      ENDDO
@@ -1107,7 +1106,7 @@ SUBROUTINE SPS_SETUP(zin, isoc_type_in, spec_type_in, dust_type_in)
            STOP
         ENDIF
         !interpolate the dust spectra onto the master wavelength array
-        jj = locate(spec_lambda,lambda_dagb(1))
+        jj = MAX(locate(spec_lambda,lambda_dagb(1)), 1)
         flux_dagb(jj:,2,i,j) = linterparr(lambda_dagb(1:nlam),&
              fluxin_dagb(1:nlam),spec_lambda(jj:))
      ENDDO
@@ -1139,8 +1138,8 @@ SUBROUTINE SPS_SETUP(zin, isoc_type_in, spec_type_in, dust_type_in)
      READ(99,*) agndust_lam(i),agndust_specinit(i,:)
   ENDDO
 
-  i1 = locate(spec_lambda,agndust_lam(1))
-  i2 = locate(spec_lambda,agndust_lam(nagndust_spec))
+  i1 = MAX(locate(spec_lambda,agndust_lam(1)), 1)
+  i2 = MAX(locate(spec_lambda,agndust_lam(nagndust_spec)), 1)
   DO i=1,nagndust
      agndust_spec(i1:i2,i) = 10**linterparr(LOG10(agndust_lam),&
           LOG10(agndust_specinit(:,i)+tiny30),LOG10(spec_lambda(i1:i2)))-tiny30
@@ -1372,7 +1371,7 @@ SUBROUTINE SPS_SETUP(zin, isoc_type_in, spec_type_in, dust_type_in)
 
   !interpolate the Vega spectrum onto the wavelength grid
   !and convert to fnu
-  jj = locate(vega_spec,tvega_lam(ntlam))
+  jj = locate(spec_lambda,tvega_lam(ntlam))
   vega_spec(:jj) = 10**linterparr(LOG10(tvega_lam),&
           LOG10(tvega_spec+tiny_number),LOG10(spec_lambda(:jj)))
   vega_spec = vega_spec*spec_lambda**2
@@ -1393,7 +1392,7 @@ SUBROUTINE SPS_SETUP(zin, isoc_type_in, spec_type_in, dust_type_in)
   CLOSE(98)
 
   !interpolate the Solar spectrum onto the wavelength grid
-  jj = locate(sun_spec,tsun_lam(ntlam))
+  jj = locate(spec_lambda,tsun_lam(ntlam))
   sun_spec(:jj) = 10**linterparr(LOG10(tsun_lam),&
           LOG10(tsun_spec+tiny_number),LOG10(spec_lambda(:jj)))
   sun_spec(jj+1:) = tiny_number
