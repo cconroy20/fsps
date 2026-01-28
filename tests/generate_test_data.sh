@@ -13,12 +13,13 @@ if [[ ! -f "generate_test_data.sh" ]]; then
 fi
 
 # Define the library combinations
+# Format: "Legacy_File_Suffix|Runtime_Args"
 declare -a configurations=(
-    "-DMILES=1 -DMIST=1"
-    "-DMILES=0 -DMIST=0 -DBASEL=1 -DPADOVA=1"
-    "-DMILES=1 -DMIST=1 -DTHEMIS=1 -DDL07=0"
-    "-DMILES=0 -DC3K=1 -DMIST=1"
-    "-DMIST=0 -DBPASS=1"
+    "MILES-1_MIST-1|--isoc mist --spec miles"
+    "MILES-0_MIST-0_BASEL-1_PADOVA-1|--isoc pdva --spec basel"
+    "MILES-1_MIST-1_THEMIS-1_DL07-0|--isoc mist --spec miles --dust themis"
+    "MILES-0_C3K-1_MIST-1|--isoc mist --spec c3k_afe+0.0"
+    "MIST-0_BPASS-1|--isoc bpss --spec bpass"
 )
 
 # Create the data directory if it doesn't exist
@@ -27,33 +28,39 @@ mkdir -p data
 # Move into src directory to run Make
 cd ../src
 
+echo "=========================================================="
+echo "Compiling FSPS objects and generator..."
+echo "=========================================================="
+
+# Clean previous build artifacts
+make clean > /dev/null 2>&1
+
+# Build the generator target ONCE
+make generate_test_data F90FLAGS="-cpp -fPIC -O3"
+
+if [ ! -f ./generate_test_data ]; then
+    echo "ERROR: Compilation failed."
+    exit 1
+fi
+
 # Main Loop
-for flags in "${configurations[@]}"; do
+for config in "${configurations[@]}"; do
+    IFS="|" read -r suffix args <<< "$config"
+    
     echo "=========================================================="
-    echo "Running configuration: $flags"
+    echo "Running configuration: $args"
+    echo "Output: tests/data/sps_ref_${suffix}.bin"
     echo "=========================================================="
-
-    # Clean previous build artifacts
-    make clean > /dev/null 2>&1
-
-    # Build ONLY the generator target with specific flags
-    # This automatically builds the necessary library objects (sps_vars.o, etc.)
-    # We pass the flags explicitly to override the Makefile defaults
-    echo "Compiling FSPS objects..."
-    make generate_test_data F90FLAGS="-cpp -fPIC -O3 $flags"
 
     # Run the generator
-    if [ -f ./generate_test_data ]; then
-        echo "Running generator..."
-        ./generate_test_data
-        
-        # Move and rename output to the tests/data folder
-        safe_name=$(echo "$flags" | sed 's/-D//g' | sed 's/ /_/g' | sed 's/=/-/g')
-        mv sps_test_output.bin "../tests/data/sps_ref_${safe_name}.bin"
-        
-        echo "Created: tests/data/sps_ref_${safe_name}.bin"
+    ./generate_test_data $args
+    
+    # Move and rename output to the tests/data folder
+    if [ -f "sps_test_output.bin" ]; then
+        mv sps_test_output.bin "../tests/data/sps_ref_${suffix}.bin"
+        echo "Created: tests/data/sps_ref_${suffix}.bin"
     else
-        echo "ERROR: Compilation failed for $flags"
+        echo "ERROR: Output file not generated for $args"
         exit 1
     fi
     
