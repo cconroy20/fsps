@@ -1,18 +1,22 @@
 SETUP INSTRUCTIONS
 
-1.   edit your .cshrc (or .bashrc) file to something like:
-     	  setenv SPS_HOME /home/user/fsps/
-	  (this should point to the directory containing the src directory)
+1.  Edit your .cshrc (or .bashrc/zshrc) file to set the SPS_HOME variable:
+            export SPS_HOME="/home/user/fsps/"
+       (this must point to the root directory containing the src/ directory)
 
-2.  edit the makefile in the src directory so that it is using your
-    fortran compiler one should then be able to compile everything by
-    simply typing "make"
+2.  Compile the code. The Makefile is located in the root directory.
+    By default, it uses gfortran. You can compile by simply typing:
+            make
+
+    If you wish to use a different compiler (e.g., ifort), you can specify it
+    on the command line without editing the Makefile:
+            make FC=ifort
 
 3.  email cconroy@cfa.harvard.edu so that I can keep you posted on updates.  
       -> this step is actually important!  Every code has bugs.  If I
-	 don't know that you're using this code, I can't tell you
-	 that I found a catastrophic bug that invalidates all of your
-	 results.
+      don't know that you're using this code, I can't tell you
+      that I found a catastrophic bug that invalidates all of your
+      results.
 
 4.  please email me if have any problems or find any bugs.
 
@@ -24,3 +28,9 @@ NOTES:
     earlier versions of gfortran (specifically v4.2.1).  The code has
     been tested and compiles sucessfully with gfortran v4.4 and later.
     (FYI, I currently compile FSPS with gfortran v6.4.0).
+
+2.  As of 2026, the code allows for runtime selection of isochrones and
+    spectral libraries. You do NOT need to edit sps_vars.f90 and 
+    recompile to switch between MIST, Padova, MILES, BaSeL, etc.
+    These options can now be passed directly to the setup routines or 
+    selected interactively in the `autosps` driver.

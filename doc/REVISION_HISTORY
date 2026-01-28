@@ -150,3 +150,17 @@
 04/2/21
  - Release of v3.2
  - added THEMIS dust emission model
+
+01/28/26
+ - Major modernization of the codebase and build system.
+ - Key Feature: Isochrone and spectral libraries can now be selected at 
+   runtime. You no longer need to edit `sps_vars.f90` and recompile to switch 
+   between MIST, Padova, MILES, BaSeL, etc.
+ - Implemented dynamic memory allocation throughout the driver programs 
+   (`simple`, `lesssimple`, `autosps`), removing compile-time static array limits.
+ - `autosps` is now interactive and will prompt the user to select their desired
+   libraries at runtime.
+ - The `Makefile` has been moved to the root directory and now uses an 
+   out-of-source build system (all artifacts are output to `build/`).
+ - Fixed legacy compiler warnings regarding FORMAT strings.
+ - Updated CI/CD infrastructure for regression testing.
