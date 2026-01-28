@@ -2,9 +2,9 @@ name: FSPS Regression Tests
 
 on:
   push:
-    branches: [ master, refactor/allocatable-arrays ]
+    branches: [ master ]
   pull_request:
-    branches: [ master, refactor/allocatable-arrays ]
+    branches: [ master ]
 
 jobs:
   test-matrix:
