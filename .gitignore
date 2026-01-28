@@ -1,6 +1,3 @@
-*.o
-*.mod
-*.exe
 .DS_Store
 nr
 SPECTRA/CKC14/*
@@ -11,3 +8,17 @@ metalml.f90
 colorteff.f90
 bytype.f90
 Makefile.prv
+
+# Ignore compiler outputs
+build/
+*.o
+*.mod
+*.exe
+
+# Executables produced by Makefile
+autosps
+simple
+lesssimple
+spec_bin
+generate_test_data
+test_runner

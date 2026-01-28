@@ -10,14 +10,14 @@
 
   INTEGER :: i
   !define variable for SSP spectrum
-  REAL(SP), DIMENSION(ntfull,nspec)  :: spec_ssp
+  REAL(SP), ALLOCATABLE :: spec_ssp(:,:)
   !define variables for Mass and Lbol info
-  REAL(SP), DIMENSION(ntfull)    :: mass_ssp,lbol_ssp
+  REAL(SP), ALLOCATABLE :: mass_ssp(:), lbol_ssp(:)
   CHARACTER(100) :: file1='', file2=''
   !structure containing all necessary parameters
   TYPE(PARAMS) :: pset
   !define structure for CSP spectrum
-  TYPE(COMPSPOUT), DIMENSION(ntfull) :: ocompsp
+  TYPE(COMPSPOUT), ALLOCATABLE :: ocompsp(:)
   REAL(SP) :: ssfr6,ssfr7,ssfr8,ave_age
 
   !---------------------------------------------------------------!
@@ -33,6 +33,14 @@
                             !20 = solar metallacity
 
   CALL SPS_SETUP(pset%zmet) !read in the isochrones and spectral libraries
+
+  ! Allocate memory now that SPS_SETUP has defined ntfull/nspec
+  IF (.NOT. ALLOCATED(spec_ssp)) THEN
+      ALLOCATE(spec_ssp(ntfull, nspec))
+      ALLOCATE(mass_ssp(ntfull))
+      ALLOCATE(lbol_ssp(ntfull))
+      ALLOCATE(ocompsp(ntfull))
+  END IF
 
   !define the parameter set.  These are the default values, specified 
   !in sps_vars.f90, but are explicitly included here for transparency
@@ -85,6 +93,12 @@
   !compute basic SFH statistics for the last entry in the ocompsp array
   !results are returned in the variables ssfr6,...,ave_age
   CALL SFHSTAT(pset,ocompsp(1),ssfr6,ssfr7,ssfr8,ave_age)
+
+  ! Clean up memory before exiting
+  IF (ALLOCATED(spec_ssp)) DEALLOCATE(spec_ssp)
+  IF (ALLOCATED(mass_ssp)) DEALLOCATE(mass_ssp)
+  IF (ALLOCATED(lbol_ssp)) DEALLOCATE(lbol_ssp)
+  IF (ALLOCATED(ocompsp))  DEALLOCATE(ocompsp)
 
 
 END PROGRAM SIMPLE

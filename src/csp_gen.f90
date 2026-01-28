@@ -59,7 +59,7 @@ subroutine csp_gen(mass_ssp, lbol_ssp, spec_ssp, &
   real(SP), dimension(nspec) :: lw_age, temp_spec !,csp1, csp2
   real(SP), dimension(nemline) :: ncsp1, ncsp2, nlw_age, temp_lin
   real(SP), dimension(ntfull, nzin) :: total_weights
-  real(SP), dimension(ntfull) :: w1=0., w2=0.
+  real(SP), dimension(ntfull) :: w1, w2
   integer :: i, j, k, imin, imax, i_tesc
   type(SFHPARAMS) :: sfhpars
   real(SP) :: m1, m2, frac_linear, mfrac, sfr, fburst
@@ -67,6 +67,8 @@ subroutine csp_gen(mass_ssp, lbol_ssp, spec_ssp, &
   real(SP) :: lbol_age, mass_age ! for mass and lbol weighted ages
 
   ! ------- Setup ----------
+  w1 = 0.
+  w2 = 0.
 
   ! Build a structure containing useful units, numbers, and switches for the
   ! weight calculations. The units of the parameters in the `sfhparams`
