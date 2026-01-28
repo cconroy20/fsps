@@ -274,6 +274,9 @@ PROGRAM TEST_RUNNER
 
   ! Report results
   WRITE(*,*) '--------------------------------------------------'  
+
+  CALL SPS_TAKEDOWN()
+
   IF (test_passed) THEN
      WRITE(*,*) 'TEST RESULT: PASS'
      STOP EXIT_SUCCESS

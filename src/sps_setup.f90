@@ -11,7 +11,7 @@ SUBROUTINE SPS_SETUP(zin, isoc_type_in, spec_type_in, dust_type_in)
 
   USE sps_vars
   USE sps_utils, ONLY: locate, linterparr, linterp, tsum, get_tuniv, &
-       get_lumdist, airtovac
+       get_lumdist, airtovac, sps_takedown
   IMPLICIT NONE
   INTEGER, INTENT(in) :: zin
   CHARACTER(LEN=*), INTENT(in), OPTIONAL :: isoc_type_in
@@ -65,6 +65,8 @@ SUBROUTINE SPS_SETUP(zin, isoc_type_in, spec_type_in, dust_type_in)
 
   !---------------------------------------------------------------!
   !---------------------------------------------------------------!
+
+  CALL SPS_TAKEDOWN()
 
   IF (verbose.EQ.1) THEN
      WRITE(*,*)
@@ -183,66 +185,6 @@ SUBROUTINE SPS_SETUP(zin, isoc_type_in, spec_type_in, dust_type_in)
      STOP
   ENDIF
   
-  ! Deallocate arrays if they are already allocated
-  IF (ALLOCATED(indexdefined)) DEALLOCATE(indexdefined)
-  IF (ALLOCATED(wgdust)) DEALLOCATE(wgdust)
-  IF (ALLOCATED(g03smcextn)) DEALLOCATE(g03smcextn)
-  IF (ALLOCATED(bands)) DEALLOCATE(bands)
-  IF (ALLOCATED(magsun)) DEALLOCATE(magsun)
-  IF (ALLOCATED(magvega)) DEALLOCATE(magvega)
-  IF (ALLOCATED(filter_leff)) DEALLOCATE(filter_leff)
-  IF (ALLOCATED(vega_spec)) DEALLOCATE(vega_spec)
-  IF (ALLOCATED(sun_spec)) DEALLOCATE(sun_spec)
-  IF (ALLOCATED(spec_lambda)) DEALLOCATE(spec_lambda)
-  IF (ALLOCATED(spec_nu)) DEALLOCATE(spec_nu)
-  IF (ALLOCATED(spec_res)) DEALLOCATE(spec_res)
-  IF (ALLOCATED(speclib)) DEALLOCATE(speclib)
-  IF (ALLOCATED(wmb_spec)) DEALLOCATE(wmb_spec)
-  IF (ALLOCATED(agb_spec_o)) DEALLOCATE(agb_spec_o)
-  IF (ALLOCATED(agb_logt_o)) DEALLOCATE(agb_logt_o)
-  IF (ALLOCATED(agb_spec_c)) DEALLOCATE(agb_spec_c)
-  IF (ALLOCATED(agb_logt_c)) DEALLOCATE(agb_logt_c)
-  IF (ALLOCATED(agb_spec_car)) DEALLOCATE(agb_spec_car)
-  IF (ALLOCATED(pagb_spec)) DEALLOCATE(pagb_spec)
-  IF (ALLOCATED(wrn_spec)) DEALLOCATE(wrn_spec)
-  IF (ALLOCATED(wrc_spec)) DEALLOCATE(wrc_spec)
-  IF (ALLOCATED(dustem2_dustem)) DEALLOCATE(dustem2_dustem)
-  IF (ALLOCATED(qpaharr)) DEALLOCATE(qpaharr)
-  IF (ALLOCATED(uminarr)) DEALLOCATE(uminarr)
-  IF (ALLOCATED(lambda_dustem)) DEALLOCATE(lambda_dustem)
-  IF (ALLOCATED(dustem_dustem)) DEALLOCATE(dustem_dustem)
-  IF (ALLOCATED(flux_dagb)) DEALLOCATE(flux_dagb)
-  IF (ALLOCATED(nebem_cont)) DEALLOCATE(nebem_cont)
-  IF (ALLOCATED(xnebem_cont)) DEALLOCATE(xnebem_cont)
-  IF (ALLOCATED(neb_res_min)) DEALLOCATE(neb_res_min)
-  IF (ALLOCATED(gaussnebarr)) DEALLOCATE(gaussnebarr)
-  IF (ALLOCATED(agndust_spec)) DEALLOCATE(agndust_spec)
-  IF (ALLOCATED(mact_isoc)) DEALLOCATE(mact_isoc)
-  IF (ALLOCATED(logl_isoc)) DEALLOCATE(logl_isoc)
-  IF (ALLOCATED(logt_isoc)) DEALLOCATE(logt_isoc)
-  IF (ALLOCATED(logg_isoc)) DEALLOCATE(logg_isoc)
-  IF (ALLOCATED(ffco_isoc)) DEALLOCATE(ffco_isoc)
-  IF (ALLOCATED(phase_isoc)) DEALLOCATE(phase_isoc)
-  IF (ALLOCATED(mini_isoc)) DEALLOCATE(mini_isoc)
-  IF (ALLOCATED(lmdot_isoc)) DEALLOCATE(lmdot_isoc)
-  IF (ALLOCATED(nmass_isoc)) DEALLOCATE(nmass_isoc)
-  IF (ALLOCATED(timestep_isoc)) DEALLOCATE(timestep_isoc)
-  IF (ALLOCATED(zlegend)) DEALLOCATE(zlegend)
-  IF (ALLOCATED(zlegendinit)) DEALLOCATE(zlegendinit)
-  IF (ALLOCATED(spec_ssp_zz)) DEALLOCATE(spec_ssp_zz)
-  IF (ALLOCATED(mass_ssp_zz)) DEALLOCATE(mass_ssp_zz)
-  IF (ALLOCATED(lbol_ssp_zz)) DEALLOCATE(lbol_ssp_zz)
-  IF (ALLOCATED(time_full)) DEALLOCATE(time_full)
-  IF (ALLOCATED(weight_ssp)) DEALLOCATE(weight_ssp)
-  IF (ALLOCATED(spec_young)) DEALLOCATE(spec_young)
-  IF (ALLOCATED(spec_old)) DEALLOCATE(spec_old)
-  IF (ALLOCATED(bpass_spec_ssp)) DEALLOCATE(bpass_spec_ssp)
-  IF (ALLOCATED(bpass_mass_ssp)) DEALLOCATE(bpass_mass_ssp)
-  IF (ALLOCATED(lam_xrb)) DEALLOCATE(lam_xrb)
-  IF (ALLOCATED(spec_xrb)) DEALLOCATE(spec_xrb)
-  IF (ALLOCATED(ages_xrb)) DEALLOCATE(ages_xrb)
-  IF (ALLOCATED(zmet_xrb)) DEALLOCATE(zmet_xrb)
-  IF (ALLOCATED(lsfinfo%lsf)) DEALLOCATE(lsfinfo%lsf)
 
   ! Allocate arrays
   ALLOCATE(indexdefined(7,nindx))
