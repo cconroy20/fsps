@@ -10,9 +10,9 @@
 
   INTEGER :: i
   !define variable for SSP spectrum
-  REAL(SP), DIMENSION(ntfull,nspec)  :: spec_ssp
+  REAL(SP), DIMENSION(ntfull,nafe,nspec)  :: spec_ssp
   !define variables for Mass and Lbol info
-  REAL(SP), DIMENSION(ntfull)    :: mass_ssp,lbol_ssp
+  REAL(SP), DIMENSION(ntfull,nafe)    :: mass_ssp,lbol_ssp
   CHARACTER(100) :: file1='', file2=''
   !structure containing all necessary parameters
   TYPE(PARAMS) :: pset

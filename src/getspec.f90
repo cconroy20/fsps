@@ -87,7 +87,8 @@ SUBROUTINE GETSPEC(pset,mact,logt,lbol,logg,phase,ffco,lmdot,wght,spec)
      ENDIF
 
   !O-rich TP-AGB spectra, from Lancon & Mouhcine 2002
-  ELSE IF (phase.EQ.5.0.AND.logt.LT.3.6.AND.ffco.LE.1.0) THEN
+  ELSE IF (phase.EQ.5.0.AND.logt.LT.3.6.AND.ffco.LE.1.0 &
+       .AND.use_lw_tpagb.EQ.1) THEN
      
      flag = flag+1
      jlo  = MAX(MIN(locate(agb_logt_o(pset%zmet,:),logt),n_agb_o-1),1)
@@ -126,7 +127,7 @@ SUBROUTINE GETSPEC(pset,mact,logt,lbol,logg,phase,ffco,lmdot,wght,spec)
              ( (1-t)*agb_spec_c(:,jlo) + t*(agb_spec_c(:,jlo+1)) )
      ENDIF
 
-  !use WMBasic grid from JJ Eldridge for T>25,000K MS stars
+  !use WMBasic grid from JJ Eldridge for T>T_cut MS stars
   ELSE IF (phase.EQ.0.0.AND.logt.GT.logt_cut) THEN
 
      flag = flag+1
@@ -158,10 +159,10 @@ SUBROUTINE GETSPEC(pset,mact,logt,lbol,logg,phase,ffco,lmdot,wght,spec)
      u   = (loggi-speclib_logg(klo))/(speclib_logg(klo+1)-speclib_logg(klo))
      u   = MIN(MAX(u,0.0),1.0) !no extrapolation
 
-     test1 = speclib(whlam5000,pset%zmet,jlo,klo)
-     test2 = speclib(whlam5000,pset%zmet,jlo+1,klo)
-     test3 = speclib(whlam5000,pset%zmet,jlo,klo+1)
-     test4 = speclib(whlam5000,pset%zmet,jlo+1,klo+1)
+     test1 = speclib(whlam5000,pset%zmet,pset%afeindx,jlo,klo)
+     test2 = speclib(whlam5000,pset%zmet,pset%afeindx,jlo+1,klo)
+     test3 = speclib(whlam5000,pset%zmet,pset%afeindx,jlo,klo+1)
+     test4 = speclib(whlam5000,pset%zmet,pset%afeindx,jlo+1,klo+1)
      
      !if all four components are zero, set the flag to zero
      IF ((test1.LE.tiny30.AND.test2.LE.tiny30.AND.&
@@ -179,18 +180,18 @@ SUBROUTINE GETSPEC(pset,mact,logt,lbol,logg,phase,ffco,lmdot,wght,spec)
              pset%zmet,logt,loggi,INT(phase),LOG10(wght*lbol)
 
         !this is a very crude hack.  just pick one of the spectra
-        IF (test1.GT.tiny30) ispec = speclib(:,pset%zmet,jlo,klo)
-        IF (test2.GT.tiny30) ispec = speclib(:,pset%zmet,jlo+1,klo)
-        IF (test3.GT.tiny30) ispec = speclib(:,pset%zmet,jlo,klo+1)
-        IF (test4.GT.tiny30) ispec = speclib(:,pset%zmet,jlo+1,klo+1)
+        IF (test1.GT.tiny30) ispec = speclib(:,pset%zmet,pset%afeindx,jlo,klo)
+        IF (test2.GT.tiny30) ispec = speclib(:,pset%zmet,pset%afeindx,jlo+1,klo)
+        IF (test3.GT.tiny30) ispec = speclib(:,pset%zmet,pset%afeindx,jlo,klo+1)
+        IF (test4.GT.tiny30) ispec = speclib(:,pset%zmet,pset%afeindx,jlo+1,klo+1)
 
      ELSE
 
         !bilinear interpolation
-        ispec = (1-t)*(1-u)*speclib(:,pset%zmet,jlo,klo) + &
-             t*(1-u)*speclib(:,pset%zmet,jlo+1,klo) + &
-             t*u*speclib(:,pset%zmet,jlo+1,klo+1) + &
-             (1-t)*u*speclib(:,pset%zmet,jlo,klo+1)
+        ispec = (1-t)*(1-u)*speclib(:,pset%zmet,pset%afeindx,jlo,klo) + &
+             t*(1-u)*speclib(:,pset%zmet,pset%afeindx,jlo+1,klo) + &
+             t*u*speclib(:,pset%zmet,pset%afeindx,jlo+1,klo+1) + &
+             (1-t)*u*speclib(:,pset%zmet,pset%afeindx,jlo,klo+1)
 
      ENDIF
 
@@ -204,8 +205,6 @@ SUBROUTINE GETSPEC(pset,mact,logt,lbol,logg,phase,ffco,lmdot,wght,spec)
   spec = MAX(spec,tiny_number)
   
   IF (verbose.EQ.1) THEN
-     !IF (flag.EQ.0.AND.(spec_type.EQ.'basel'.OR.spec_type.EQ.'ckc14').AND.&
-     !     phase.NE.6.AND.phase.NE.9) THEN
      IF (flag.EQ.0..AND.wght.GT.0.0) THEN
         WRITE(*,'(" GETSPEC WARNING: point entirely off the grid: Z=",I2,'//&
              '" logT=",F5.2," logg=",F5.2," phase=",I2," lg IMF*L=",F5.2)') &
