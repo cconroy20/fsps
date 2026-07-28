@@ -108,7 +108,7 @@ MODULE SPS_VARS
 
   !Use Lancon & Wood (2002) empirical library for TP-AGB
   !stars if this is turned on; else use main grid
-  INTEGER, PARAMETER :: use_lw_tpagb=0
+  INTEGER :: use_lw_tpagb=0
   
   !turn on/off computation of light-weighted stellar ages
   !NB: currently only works with sfh=1,4 options
@@ -238,7 +238,7 @@ MODULE SPS_VARS
   INTEGER, PARAMETER :: nz=5
   INTEGER, PARAMETER :: nafe=1
 #elif (MIST)
-  REAL(SP), PARAMETER :: zsol = 0.0191
+  REAL(SP), PARAMETER :: zsol = 0.0185
   CHARACTER(4), PARAMETER :: isoc_type = 'mist'
   INTEGER, PARAMETER :: nt=107
   INTEGER, PARAMETER :: nz=13
@@ -272,6 +272,7 @@ MODULE SPS_VARS
 #if (BPASS)
   REAL(SP), PARAMETER :: zsol_spec = 0.020
   CHARACTER(5), PARAMETER :: spec_type = 'bpass'
+  INTEGER, PARAMETER :: ndim_logt=1, ndim_logg=1  ! There's no spec lib so let's not waste memory
   INTEGER, PARAMETER :: nzinit=1
   INTEGER, PARAMETER :: nspec=15000
   INTEGER, PARAMETER :: nafeinit=1
@@ -283,16 +284,18 @@ MODULE SPS_VARS
 #if (MILES)
   REAL(SP), PARAMETER :: zsol_spec = 0.019
   CHARACTER(5), PARAMETER :: spec_type = 'miles'
+  INTEGER, PARAMETER :: ndim_logt=68, ndim_logg=19
   INTEGER, PARAMETER :: nzinit=5
   INTEGER, PARAMETER :: nspec=5994
   INTEGER, PARAMETER :: nafeinit=1
   CHARACTER(4), DIMENSION(nafeinit), PARAMETER :: afe_str=''
-  CHARACTER(2), DIMENSION(nafeinit), PARAMETER :: afe_str_iso=''
+  CHARACTER(2), DIMENSION(nafeinit), PARAMETER :: afe_str_iso='p0'
   REAL(SP), DIMENSION(nafeinit), PARAMETER     :: afe_val=0.0
   INTEGER, PARAMETER :: afe_sol_indx=1
 #elif (C3K_LR)
-  REAL(SP), PARAMETER     :: zsol_spec = 0.0134
+  REAL(SP), PARAMETER     :: zsol_spec = 0.0185
   CHARACTER(7), PARAMETER :: spec_type = 'c3k_lr'
+  INTEGER, PARAMETER      :: ndim_logt=80, ndim_logg=14
   INTEGER, PARAMETER      :: nzinit=11
   INTEGER, PARAMETER      :: nspec=1936
 #if (AFE_FLAG)
@@ -314,8 +317,9 @@ MODULE SPS_VARS
   INTEGER, PARAMETER :: afe_sol_indx=1
 #endif  
 #elif (C3K_HR)
-  REAL(SP), PARAMETER :: zsol_spec = 0.0134
+  REAL(SP), PARAMETER :: zsol_spec = 0.0185
   CHARACTER(7), PARAMETER :: spec_type = 'c3k_hr'
+  INTEGER, PARAMETER      :: ndim_logt=80, ndim_logg=14
   INTEGER, PARAMETER :: nzinit=11
   INTEGER, PARAMETER :: nspec=10992
 #if (AFE_FLAG)
@@ -356,7 +360,7 @@ MODULE SPS_VARS
   !max number of lines in tabulated SFH, LSF
   INTEGER, PARAMETER :: ntabmax=20000
   !dimensions of BaSeL library
-  INTEGER, PARAMETER :: ndim_logt=80, ndim_logg=14
+  !INTEGER, PARAMETER :: ndim_logt=80, ndim_logg=14
   !number of O-rich, C-rich AGB spectra (and Aringer C-rich spec)
   INTEGER, PARAMETER :: n_agb_o=9, n_agb_c=5, n_agb_car=9
   !number of post-AGB spectra
