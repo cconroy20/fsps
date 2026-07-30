@@ -23,7 +23,8 @@ FUNCTION AGN_DUST(lam,spec,pset,lbol_csp)
   agnspeci  = (1-dj)*agndust_spec(:,jlo) + dj*agndust_spec(:,jlo+1)
 
   !attenuate the AGN emission by the diffuse dust
-  agnspeci = agnspeci*EXP(-attn_curve(spec_lambda,dust_type,pset))
+  !Scale by pset%dust2 to apply the correct optical depth
+  agnspeci = agnspeci*EXP(-pset%dust2 * attn_curve(spec_lambda,dust_type,pset))
 
   agn_dust = spec + 10**lbol_csp*pset%fagn*agnspeci
 
