@@ -6,9 +6,20 @@ using the ATLAS12 flux files (based on opacity binning) outside that range.
 These use the native C3K logg-logt grid. The spectra are critically sampled with
 the following resolution
 
+## C3K_LR
 
 | wave_low (AA) | wave_high (AA) | R (lambda/FWHM) |
 |---------------|----------------|-----------------|
 | 100           | 3000           | 100             |
 | 3001          | 24000          | 100             |
-| 240000        | 10000000       | 50              |
+| 240000        | 100000000      | 50              |
+
+## C3K_HR
+
+| wave_low (AA) | wave_high (AA) | R (lambda/FWHM) |
+|---------------|----------------|-----------------|
+| 100           | 1000           | 200             |
+| 1000          | 3000           | 500             |
+| 3001          | 10000          | 3000            |
+| 10000         | 25000          | 500             |
+| 25000         | 100000000      | 500             |

@@ -259,13 +259,13 @@ SUBROUTINE SPS_SETUP(zin)
      ENDDO
      CLOSE(91)
   ELSE IF (spec_type(1:3).EQ.'c3k') THEN
-     OPEN(91,FILE=TRIM(SPS_HOME)//'/SPECTRA/logt.dat',&
+     OPEN(91,FILE=TRIM(SPS_HOME)//'/SPECTRA/C3K/logt.dat',&
            STATUS='OLD',iostat=stat,ACTION='READ')
      DO i=1,ndim_logt
         READ(91,*) speclib_logt(i)
      ENDDO
      CLOSE(91)
-     OPEN(91,FILE=TRIM(SPS_HOME)//'/SPECTRA/logg.dat',&
+     OPEN(91,FILE=TRIM(SPS_HOME)//'/SPECTRA/C3K/logg.dat',&
       STATUS='OLD',iostat=stat,ACTION='READ')
      DO i=1,ndim_logg
         READ(91,*) speclib_logg(i)
