@@ -1,6 +1,6 @@
 FSPS: Flexible Stellar Population Synthesis
 =====
-version 3.2
+version 4.0
 
 References
 ---------
@@ -15,9 +15,16 @@ If you have git installed, FSPS can be obtained with the following commands:
 cd /path/to/desired/location/
 git clone https://github.com/cconroy20/fsps
 ```
-Otherwise download a gzipped tarball from [here](https://github.com/cconroy20/fsps/releases). Then follow the instructions at [doc/INSTALL](doc/INSTALL).
+Otherwise download a gzipped tarball from
+[here](https://github.com/cconroy20/fsps/releases). Then follow the instructions
+at [doc/INSTALL](doc/INSTALL).
 
-You should not need to update the git repository until an update is announced (which is why you need to be on the mailing list - see [doc/INSTALL](doc/INSTALL)).  If you've obtained FSPS using git then when an update is announced you will need to simply type ``cd $SPS_HOME; git pull`` and then recompile.  If you have made your own edits to the FSPS files, git will attempt to gracefully merge your local version with the repository version.
+You should not need to update the git repository until an update is announced
+(which is why you need to be on the mailing list - see
+[doc/INSTALL](doc/INSTALL)).  If you've obtained FSPS using git then when an
+update is announced you will need to simply type ``cd $SPS_HOME; git pull`` and
+then recompile.  If you have made your own edits to the FSPS files, git will
+attempt to gracefully merge your local version with the repository version.
 
 Documentation
 ------
@@ -55,19 +62,13 @@ instructions.
 
 * `dust`: Contains the dust attenuation curves for the Witt & Gordon
 (2000) dust model and the dust emission spectra from the Draine & Li
-2007 grain model.  Also contains the circumstellar dust models from 
+2007 grain model.  Also contains the circumstellar dust models from
 Villaume et al. 2015 and the AGN dusty torus models of Nenkova et al. 2008.
 
-* `nebular`: Contains the Cloudy lookup tables for nebular emission 
+* `nebular`: Contains the Cloudy lookup tables for nebular emission
 (both continuum and line emission) computed by Nell Byler.
 
 * `pro`: Contains IDL files for reading in the .mag, .indx, and .spec
 output files
 
 * `src`: Contains the source files and routines from Numerical Recipes.
-
-
-
-
-
-
