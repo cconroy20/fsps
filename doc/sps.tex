@@ -1,0 +1,1358 @@
+\documentclass[]{article}
+\usepackage{deluxetable}
+
+\voffset=-0.6truein
+\textheight 8.9truein
+\textwidth 6.5truein
+\oddsidemargin=-0.05truein
+
+\newcommand{\Msun}{M_{\odot}}
+
+\begin{document}
+
+\centerline{\bf\large Manual for FSPS v4.0}
+\centerline{July 29, 2026}
+\vspace{0.2in}
+
+\noindent{\bf 1. Overview}
+\vspace{0.1in}
+
+\noindent
+The collection of fortran routines contained in this package allows the user to
+compute simple stellar populations (SSPs) for a variety of IMFs and
+metallicities, and for a variety of assumptions regarding the morphology of the
+horizontal branch, the blue straggler population, the post--AGB phase, and the
+location in the HR diagram of the TP-AGB phase.  A variety of simple and
+flexible prescriptions for attenuation by dust are also included, as are dust
+emission models from diffuse dust and an AGN torus.  From these SSPs the user
+may then generate composite stellar populations (CSPs) for a variety of star
+formation histories (SFHs) and dust attenuation prescriptions.  Outputs include
+the spectra and magnitudes of the SSPs and CSPs at arbitrary redshift. In
+addition to these fortran routines a collection of IDL routines are provided
+that allow easy manipulation of the output.
+
+The user is strongly encouraged to read Conroy et al. (2009) for an overview of
+stellar population synthesis (SPS) and for details regarding this collection of
+routines.  This code has been extensively calibrated against a suite of
+observational data (for details see Conroy \& Gunn 2010; Johnson et al. 2021;
+Park et al. 2025).  The code package is a in essence a highly flexible SPS code
+and has therefore come to be called FSPS.
+
+The rest of this manual is organized as follows.  In $\S$1 we briefly discuss
+the overall philosophy of the code structure and highlight the main features.
+In $\S$2 we present the routines, how they are used, and provide the user with a
+basic program that demonstrates the use of the routines.  $\S$3 discusses the
+IDL routines provided to read and manipulate the outputs from the fortran
+package.  $\S$4 discusses a variety of questions (ok, only one) the user may
+have.
+
+For a description of revisions since the initial release of the code, see the
+file REVISION\_HISTORY in the \texttt{doc} directory.  Installation instructions
+are also provided in that directory.
+
+\vspace{0.1in}
+\noindent{\bf 1.1 Downloading the code}
+\vspace{0.1in}
+
+\noindent
+FSPS is distributed via github: \texttt{github.com/cconroy20/fsps}.  The code
+can be checked out with standard github commands.  Emails will be sent to the
+mailing list whenever new versions become available (this is one reason why it
+is essential for users of this code to be on the mailing list).
+
+\vspace{0.1in}
+\noindent{\bf 1.2 Environment variables}
+\vspace{0.1in}
+
+\noindent
+As mentioned on the webpage, you will need to set an environment variable called
+SPS\_HOME that points to the root SPS directory (i.e. the directory that
+contains the \texttt{src}, \texttt{OUTPUTS}, etc. directories)
+
+\vspace{0.1in}
+\noindent{\bf 1.3 Inclusion of TP-AGB spectra}
+\vspace{0.1in}
+
+\noindent
+The TP-AGB empirical spectral library does not extend past the rest-frame K-band
+and so in previous versions the integrated spectra were not reliable beyond
+$\lambda\approx2.4\mu m$.  The TP-AGB spectra are extrapolated blueward with
+simpler linear slopes (as advocated in Lancon \& Wood 2002).  The spectra of the
+carbon stars are now extrapolated redward with the Aringer et al. (2009)
+synthetic carbon star spectral library.  The spectra of the oxygen-rich TP-AGB
+stars are now extrapolated with the latest version of the PHOENIX stellar
+spectral library (the BT-SETTL library).
+
+\vspace{0.1in}
+\noindent{\bf 1.4 Units}
+\vspace{0.1in}
+
+\noindent
+This code produces two types of files.  The first are spectral files
+(\texttt{*.spec}). The spectra are in units of $L_{\odot}/$Hz, i.e. they are
+$f_\nu$.  Integrating over frequency generates the bolometric luminosity of the
+spectrum.  Wavelengths are in angstroms {\it in vacuum}, and the wavelength
+array for the stellar libraries can be found in the files
+\texttt{C3K/c3k\_lr\.lambda} and \texttt{MILES/miles\.lambda}.  The full
+wavelength array is also now printed in the first line in the \texttt{*.spec}
+files.  The spectral resolution of the library is given in km/s dispersion in
+the e.g. \texttt{C3K/c3k\_hr.res} files; negative numbers indicate approximate
+values since the spectrum comes from a model based on opacity binning. The
+second type of file contains magnitudes in a variety of filters.  The magnitude
+zero point (i.e., AB or Vega) is set by the variable
+\texttt{compute\_vega\_mags} described below.  Both of these output files
+contain information on the age, mass, bolometric luminosity, and star formation
+rate.  All of these quantities are in the log (base-10), with units of years,
+$M_\odot$, $L_\odot$, and $M_\odot$ yr$^{-1}$, respectively.
+
+\vspace{0.1in}
+\noindent{\bf 1.5 Redshift Effects}
+\vspace{0.1in}
+
+\noindent
+The code allows the user to specify a redshift (see Section 3.1.2 below).
+Specifying a non-zero redshift affects {\it both} the computed magnitudes and
+spectra.  There are two qualitatively different options for redshifting.  See
+the parameter \texttt{redshift\_colors} below for more details.  The returned
+magnitudes include both the relevant $(1+z)$ factors and the distance modulus.
+Also as of v2.5, IGM absorption via Madau (1995) can be turned on and will
+attenuate the spectrum (and mags).  This feature is enabled only for non-zero
+redshifts.
+
+\vspace{0.1in}
+\noindent{\bf 1.6 Filters}
+\vspace{0.1in}
+
+\noindent
+The current release contains 159 filters.  The filter names can be found in the
+file \texttt{FILTER\_LIST} in the \texttt{data} directory.  The actual filter
+definitions are in the file \texttt{allfilters.dat} in the same directory.  The
+transmission profiles in this file include atmospheric absorption and are in
+units of relative response per photon (as opposed for example to relative
+response per unit power).  The filters are normalized internally within the
+code.  The output magnitudes are listed in the filter order displayed in the
+\texttt{FILTER\_LIST} file.  The user is cautioned to use whenever possible the
+exact filter transmission curve appropriate for the data being considered.
+There is, for example, no such thing as THE $B-$band filter.  Differences of a
+few hundredths of a magnitude are common between different definitions of a
+given filter such as $B$.
+
+\vspace{0.1in}
+\noindent{\bf 1.7 Computation of magnitudes}
+\vspace{0.1in}
+
+\noindent
+The AB magnitude through a filter $b$, $m_b$, is defined according to the
+following formuale:
+\begin{eqnarray}
+\langle f_\nu \rangle_b &=& \frac{\int R^b_\gamma\,f_\nu\,\,{\rm d\,
+  ln}\,\nu}{\int (\nu/\nu_b)^\beta \,R^b_\gamma\,\, {\rm d \,ln}\,\nu} \\
+m_b &=& -2.5{\rm log}_{10}(\langle f_\nu \rangle_b)-48.60
+\end{eqnarray}
+where $f_\nu$ is the spectrum and $R^b_\gamma$ is the relative response per
+photon of the filter.  The factor $(\nu/\nu_b)^\beta$ in the demoninator of
+Equation 1 may surprise those used to working with optical photometry.  Indeed,
+for UV, optical, and near-IR photometry, one usually adopts $\beta=0$ (e.g., for
+the GALEX, SDSS, and 2MASS surveys).  However, IR photometry typically assumes a
+different calibration.  For example, the {\it IRAS}, {\it Spitzer} IRAC, and
+{\it Herschel} PACS and SPIRE magnitudes are frequently quoted assuming
+$\beta=1$ while the {\it Spitzer} MIPS filters adopt $\beta=2$ (i.e., a $10^4$ K
+blackbody).  The parameter $\nu_b$ is the central wavelength of the filter.
+
+The motivation underlying this convention is that for sources with an intrinsic
+spectral slope $\beta$, the bandpass-convolved flux quoted at frequency $\nu_b$
+will be precisely the flux at that frequency. For example, observing a $10^4$K
+blackbody through the MIPS filters with the above calibration will return a flux
+density at the central frequency of the filter that is precisely the true flux
+at $\nu_b$. In the end, this is merely a convention, but one that must be
+handled carefully when comparing data to models.  See the routine
+\texttt{sps\_setup.f90} for implementation.
+
+\vspace{0.1in}
+\noindent{\bf 1.8 Interpretation of the $\Delta_L$ and $\Delta_T$
+  parameters}
+\vspace{0.1in}
+
+\noindent
+As described below, when using the Padova isochrones, the user may modify the
+bolometric luminosity and effective temperature of the TP-AGB phase by applying
+overall shifts in log($L_{\rm bol}$) and log($T_{\rm eff}$) via the parameters
+$\Delta_L$ and $\Delta_T$.  These parameters represent shifts with respect to
+the best-fit values found in Villaume et al. (2015).
+
+%\vspace{0.4in}
+
+\vspace{0.1in}
+\noindent{\bf 1.9 Dust attenuation models}
+\vspace{0.1in}
+
+\noindent
+The philosophy of the primary dust absorption model closely follows the two
+component model of Charlot \& Fall (2000).  In the general case there is dust
+associated with young stars (where the defintion of young is defined by the
+parameter \texttt{dust\_tesc}) with an optical depth \texttt{dust1} and a
+power-law attenuation curve with index \texttt{dust1\_index}.  There is a second
+dust component affecting all stars equally and is implemented as a uniform
+screen.  This component has an optical depth \texttt{dust2} and an attenuation
+curve specified by the parameter \texttt{dust\_type}.  An optional third
+component with optical depth \texttt{dust3} that only affects the older stars
+can also be included.  Currently supported attenuation models include a
+power-law curve with index \texttt{dust\_index}, a Milky-Way-like curve
+(following CCM89 but with a variable UV bump strength), a Calzetti et al. (2000)
+curve, models from Witt \& Gordon (2000) and Gordon et al. (2003) and the
+parameterized models from Kriek \& Conroy (2013) and Reddy et al. (2015).  Note
+that one can specify an effective uniform screen (as commonly employed when
+implementing the Calzetti curve, although technically one should not think of of
+the Calzetti law as representing a uniform screen) by setting
+\texttt{dust1}$=0.0$.
+
+\vspace{0.1in}
+\noindent{\bf 1.10 Dust emission model}
+\vspace{0.1in}
+
+\noindent
+FSPS includes two models for dust emission (see the parameter
+\texttt{add\_dust\_emission} below) -- the Draine \& Li 2007 model (DL07) and
+the THEMIS model (Jones et al. 2013, 2017).  Since there is currently no
+publication discussing this aspect of FSPS, a few words regarding the details
+and implementation of the dust emission model are in order.
+
+The Draine \& Li (2007; DL07) is a silicate-graphite-PAH grain model. The model
+produces dust emission spectra from $1-10^4\mu m$ as a function of the
+interstellar radiation field, $U$, expressed in units of the Milky Way radiation
+field.  DL07 advocate constructing spectra for entire galaxies by summing up
+emission spectra over a range of radiation field strengths, $P(U)dU$
+approximated by a delta function at $U_{\rm min}$ and a power-law component from
+$U_{\rm min}<U\leq U_{\rm max}$.  As suggested by DL07, we have fixed $U_{\rm
+max}=10^6$ and the power-law slope to be $\alpha=2.0$.  We therefore have:
+$P(U)dU=(1-\gamma)\delta(U-U_{\rm min})+\gamma A U^{-2}$,
+where $(1-\gamma)$ is the fraction of dust mass exposed to starlight intensity
+$U_{\rm min}$ and $A$ is a normalization constant.  The DL07 model thus has
+three parameters, $U_{\rm min}$, $\gamma$, and $q_{\rm PAH}$, the latter
+parameter being the PAH fraction.  These three parameters are contained in the
+parameter set and are called \texttt{duste\_umin}, \texttt{duste\_gamma},
+\texttt{duste\_qpah}. The user can define each of these parameters in FSPS.
+
+The THEMIS model has a similar setup to DL07 but with different underlying grain
+physics, and a wider allowed range in $q_{\rm PAH}$ and $U_{\rm min}$.
+
+\vspace{0.1in}
+\noindent{\bf 1.11 Circumstellar dust}
+\vspace{0.1in}
+
+\noindent
+Circumstellar dust around AGB stars is an option that can be included if the
+switch \texttt{add\_agb\_dust\_model} is turned on, which it is by default.  The
+circumstellar dust models are a grid of models derived from the radiative
+transfer code DUSTY, see Villaume et al. 2015 for details.
+
+\vspace{0.1in}
+\noindent{\bf 1.12 AGN dust}
+\vspace{0.1in}
+
+\noindent
+Dust emission associated with an AGN torus is an option that can be included if
+the switch \texttt{add\_agn\_dust} is turned on, which it is by default.  In
+order for AGN dust to have an effect one must also set the \texttt{pset}
+parameter \texttt{fagn} to a non-zero value; by default this is set to 0.0.  The
+AGN dust model is from Nenkova et al. (2008).  Note that the models available
+within FSPS are a very small subset of the grids provided by Nenkova et al.;
+i.e., aside from the overall amplitude, the only other free parameter is the
+$V-$band optical depth of individual clouds.
+
+\vspace{0.1in}
+\noindent{\bf 1.13 Nebular emission}
+\vspace{0.1in}
+
+\noindent
+Nebular continuum and line emission is included within FSPS based on Cloudy
+tables provided by Nell Byler.  The details of these grids are presented in
+Byler et al. (2017).   This feature is off by default (for reasons of speed),
+and the relevant switch is \texttt{add\_neb\_emission}.  One can also
+selectively turn off the continuum emission, choose between Cloudy tables that
+do or do not include dust, and can vary the gas-phase metallicity and ionization
+parameter.
+
+\vspace{0.1in}
+\noindent{\bf 1.14 Bursts of star formation}
+\vspace{0.1in}
+
+\noindent
+At present the user is able to specify a single burst time and burst strength.
+In the future it will be possible to specify multiple bursts.  Note that while
+the bursts are added into the spectrophotometric outputs, they are {\it not}
+included in the output SFR columns.  It is up to the user to add in these
+components by hand to the resulting effective SFR.
+
+\vspace{0.1in}
+\noindent{\bf 1.15 Output quantities}
+\vspace{0.1in}
+
+\noindent
+The basic executable routines available in the public distribution of FSPS
+outputs two files containing magnitudes and spectra.  FSPS can also output two
+other files: color magnitude diagrams in all available filters and spectral
+indices in the Lick system with several additional indices.  In order to output
+these files the user must modify the syntax calling \texttt{compsp}
+(specifically the \texttt{write\_compsp} variable).
+
+\vspace{0.1in}
+\noindent{\bf 1.16 BPASS models}
+\vspace{0.1in}
+
+\noindent
+BPASS stellar population models are included in FSPS.  These are binary stellar
+evolution models (v2.2; Eldridge, Stanway et al. 2017) that are made available
+as SSP SEDs for a variety of ages, metallicities, and IMFs.  For this reason the
+BPASS models are handled differently than the other isochrone models in FSPS.
+Specifically, because the models are tabulated directly as SSPs, the user cannot
+modify the spectral library nor the adopted IMF.  The BPASS models we have made
+available within FSPS are the ``-bin-imf135all\_100'' models, i.e., they assume
+a Salpeter IMF with an upper mass cutoff of $100\Msun$.  We have not included
+the very lowest metallicity model and have cut off the age grid at 15.8 Gyr.
+
+
+\vspace{0.2in}
+\noindent{\bf 1.17  General program advice}
+\vspace{0.1in}
+
+\noindent
+The code provided in this package is optimally designed to be integrated into a
+larger fortran program.  The code reads all of the libraries into memory and
+then utilizes various routines to compute SSPs and CSPs.  The benefit of the
+structure of this package is that it allows the user to produce very large
+numbers of models relatively quickly (e.g., $\sim10^5$ models in 30 minutes on a
+2.66 GHz Intel processor).  It also allows one to easily integrate SPS into
+particular science tasks.
+
+For those more interested in generating quick results, rather than using the
+more flexible aspects of the code, we also provide a routine that generates
+results after prompting the user for input.  This program is called
+\texttt{autosps.exe}.  Note that all outputs are placed in the \texttt{OUTPUTS}
+directory, included in the tarball, by default.
+
+There is a well-maintained set of Python interfaces to FSPS, originally created
+by Dan Foreman-Mackey and now maintained by Ben Johnson, available here:
+\texttt{https://github.com/dfm/python-fsps}.
+
+
+\vspace{0.4in}
+\noindent{\bf 2.  Details of Fortran Routines}
+\vspace{0.1in}
+
+\noindent{\bf 2.1 The \texttt{sps\_vars.f90} Module: Common
+  Variables, Parameters, and Structure Set-up}
+\vspace{0.1in}
+
+\noindent
+It is recommended that the user read through the \texttt{sps\_vars.f90} module.
+This module must be called at the beginning of every program that uses the
+routines described below.  It sets up two types of variables: common and
+parameters.  Both parameters and common variables can be seen by all routines
+and thus do not have to be explicitly passed during a call to a routine.  The
+difference between the two is that the parameters are defined once in
+\texttt{sps\_vars.f90} and thereafter cannot be changed.  The common variables,
+by contrast, can be changed by various routines (see $\S$ 3.1.1).  Be careful
+when changing common variables!  The variables in this module are
+well-documented.  Most parameters should not be changed.
+
+The \texttt{sps\_vars.f90} module also sets up structures (for those who are not
+familiar with fortran structures, they are similar in many ways to structures in
+IDL).  There are two main structures that are used extensively in many routines.
+One of these is defined to conveniently handle the output of the
+\texttt{compsp.f90} routine; it should not be of much concern for most users.
+The second structure defines the parameter set.  It is sufficiently important to
+warrant a more detailed discussion (see $\S$ 3.1.2).
+
+\vspace{0.1in}
+\noindent{\bf 2.1.1  Defining the isochrones, stellar libraries, and
+  dust emission model}
+\vspace{0.1in}
+
+\noindent
+At the top of the \texttt{sps\_vars.f90} module there are lines that start with
+\texttt{\#define}.  These lines set switches that tell the code to compile
+certain portions of the module depending on which switches are set.  The
+switches are binary, with `1'=on and `0'=off. So for example in the standard
+release of \texttt{sps\_vars.f90} you will see:
+
+\noindent \\
+\noindent
+\texttt{\#define MILES 0}\\
+\texttt{\#define C3K\_LR 1}\\
+\texttt{\#define C3K\_HR 0}\\
+\\
+\texttt{\#define PADOVA 0}\\
+\texttt{\#define MIST 1}\\
+\texttt{\#define PARSEC 0}\\
+\texttt{\#define BASTI 0}\\
+\texttt{\#define GENEVA 0}\\
+\texttt{\#define BPASS 0}\\
+\\
+\texttt{\#define DL07 1}\\
+\texttt{\#define THEMIS 0}\\
+
+\noindent
+which tells the code to use the C3K low resolution stellar library, the MIST
+isochrones, and the DL07 dust emission model. {\it  It is very important that
+you `make clean' every time you change one of these switches.}
+
+\noindent\\
+\noindent
+Additionally, when using the MIST isochrones and the C3K stellar libraries, it
+is possible to use $\alpha$-enhanced isochrones and stellar libraries (e.g. Park
+et al. 2025). This is done by setting
+
+\noindent\\
+\noindent
+\texttt{\#define AFE\_FLAG 1}
+
+\noindent\\
+\noindent
+Users are encouraged to contact the developers regarding the use of this flag,
+as it can become memory intensive and requires specialized spectral libraries.
+See Park et al. (2025) for more details.
+
+\vspace{0.2in}
+\noindent{\bf 2.1.2  Common variables \& parameters}
+\vspace{0.1in}
+
+\noindent
+We briefly describe several of the most important and most used common
+variables and parameters.  These parameters are defined in
+\texttt{sps\_vars.f90}.
+
+\begin{itemize}
+\item \texttt{add\_agb\_dust\_model}
+Parameter to turn on/off the AGB circumstellar dust emission model presented in
+Villaume et al. (2014).  By default this is function is turned on as of v2.5.
+\end{itemize}
+
+\begin{itemize}
+\item \texttt{add\_dust\_emission}
+Parameter to turn on/off the dust emission model.
+{\it Default is on.}
+\end{itemize}
+
+\begin{itemize}
+\item \texttt{add\_agn\_dust}
+Parameter to turn on/off the AGN dust emission model of Nenkova et al. (2008).
+\end{itemize}
+
+\begin{itemize}
+\item \texttt{add\_igm\_absorption}
+Parameter to turn on/off IGM absorption according to Madau (1995). By default
+this option is turned off.
+\end{itemize}
+
+\begin{itemize}
+\item \texttt{add\_neb\_emission}
+Parameter to turn on/off the nebular emission model (both continuum and line
+emission), based on Cloudy models from Nell Byler.  By default this option is
+turned \emph{off}.
+\end{itemize}
+
+\begin{itemize}
+\item \texttt{add\_neb\_continuum}
+Parameter to turn on/off the nebular continuum.  By default this option is
+turned on.  \texttt{add\_neb\_emission} must be turned on for this option to
+have any effect.
+\end{itemize}
+
+\begin{itemize}
+\item \texttt{neblineinspec}
+Parameter to turn on/off the inclusion of nebular lines in the spectrum.
+\texttt{add\_neb\_emission} must be turned on for this option to have any
+effect.
+{\it Default is on.}
+\end{itemize}
+
+\begin{itemize}
+\item \texttt{add\_stellar\_remnants}
+Parameter to turn on/off the inclusion of stellar remnants in the calculation of
+stellar masses.
+{\it Default is on.}
+\end{itemize}
+
+\begin{itemize}
+\item \texttt{compute\_vega\_mags}
+A switch that sets the zero points of the magnitude system:
+  \begin{itemize}
+  \item {\bf 0:}  AB system
+  \item {\bf 1:}  Vega system
+  \end{itemize}
+{\it Default is 0.}
+\end{itemize}
+
+
+\begin{itemize}
+\item \texttt{compute\_light\_ages}
+A switch that changes the output ages of COMPSP (see below) to bolometric
+luminosity weighted ages.
+\end{itemize}
+
+\begin{itemize}
+\item \texttt{dust\_type}
+Common variable defining the attenuation curve for the diffuse dust component:
+
+  \begin{itemize}
+  \item {\bf 0:} power--law; see variable \texttt{dust\_index} below.
+  \item {\bf 1:} Milky Way extinction law parameterized by Cardelli et al.
+    (1989), with variable UV bump strength; see variables \texttt{mwr} and
+    \texttt{uvb} below.
+  \item {\bf 2:} Calzetti et al. (2000) attenuation curve.  Note that if this
+    option is set then the dust attenuation is applied to all starlight equally
+    (not split by age), and therefore the only relevant parameter is
+    \texttt{dust2} (defined below), which sets the overall normalization (you
+    must set \texttt{dust1}$=0.0$ for this to work correctly).
+  \item {\bf 3:} allows the user to access a variety of attenuation curve models
+    from Witt \& Gordon (2000).  See the parameters \texttt{wgp1},
+    \texttt{wgp2}, and \texttt{wgp3} in $\S$3.1.2.  In this case the parameters
+    \texttt{dust1} and \texttt{dust2} have no effect because the WG00 models
+    specify the full attenuation curve.
+  \item {\bf 4: } Kriek \& Conroy (2013) attenuation curve.  In this model the
+    slope of the curve, set by the variable \texttt{dust\_index}, is linked to
+    the strength of the UV bump.
+  \item {\bf 5: } the SMC bar extinction curve from Gordon et al. (2003).
+  \item {\bf 6: } Reddy et al. (2015) attenuation curve.
+  \end{itemize}
+
+{\it Default is 0.}
+
+\end{itemize}
+
+\begin{itemize}
+\item \texttt{imf\_type}
+Common variable defining the IMF type:
+
+  \begin{itemize}
+  \item {\bf 0:}  Salpeter (1955)
+  \item {\bf 1:}  Chabrier (2003)
+  \item {\bf 2:}  Kroupa (2001)
+  \item {\bf 3:}  van Dokkum (2008)
+  \item {\bf 4:}  Dave (2008)
+  \item {\bf 5:}  tabulated piece-wise power-law IMF, specified in
+    \texttt{imf.dat} file located in the \texttt{data} directory (or specified
+    via the parameter \texttt{imf\_filename}; see below).
+  \end{itemize}
+
+{\it Default is 2.}
+\end{itemize}
+
+\begin{itemize}
+\item \texttt{redshift\_colors}
+  \begin{itemize}
+  \item {\bf 0:}  Magnitudes are computed at a fixed redshift specified in the
+    parameter set (see below)
+  \item {\bf 1:}  Magnitudes are computed at a redshift that corresponds to the
+    age of the output SSP/CSP (assuming a redshift--age relation appropriate for
+    a WMAP7 cosmology).  This switch is useful if the user wants to compute the
+    evolution in {\it observed} colors of a SSP/CSP.
+  \end{itemize}
+\end{itemize}
+
+\begin{itemize}
+\item \texttt{smooth\_velocity}
+Switch to smooth the spectrum in velocity space.  If off, the spectrum is
+smoothed in wavelength space.  The degree of smoothing is determined by the
+variable \texttt{sigma\_smooth} in the parameter set (see below).
+\end{itemize}
+
+\begin{itemize}
+\item \texttt{smooth\_lsf}
+Parameter to smooth the SSPs by a tabulated instrumental LSF provided in
+data/lsf.dat.  The assumed units are km/s (sigma, not FWHM). Turned off by
+default.
+\end{itemize}
+
+\begin{itemize}
+\item \texttt{tpagb\_norm\_type}
+Parameter to choose the normalization of the TP-AGB stars (only applies to the
+Padova isochrones; default is 2):
+
+  \begin{itemize}
+  \item {\bf 0:}  Original normalization of the Padova isochrones
+  \item {\bf 1:}  Normalization from Conroy \& Gunn (2010)
+  \item {\bf 2:}  Normalization from Villaume et al. (2015)
+  \end{itemize}
+\end{itemize}
+
+\begin{itemize}
+\item \texttt{time\_res\_incr}
+Parameter setting the factor by which the resolution of the default isochrone
+age array is increased.  Default value is 1, which is sufficient for most
+purposes.
+\end{itemize}
+
+\begin{itemize}
+\item \texttt{vactoair\_flag}
+Parameter to write wavelengths in air rather than vacuum if set to 1.
+The default is to write wavelengths in vacuum.
+\end{itemize}
+
+\begin{itemize}
+\item \texttt{verbose}
+Parameter that controls output to screen.  If set to 1 a lot of output will be
+printed to screen, if set to 0 the programs will be silent.
+\end{itemize}
+
+\clearpage
+
+\vspace{0.1in}
+\noindent{\bf 2.1.3  The Parameter Set}
+\vspace{0.1in}
+
+\noindent
+The parameter set is a structure defined in the \texttt{sps\_vars.f90} module.
+It must be defined at the beginning of every program for the various routines to
+properly work.  This structure acts as the primary interface between what the
+user would like to compute and the various subroutines that actually do the
+work.  Simply defining the structure at the beginning of the program will set
+all structure elements to their default values (see the example program
+\texttt{simple.f90}). The elements of the structure, and the default values, are
+described below.  The parameters are organized by topic, e.g., star formation
+history, IMF, dust, and stellar evolution parameters.
+
+\vspace{0.3cm}
+
+\noindent
+{\bf Basic Parameters}
+
+\begin{itemize}
+
+\item{\texttt{zred}} Redshift.
+  If this value is non-zero and if \texttt{redshift\_colors}$=0$, the magnitudes
+  will be computed for the spectrum placed at redshift \texttt{zred}.
+  {\it Default value is 0.0}.
+\item{\texttt{zmet}} Metallicity index.
+  The metallicity is specified as an integer ranging between 1 and \texttt{NZ} for the
+  isochrones.  A lookup table for the actual metallicities corresponding to the
+  integer values is provided at the end of this manual. Note that
+  $Z_\odot=0.0190$.
+  {\it Default value is 1}.
+\item{\texttt{afeindx}} Alpha-enhancement index.
+  The $\alpha$ enhancement is specified as an integer ranging between 1 and
+  \texttt{N\_AFE} for the isochrones.  This can only be changed if the
+  isochrones and stellar libraries are $\alpha$-enhanced (see $\S$2.1.1).
+  {\it Default value is 1}.
+\item{\texttt{imf1}} Logarithmic slope of the IMF over the range
+  $0.08<M<0.5\,\Msun$.  Only used if \texttt{imf\_type}$=2$.
+  {\it Default value is 1.3}.
+\item{\texttt{imf2}} Logarithmic slope of the IMF over the range
+  $0.5<M<1.0\,\Msun$.  Only used if \texttt{imf\_type}$=2$.
+  {\it Default value is 2.3}.
+\item{\texttt{imf3}} Logarithmic slope of the IMF over the range
+  $1.0<M<100\,\Msun$.  Only used if \texttt{imf\_type}$=2$.
+  {\it Default value is 2.3}.
+\item{\texttt{vdmc}} IMF parameter defined in van Dokkum 2008.  Only
+  used if \texttt{imf\_type}$=3$.
+  {\it Default value is 0.08}.
+\item{\texttt{mdave}} IMF parameter defined in Dave 2008.  Only
+  used if \texttt{imf\_type}$=4$.  {\it Default value is 0.5}.
+\item{\texttt{evtype}} Only include isochrone points at a particular
+  evolutionary phase specified in the isochrone table (see
+  \texttt{data/ev\_phases.tex} for phase options).  Only available with for
+  isochrones with phase information.  All phases used when set to -1.
+  {\it Default value is -1}.
+\item{\texttt{masscut}} Only include masses below {\texttt{masscut} in the
+  synthesis.
+  {\it Default value is 150.0}.
+\item{\texttt{imf\_filename}} Filename of the tabulated IMF file located in the
+  \texttt{data} directory.  If unset, the default \texttt{imf.dat} is assumed.
+  Only applies if \texttt{imf\_type}$=5$.
+\item{\texttt{mag\_compute}} Integer array of length \texttt{nbands}. Allows the
+  user to choose which magnitudes are computed from the filter list.  1=yes,
+  0=no.  All magnitudes are still printed to the mag file, but if the particular
+  band has a value of 0 in this array, the output value will be 99.
+  {\it Default values are 1 for all bands}.
+\item{\texttt{sigma\_smooth} Broadening of the spectrum, in units of km s$^{-1}$
+  (if \texttt{smooth\_velocity}$=1$) or \AA, (if \texttt{smooth\_velocity}$=0$).
+  This specifies the width of the Gaussian in terms of $\sigma$, {\it not} FWHM.
+  {\it Default value is 0.0}.}
+\item{\texttt{min\_wave\_smooth} Minimum wavelength, in \AA, that will be
+  smoothed if \texttt{sigma\_smooth}$>0$.
+  {\it Default value is 1000\,\AA}.}
+\item{\texttt{max\_wave\_smooth} Maximum wavelength, in \AA, that will be
+  smoothed if \texttt{sigma\_smooth}$>0$.
+  {\it Default value is 10,000\,\AA}.}
+\item{\texttt{gas\_logu} Value of the gas ionization parameter, $U$; relevant
+  only for the nebular emission model.
+  {\it Default value is -2.0}.}
+\item{\texttt{gas\_logz} Value of the gas metallicity; relevant only for the
+  nebular emission model.
+  {\it Default value is 0.0}.}
+\item{\texttt{igm\_factor}} Factor by which to multiply the default IGM
+  absorption optical depth.
+    {\it Default value is 1.0}.}
+\end{itemize}
+
+\vspace{0.5cm}
+
+\noindent
+{\bf SFH Parameters}
+\begin{itemize}
+\item \texttt{sfh} Defines the type of star formation history, normalized such
+  that one solar mass of stars is formed over the full SFH (except for tabular).
+  {\it Default value is 0}.
+  \begin{itemize}
+  \item {\bf 0:} SSP
+  \item {\bf 1:} A six parameter SFH (tau model plus a constant component and a
+    burst), with parameters \texttt{tau}, \texttt{const}, \texttt{sf\_start},
+    \texttt{sf\_trunc}, \texttt{tburst}, and \texttt{fburst} (see below).
+  \item {\bf 2:} Tabulated SFH defined in a file called \texttt{sfh.dat} that
+    must reside in the \texttt{data} directory (or a file specified via the
+    parameter \texttt{sfh\_filename}; see below). The file must contain three
+    columns.  The first column is time since the Big Bang in Gyr, the second is
+    the SFR in units of solar masses per year, the third is the absolute
+    metallicity.  An example is provided in the \texttt{data} directory.  The
+    time grid in this file can be arbitrary (so long as the units are correct),
+    but it is up to the user to ensure that the tabulated sfh is well-sampled so
+    that the outputs are stable. Obviously, highly oscillatory data require
+    dense sampling.
+  \item {\bf 3:} Reserved for special use of the tabulated SFH option. Allows
+    the user to read in the tabulated SFHs directly into the necessary arrays,
+    bypassing the need to create \texttt{sfh.dat} files.  Email
+    cconroy@cfa.harvard.edu if you would like further instructions for how to
+    use this option.
+  \item {\bf 4:} This is the same as option 1 except that the tau-model
+    component is replaced with a delayed tau model of the form $t\,e^{-t/\tau}$.
+  \item {\bf 5:} Delayed tau model with a transition at a time
+    \texttt{sf\_trunc} to a linearly decreasing SFH with the slope specified by
+    \texttt{sf\_slope}. See Simha et al. 2014 for details.
+  \end{itemize}
+\item{\texttt{tau}} Defines e-folding time for the SFH, in Gyr.  Only used if
+  \texttt{sfh}$=1$ or 4.  The range is $0.1<\tau<10^2$.
+  {\it Default value is 1.0}.
+\item{\texttt{const}} Defines the constant component of the SFH.  This quantity
+  is defined as the fraction of mass formed in a constant mode of SF; the range
+  is therefore $0\leq C\leq1$.  Only used if \texttt{sfh}$=1$ or 4.
+  {\it Default value is 0.0}.
+\item{\texttt{sf\_start}} Start time of the SFH, in Gyr.
+  {\it Default value is 0.0}.
+\item{\texttt{sf\_trunc}} Truncation time of the SFH, in Gyr.  If set to 0.0,
+  there is no trunction.
+  {\it Default value is 0.0}.
+\item{\texttt{tage}} If set to a non-zero value, the \texttt{compsp} routine
+  will compute the spectra and magnitudes only at this age, and will therefore
+  only output one age result.  The units are Gyr. (The default is for
+  \texttt{compsp} to compute and return results from $t\approx0$ to the maximum
+  age in the isochrones).
+  {\it Default value is 0.0.}
+\item{\texttt{fburst}} Defines the fraction of mass formed in an instantaneous
+  burst of star formation.  Only used if \texttt{sfh}$=1$ or 4.
+  {\it Default value is 0.0}.
+\item{\texttt{tburst}} Defines the age of the Universe when the burst occurs, in
+  Gyr.  If \texttt{tburst}$>$\texttt{tage} then there is no burst. Only used if
+  \texttt{sfh}$=1$ or 4.  {\it Default value is 11.0}.
+\item{\texttt{sf\_slope}} For \texttt{sfh}$=5$, this is the slope of the SFR
+  after time \texttt{sf\_trunc}.
+  {\it Default value is 0.0}.
+\item{\texttt{sfh\_filename}} Filename of the tabulated SFH file located in the
+  \texttt{data} directory.  If unset, the default \texttt{sfh.dat} is assumed.
+  Only applies if \texttt{sfh}$=2$.
+\end{itemize}
+
+\vspace{0.5cm}
+
+\noindent
+{\bf Dust Parameters}
+\begin{itemize}
+\item{\texttt{dust\_tesc}} Stars younger than \texttt{dust\_tesc} are attenuated
+  by both \texttt{dust1} and \texttt{dust2}, while stars older are attenuated by
+  \texttt{dust2} only.  Units are log(yrs).
+  {\it Default value is 7.0}.
+\item{\texttt{dust1}} Dust parameter describing the attenuation of young stellar
+  light, i.e. where $t\leq$\texttt{dust\_tesc} (for details, see Conroy et al.
+  2009a).  Specifically, it is the opacity at 5500\AA.
+  {\it Default value is 0.0}.
+\item{\texttt{dust2}} Dust parameter describing the attenuation of all stellar
+  light.  Specifically, it is the opacity at 5500\AA.
+  {\it Default value is 0.0}.
+\item{\texttt{dust3}} Optical depth of dust affectting only old stellar light,
+  i.e. where $t>$\texttt{dust\_tesc}
+  {\it Default value is 0.0}.
+\item{\texttt{frac\_nodust}} Fraction of starlight that is not attenuated by the
+  diffuse dust component (i.e. that is not affected by \texttt{dust2}).
+  {\it Default value is 0.0}.
+\item{\texttt{frac\_obrun}} Fraction of starlight that is not attenuated by the
+  birth cloud dust component (i.e. that is not affected by \texttt{dust1}).
+  {\it Default value is 0.0}.
+\item{\texttt{dust\_index}} Power--law index of the diffuse dust attenuation
+  curve.  Only used when \texttt{dust\_type}=0 or 4.
+  {\it Default value is -0.7}.
+\item{\texttt{dust1\_index}} Power--law index of the birth cloud dust
+  attenuation curve.  Used for all dust types.
+  {\it Default value is -1.0}.
+\item{\texttt{mwr}} The ratio of total to selective absorption which
+  characterizes the MW extinction curve: $R\equiv A_V/E(B-V)$.  Only used when
+  \texttt{dust\_type}=1.
+  {\it Default value is 3.1}.
+\item{\texttt{uvb}} Parameter characterizing the strength of the 2175\AA\,
+  extinction feature with respect to the standard Cardelli et al.  determination
+  for the MW.  Only used when \texttt{dust\_type}=1.
+  {\it Default value is 1.0}.
+\item{\texttt{wgp1}} Integer specifying the optical depth in the Witt \& Gordon
+  2000 (WG00) models.  Values range from $1-18$, corresponding to optical depths
+  of\\
+  $0.25,0.50,0.75,1.00,1.50,2.00,2.50,3.00,3.50,4.00,4.50, 5.00,5.50,6.00,7.00,8.00,9.00,10.0$.
+  Note that these optical depths are defined differently from the optical depths
+  defined by the parameters \texttt{dust1} and \texttt{dust2}.  See WG00 for
+  details.
+\item{\texttt{wgp2}} Integer specifying the type of large--scale geometry and
+  extinction curve.  Values range from $1-6$, corresponding to MW+dusty,
+  MW+shell, MW+cloudy, SMC+dusty, SMC+shell, SMC+cloudy.  MW= Milky Way
+  extinction; SMC= Small Magellanic Cloud extinction.  Dusty, shell, and cloudy
+  specify the geometry and are described in WG00.
+\item{\texttt{wgp3}} Integer specifying the local geometry for the WG00 dust
+  models.  A value of 1 corresponds to a homogeneous distribution, and a value
+  of 2 corresponds to a clumpy distribution. See WG00 for details.
+\item{\texttt{duste\_gamma}} Parameter of the dust emission model.  Specifies
+  the relative contribution of dust heated at a radiation field strength of
+  $U_{\rm min}$ and dust heated at $U_{\rm min}<U\leq U_{\rm max}$.  Allowable
+  range is $0.0-1.0$.
+  {\it Default value is 0.01.}
+\item{\texttt{duste\_umin}} Parameter of the dust emission model.  Specifies the
+  minimum radiation field strength in units of the MW value.  Valid range is
+  between 0.1 and 25.0.
+  {\it Default value is 1.0.}
+\item{\texttt{duste\_qpah}} Parameter of the dust emission model.  Specifies the
+  grain size distribution through the fraction of grain mass in PAHs. This
+  parameter has units of \% and a valid range of $0.47-4.58$.
+  {\it Default value is 3.5.}
+\item{\texttt{fagn}} This parameter is the luminosity of the AGN expressed as a
+  fraction of the stellar bolometric luminosity.
+  {\it Default value is 0.0.}
+\item{\texttt{agn\_tau}} $V-$band optical depth of individual clouds in the AGN
+  model of Nenkova et al. (2008).
+  {\it Default value is 10.0.}
+\end{itemize}
+
+\noindent
+{\bf Isochrone Parameters}
+\begin{itemize}
+\item{\texttt{redgb}} Modify weight given to the RGB. Only availble for
+  isochrone sets that specify this phase (e.g., BaSTI).
+  {\it Default value is 1.0}.
+\item{\texttt{agb}} Modify weight given to the AGB.  Only available for
+  isochrone sets that specify this phase (e.g., BaSTI).
+  {\it Default value is 1.0}.
+\item{\texttt{dell}} Shift in ${\rm log}(L_{\rm bol})$ of the TP-AGB isochrones.
+  Note that the meaning of this parameter and the one below has changed to
+  reflect the updated calibrations presented in Conroy \& Gunn (2009).  That is,
+  these parameters now refer to a modification about the calibrations presented
+  in that paper.
+  {\it Default value is 0.0}.
+\item{\texttt{delt}} Shift in ${\rm log}(T_{\rm eff})$ of the TP-AGB isochrones
+  for Padova models.
+  {\it Default value is 0.0}.
+\item{\texttt{agb\_dust}} Scales the AGB circumstellar dust emission model
+  presented in Villaume et al. (2014).
+  {\it Default value is 1.0}.
+\item{\texttt{fcstar}} Currently has no effect.  Previously, the fraction of
+  stars that the Padova isochrones identify as Carbon stars that FSPS assigns to
+  a Carbon star spectrum.  Set this to 0.0 if for example the users wishes to
+  turn all Carbon stars into regular M-type stars.  Valid range is $0.0-1.0$.
+  {\it Default value is 1.0}.
+\item{\texttt{sbss}} Specific frequency of blue straggler stars.  See Conroy et
+  al. (2009) for details and a plausible range.
+  {\it Default value is 0.0}.
+\item{\texttt{fbhb}} Fraction of horizontal branch stars that are blue.  The
+  blue HB stars are uniformly spread in ${\rm log}(T_{\rm eff})$ to $10^4$ K.
+  See Conroy et al. 2009a for details and a plausible range.
+  {\it Default value is 0.0}.
+\item{\texttt{pagb}} Weight given to the post--AGB phase.  A value of 0.0 turns
+  off post--AGB stars; a value of 1.0 implies that the Vassiliadis \& Wood 1994
+  tracks are implemented as--is.
+  {\it Default value is 1.0}.
+
+\end{itemize}
+
+\vspace{0.1in}
+\noindent{\bf 2.2  Description of Fortran Routines}
+\vspace{0.1in}
+
+\noindent
+We now discuss the purpose and syntax of the routines in this package.
+$\S$3.2.1 discusses the example routines provided in FSPS that demonstrate how
+many of these routines are used.  Routines included in the \texttt{src}
+directory that are {\it not} discussed below are meant to only be accessed
+through other routines.
+
+%\bigskip
+
+\begin{itemize}
+\item \texttt{COMPSP(write\_compsp,nzin,outfile,mass\_ssp,lbol\_ssp,spec\_ssp,pset,ocompsp)}
+\end{itemize}
+
+This routine takes as input \texttt{mass\_ssp}, \texttt{lbol\_ssp}, and
+\texttt{spec\_ssp}, which are the outputs of the routine \texttt{ssp\_gen.f90}.
+The user must also provide the parameter set \texttt{pset} and filename for
+output in \texttt{outfile}, if output is desired (a blank string may be
+specified if no output is desired). There are six possible outputs, specified by
+\texttt{write\_compsp}: No output (0), output magnitudes (1), output spectra
+(2), output magnitudes and spectra (3), output spectral indices (4), output
+color-magnitude diagrams (5).  The outputs are written to files with the output
+filename with ``.mags'', ``.spec'', ``.indx'', or ``.cmd'' appended.
+
+A variety of output from this routine is saved in the \texttt{ocompsp} variable,
+which must be a structure as defined in \texttt{sps\_vars.f90}.  Again, see the
+example routine below.
+
+The \texttt{nzin} parameter sets the number of metallicity points passed.  For
+standard, single metallicity calculations, set this value to one and simply pass
+the outputs from \texttt{ssp\_gen.f90}. However, if one wants to compute spectra
+for an evolving metallicity (i.e. when computing a tabulated SFH, the
+metallicity history may be specified), one needs to set this parameter to the
+number of metallicity elements available (in the default release this is 22).
+One then must take care to pass the metallicity--dependent \texttt{ssp\_gen.f90}
+outputs.  Currently the code only allows the specification of a metallicity
+history when passing tabulated SFH.
+
+
+\begin{itemize}
+\item \texttt{GETMAGS(zred,spec,mags)}
+\end{itemize}
+
+The input is the redshift \texttt{zred} and spectrum \texttt{spec}. The output
+is an array of magnitudes \texttt{mags} for the redshifted spectrum.
+
+\begin{itemize}
+\item \texttt{GETINDX(lambda,spec,indices)}
+\end{itemize}
+
+This routine computes the spectral indices for the input spectrum \texttt{spec}
+with corresponding wavelength array \texttt{lambda}, returning the indices in an
+array \texttt{indices}.  The \texttt{indices} array must be defined with an
+array length specified by the variable \texttt{nindx}, which specifies the
+number of indices.  The indices are defined in the file allindices.dat in the
+\texttt{data} directory.
+
+\begin{itemize}
+\item \texttt{PZ\_CONVOL(pset,zave,spec\_pz,lbol\_pz,mass\_pz)}
+\end{itemize}
+
+This routine convolves the full array of metallicity-dependent SSPs with a
+closed-box metallicity distribution function (MDF).  The yield
+(\texttt{pset\%pmetals}) is the only input.  Outputs include the average
+metallicity (\texttt{zave}) and the spectra, lbol, and mass integrated over the
+MDF.  The full metallicity-dependent SSPs must have been previously set up.  An
+example of how to use this routine is provided in \texttt{lesssimple.f90}.
+
+
+\begin{itemize}
+\item \texttt{SFHSTAT(pos,model,ssfr6,ssfr7,ssfr8,ave\_age)}
+\end{itemize}
+
+This routine returns basic statistics for a given star formation history.  The
+inputs are the parameter set (\texttt{pos}) and a single element output from the
+compsp routine (\texttt{model}).  The outputs are the specific SFR (SSFR),
+averaged over $10^6$, $10^7$, and $10^8$ yrs (\texttt{ssfr6, ssfr7, ssfr8}), and
+the mass-weighted average stellar age (\texttt{ave\_age}).  An example of how to
+use this routine is provided in \texttt{simple.f90}.
+
+
+\begin{itemize}
+\item \texttt{SPS\_SETUP(zin)}
+\end{itemize}
+
+This routine must be called at least once before running any routines. It reads
+in all of the isochrones and spectral libraries and stores them in a common
+block.  If the user requires only one metallicity, then that metallicity can be
+specified as \texttt{zin}.  The metallicity must be specified as an integer
+corresponding to the look-up table at the end of this manual.  If the user
+wishes to read in all metallicities, then \texttt{zin} should be set to -1.
+
+\begin{itemize}
+\item \texttt{SSP\_GEN(pset,mass\_ssp,lbol\_ssp,spec\_ssp)}
+\end{itemize}
+
+This routine takes as input the parameter set, \texttt{pset}, and outputs the
+time-dependent mass, \texttt{mass\_ssp}, bolometric luminosity,
+\texttt{lbol\_ssp}, and spectrum, \texttt{spec\_ssp}, of an SSP defined by the
+parameter set.  Each of these input variables must be properly defined at the
+beginning of the main routine.  See the example routines for guidance.
+
+
+\begin{itemize}
+\item \texttt{SMOOTHSPEC(lambda,spec,sigma,minl,maxl)}
+\end{itemize}
+
+This routine broadens the input spectrum \texttt{spec} with corresponding
+wavelength array \texttt{lambda} by a velocity dispersion \texttt{sigma}
+measured in km/s.  Note that the velocity broadening is only approximate in that
+we are ignoring the variation in d$\lambda$ with $\lambda$ within each
+integration step.
+
+\begin{itemize}
+\item \texttt{WRITE\_ISOCHRONE(outfile,zz)}
+\end{itemize}
+
+This routine writes the isochrones for all ages at a single metallicity to a
+file with name \texttt{outfile}.  The metallicity of the isochrone is specified
+via the variable \texttt{zz} in the internal integer metallicity units (see the
+Table at the end of this manual).  At each age the isochrone is written for all
+of the magnitudes specified in the \texttt{FILTER\_LIST} file.
+
+\vspace{0.1in}
+\noindent{\bf 2.2.1. Example Routines}
+\vspace{0.1in}
+
+The code package contains several routines that highlight many of the features
+of FSPS.  The routine \texttt{simple.f90} demonstrates the basic syntax required
+to generate simple models.  In addition, there is a less simple routine located
+in the \texttt{src} directory, called \texttt{lesssimple.f90}, that highlights
+some more advanced features of the code.
+
+
+\vspace{0.1in}
+\noindent{\bf 3.  Description of IDL Routines}
+\vspace{0.1in}
+
+\begin{itemize}
+\item \texttt{res = read\_indx(file)}
+\end{itemize}
+
+This function takes as input an index file and reads it into a simple IDL
+structure.  The index file must be created by the user (unlike the .spec and
+.mags files, which are automatically created in the compsp routine).  The format
+is the age followed by all of the indices defined in the file
+\texttt{INDEX\_LIST}.
+
+\begin{itemize}
+\item \texttt{res = read\_mags(file)}
+\end{itemize}
+
+This function takes as input the magnitude file (*.mags) produced by
+\texttt{compsp.f90}.  The output is an IDL structure with elements including the
+some of the magnitudes listed in \texttt{FILTER\_LIST} and computed by
+\texttt{compsp.f90}.  Note that not all magnitudes computed and listed in the
+*.mags file are contained in the resulting structure.  This routine can be
+trivially modified to include other/all of the magnitudes computed.
+
+\begin{itemize}
+\item \texttt{res = read\_spec(file)}
+\end{itemize}
+
+This function takes as input the spectra file (*.spec) produced by
+\texttt{compsp.f90}.  The output is an IDL structure with elements including the
+time-dependent spectrum computed by \texttt{compsp.f90}.
+
+\begin{itemize}
+\item \texttt{res = read\_cmd(file)}
+\end{itemize}
+
+This function takes as input the CMD file (*.cmd) produced by
+\texttt{compsp.f90}.  The output is an IDL structure with elements including the
+time-dependent spectrum computed by \texttt{compsp.f90}.
+
+\begin{itemize}
+\item \texttt{res = read\_indx(file)}
+\end{itemize}
+
+This function takes as input the index file (*.indx) produced by
+\texttt{compsp.f90}.  The output is an IDL structure with elements including the
+time-dependent spectrum computed by \texttt{compsp.f90}.
+
+\begin{itemize}
+\item \texttt{res = read\_fsps(file)}
+\end{itemize}
+
+This function takes as input {\it any} file produced by \texttt{compsp.f90}.
+The function determines which type of file was passed based on the filename
+(*.spec, *.mags, etc).
+
+
+\vspace{0.4in}
+\noindent{\bf 4.  How do I....}
+\vspace{0.1in}
+
+\noindent{\bf 4.1  add additional filters?}
+\vspace{0.1in}
+
+\noindent
+Adding additional filters is straightforward.  There are three things the user
+must do: 1) modify the \texttt{nbands} parameter in the \texttt{sps\_vars.f90}
+routine; 2) add the filter to the \texttt{allfilters.dat} file located in the
+\texttt{data} directory. Follow the format: there must be a line starting with a
+\# sign, followed by two columns, the first being the wavelength in angstroms,
+the second being the total throughput.  The filter can be of any resolution, and
+need not be properly normalized.  3) The user would be wise to add details of
+the filter to the \texttt{FILTER\_LIST} file located in the \texttt{data}
+directory, although this is not, strictly speaking, necessary for proper
+functioning of the code.
+
+We would appreciate it if the user would email us if they add a filter so that
+we can include this filter in later releases (thereby saving others the trouble
+of adding filters).
+
+\vspace{0.4in}
+\noindent{\bf 5.  Acknowledgements}
+\vspace{0.1in}
+
+FSPS has been in active development since 2009 and has been developed and tested
+by a core group of users over the years including Martin White, Ben Johnson,
+Nell Byler, Alexa Villaume, Joel Leja, and Demitri Muna.  Special thanks in
+particular to Ben Johnson who has re-written entire routines and has extensively
+tested the outputs.  I would also like to thank the many researchers who have
+made publicly available their codes and/or models, which made it possible to
+include many of the features in FSPS, including B. Aringer, Bruce Draine, Gary
+Ferland, Karl Gordon, Zeljko Ivezic, Ariane Lancon, Maia Nenkova, Linda Smith,
+the Padova, BaSTI, and Geneva stellar evolution groups, and the teams
+responsible for the MILES and BaSeL spectral libraries including Bob Kurucz,
+whose stellar atmosphere and spectral libraries underpine the BaSeL library and
+the C3K spectral library under development.
+
+The development of FSPS has been supported by Packard and Sloan foundation
+fellowships, NASA grants NNX14AR86G and NNX15AK14G and NSF grant AST-1524161.
+
+
+\clearpage
+
+\begin{table}
+\begin{center}
+\caption{Lookup table of metallicity values depends on the
+  isochrone set being used.}
+\begin{tabular}{ccccccc}
+\hline\hline
+\texttt{zmet} & $Z$ [log($Z/Z_\odot$)] &  $Z$ [log($Z/Z_\odot$)] &
+log($Z/Z_\odot$) & $Z$ [log($Z/Z_\odot$)] & $Z$ [log($Z/Z_\odot$)] & Z\\ &
+Padova & BaSTI & MIST & Geneva & PARSEC & BPASS\\
+\hline
+1 &  0.0002  (-1.98) &  0.0003  (-1.82) & -2.50 & 0.0010 (-1.30) & 0.0001 (-2.18)& 0.0001\\
+2 &  0.0003  (-1.80) &  0.0006  (-1.52) & -2.25 & 0.0040 (-0.70) & 0.0002 (-1.88)& 0.0010\\
+3 &  0.0004  (-1.68) &  0.0010  (-1.30) & -2.00 & 0.0080 (-0.40) & 0.0005 (-1.48)& 0.0020\\
+4 &  0.0005  (-1.58) &  0.0020  (-1.00) & -1.75 & 0.0200 (+0.00) & 0.0010 (-1.18)& 0.0030\\
+5 &  0.0006  (-1.50) &  0.0040  (-0.70) & -1.50 & 0.0400 (+0.30) & 0.0020 (-0.88)& 0.0040\\
+6 &  0.0008  (-1.38) &  0.0080  (-0.40) & -1.25 &                & 0.0040 (-0.58)& 0.0060\\
+7 &  0.0010  (-1.28) &  0.0100  (-0.30) & -1.00 &                & 0.0060 (-0.40)& 0.0080\\
+8 &  0.0012  (-1.20) &  0.0200  (+0.00) & -0.75 &                & 0.0080 (-0.28)& 0.0100\\
+9 &  0.0016  (-1.07) &  0.0300  (+0.18) & -0.50 &                & 0.0100 (-0.18)& 0.0140\\
+10 & 0.0020  (-0.98) &  0.0400  (+0.30) & -0.25 &                & 0.0140 (-0.04)& 0.0200\\
+11 & 0.0025  (-0.89) &                  & +0.00 &                & 0.0170 (+0.05)& 0.0300\\
+12 & 0.0031  (-0.79) &                  & +0.25 &                & 0.0200 (+0.12)& 0.0400\\
+13 & 0.0039  (-0.69) &                  & +0.50 &                & 0.0300 (+0.30)& \\
+14 & 0.0049  (-0.59) &  & & & 0.0400 (+0.42) &\\
+15 & 0.0061  (-0.49) &  & & & 0.0600 (+0.60) &\\
+16 & 0.0077  (-0.39) &  &\\
+17 & 0.0096  (-0.30) &  &\\
+18 & 0.0120  (-0.20) &  &\\
+19 & 0.0150  (-0.10) &  &\\
+20 & 0.0190  (+0.00) & & \\
+21 & 0.0240  (+0.10) & & \\
+22 & 0.0300  (+0.20) & & \\
+\hline
+\end{tabular}
+\end{center}
+\tablecomments{$Z_\odot=0.0190$ for Padova, $Z_\odot=0.0200$ for BaSTI
+  and Geneva, $Z_\odot=0.0191$ for MIST, $Z_\odot=0.0152$ for PARSEC,
+  and $Z_\odot=0.020$ for BPASS.}
+\end{table}
+
+% \clearpage
+
+% \twocolumn
+
+% \begin{table}
+% \begin{center}
+% \caption{Emission lines included in FSPS}
+% \begin{tabular}{ccc}
+% \hline\hline
+% 923.148 & Ly 923 & \texttt{H  1 923.156A}\\
+% 926.249 & Ly 926 & \texttt{H  1 926.231A}\\
+% 930.751 & Ly 930 & \texttt{H  1 930.754A}\\
+% 937.814 & Ly 937 & \texttt{H  1 937.809A}\\
+% 949.742 & Ly-$\delta$ 949 & \texttt{H  1 949.749A}\\
+% 972.517 & Ly-$\gamma$ 972 & \texttt{H  1 972.543A}\\
+% 1025.728 & Ly-$\beta$ 1025 & \texttt{H  1 1025.73A}\\
+% 1215.6701 & Ly-$\alpha$ 1216 & \texttt{H  1 1215.68A}\\
+% 1640.42 & He{\sc\,ii} 1640 & \texttt{He 2 1640.00A}\\
+% 1661.241 & O{\sc\,iii}] 1661 & \texttt{O  3 1661.00A}\\
+% 1666.15 & O{\sc\,iii}] 1666 & \texttt{O  3 1666.00A}\\
+% 1812.205 & [Ne{\sc\,iii}] 1815 & \texttt{Ne 3 1815.00A}\\
+% 1854.716 & [Al{\sc\,iii}] 1855 & \texttt{Al 3 1855.00A}\\
+% 1862.7895 & [Al{\sc\,iii}] 1863 & \texttt{Al 3 1863.00A}\\
+% 1906.68 & [C{\sc\,iii}]  & \texttt{C  3 1907.00A}\\
+% 1908.73 & [C{\sc\,iii}]  & \texttt{C  3 1910.00A}\\
+% 2142.3 & N{\sc\,ii}] 2141 & \texttt{N  2 2141.00A}\\
+% 2321.664 & [O{\sc\,iii}] 2321 & \texttt{O  3 2321.00A}\\
+% 2324.21 & C{\sc\,ii}] 2326 & \texttt{C  2 2324.00A}\\
+% 2325.4 & C{\sc\,ii}] 2326 & \texttt{C  2 2325.00A}\\
+% 2326.11 & C{\sc\,ii}] 2326 & \texttt{C  2 2327.00A}\\
+% 2327.64 & C{\sc\,ii}] 2326 & \texttt{C  2 2328.00A}\\
+% 2328.83 & C{\sc\,ii}] 2326 & \texttt{C  2 2329.00A}\\
+% 2471.088 & [O{\sc\,ii}] 2471 & \texttt{O II 2471.00A}\\
+% 2661.146 & [Al{\sc\,ii}] 2660 & \texttt{Al 2 2660.00A}\\
+% 2669.951 & [Al{\sc\,ii}] 2670 & \texttt{Al 2 2670.00A}\\
+% 2796.352 & Mg{\sc\,ii} 2800 & \texttt{Mg 2 2795.53A}\\
+% 2803.53 & Mg{\sc\,ii} 2800 & \texttt{Mg 2 2802.71A}\\
+% 3109.98 & [Ar{\sc\,iii}] 3110 & \texttt{Ar 3 3109.00A}\\
+% 3343.5 & [Ne{\sc\,iii}] 3343 & \texttt{Ne 3 3343.00A}\\
+% 3722.75 & [S{\sc\,iii}] 3723 & \texttt{S  3 3722.00A}\\
+% 3727.1 & [O{\sc\,ii}] 3726 & \texttt{O II 3726.00A}\\
+% 3729.86 & [O{\sc\,ii}] 3729 & \texttt{O II 3729.00A}\\
+% 3798.987 & H 3798 & \texttt{H  1 3797.92A}\\
+% 3836.485 & H 3835 & \texttt{H  1 3835.40A}\\
+% 3869.86 & [Ne{\sc\,iii}] 3870 & \texttt{Ne 3 3869.00A}\\
+% 3889.75 & He{\sc\,i} 3889 & \texttt{He 1 3888.63A}\\
+% 3890.166 & H 3889 & \texttt{H  1 3889.07A}\\
+% 3968.59 & [Ne{\sc\,iii}] 3968 & \texttt{Ne 3 3968.00A}\\
+% 3971.198 & H 3970 & \texttt{H  1 3970.09A}\\
+% 4069.75 & [S{\sc\,ii}] 4070 & \texttt{S II 4070.00A}\\
+% 4077.5 & [S{\sc\,ii}] 4078 & \texttt{S II 4078.00A}\\
+% 4102.892 & H-$\delta$ 4102 & \texttt{H  1 4101.76A}\\
+% 4341.692 & H-$\gamma$ 4340 & \texttt{H  1 4340.49A}\\
+% 4364.435 & [O{\sc\,iii}] 4364 & \texttt{TOTL 4363.00A}\\
+% 4472.735 & He{\sc\,i} 4472 & \texttt{He 1 4471.47A}\\
+% 4622.864 & [C{\sc\,i}] 4621 & \texttt{C  1 4621.00A}\\
+% 4725.47 & [Ne{{\sc\,iv}}] 4720 & \texttt{Ne 4 4720.00A}\\
+% 4862.71 & H-$\beta$ 4861 & \texttt{H  1 4861.36A}\\
+% 4960.295 & [O{\sc\,iii}] 4960 & \texttt{O  3 4959.00A}\\
+% 5008.24 & [O{\sc\,iii}] 5007 & \texttt{O  3 5007.00A}\\
+% 5193.27 & [Ar{\sc\,iii}] 5193 & \texttt{Ar 3 5192.00A}\\
+% 5201.705 & [N{\sc\,i}] 5200 & \texttt{N  1 5200.00A} \\
+% \hline
+% \end{tabular}
+% \end{center}
+% \end{table}
+
+% \begin{table}
+% \begin{center}
+% \caption{Emission lines included in FSPS (cont.)}
+% \begin{tabular}{ccc}
+% \hline\hline
+% 5519.242 & [Cl{\sc\,iii}] 5518 & \texttt{Cl 3 5518.00A}\\
+% 5539.411 & [Cl{\sc\,iii}] 5538 & \texttt{Cl 3 5538.00A}\\
+% 5578.89 & [O{\sc\,i}] 5578 & \texttt{O  1 5577.00A}\\
+% 5756.19 & [N{\sc\,ii}] 5756 & \texttt{N  2 5755.00A}\\
+% 5877.249 & He{\sc\,i} 5877 & \texttt{He 1 5875.61A}\\
+% 6302.046 & [O{\sc\,i}] 6302 & \texttt{O  1 6300.00A}\\
+% 6313.81 & [S{\sc\,iii}] 6314 & \texttt{S  3 6312.00A}\\
+% 6365.535 & [O{\sc\,i}] 6365 & \texttt{O  1 6363.00A}\\
+% 6549.86 & [N{\sc\,ii}] 6549 & \texttt{N  2 6548.00A}\\
+% 6564.6 & H-$\alpha$ 6563 & \texttt{H  1 6562.85A}\\
+% 6585.27 & [N{\sc\,ii}] 6585 & \texttt{N  2 6584.00A}\\
+% 6679.995 & He{\sc\,i} 6680 & \texttt{He 1 6678.15A}\\
+% 6718.294 & [S{\sc\,ii}] 6717 & \texttt{S II 6716.00A}\\
+% 6732.673 & [S{\sc\,ii}] 6732 & \texttt{S II 6731.00A}\\
+% 7067.138 & He{\sc\,i} 7065 & \texttt{He 1 7065.18A}\\
+% 7137.77 & [Ar{\sc\,iii}] 7138 & \texttt{Ar 3 7135.00A}\\
+% 7321.94 & [O{\sc\,ii}] 7323 & \texttt{O II 7323.00A}\\
+% 7332.21 & [O{\sc\,ii}] 7332 & \texttt{O II 7332.00A}\\
+% 7334.17 & [Ar{{\sc\,iv}}] 7330 & \texttt{Ar 4 7331.00A}\\
+% 7753.19 & [Ar{\sc\,iii}] 7753 & \texttt{Ar 3 7751.00A}\\
+% 8581.06 & [Cl{\sc\,ii}] 8579 & \texttt{Cl 2 8579.00A}\\
+% 8729.53 & [C{\sc\,i}] 8727 & \texttt{C  1 8727.00A}\\
+% 9017.8 & Pa 9015 & \texttt{H  1 9014.92A}\\
+% 9071.1 & [S{\sc\,iii}] 9071 & \texttt{S  3 9069.00A}\\
+% 9126.1 & [Cl{\sc\,ii}] 9124 & \texttt{Cl 2 9124.00A}\\
+% 9232.2 & Pa 9229 & \texttt{H  1 9229.03A}\\
+% 9533.2 & [S{\sc\,iii}] 9533 & \texttt{S  3 9532.00A}\\
+% 9548.8 & Pa 9546 & \texttt{H  1 9545.99A}\\
+% 9852.96 & [C{\sc\,i}] 9850 & \texttt{TOTL 9850.00A}\\
+% 10052.6 & Pa-$\delta$ 10050 & \texttt{H  1 1.00494m}\\
+% 10323.32 & [S{\sc\,ii}] 10331 & \texttt{S  2 1.03300m}\\
+% 10832.057 & He{\sc\,i} 10829 & \texttt{He 1 1.08299m}\\
+% 10833.306 & He{\sc\,i} 10833 & \texttt{He 1 1.08303m}\\
+% 10941.17 & Pa-$\gamma$ 10939 & \texttt{H  1 1.09381m}\\
+% 12570.21 & [Fe{\sc\,ii}] 1.26$\mu\mathrm{m}$ & \texttt{Fe 2 1.25668m}\\
+% 12821.578 & Pa-$\beta$ 12819 & \texttt{H  1 1.28181m}\\
+% 17366.885 & Br 17363 & \texttt{H  1 1.73621m}\\
+% 18179.2 & Br 18175 & \texttt{H  1 1.81741m}\\
+% 18756.4 & Pa-$\alpha$ 18752 & \texttt{H  1 1.87511m}\\
+% 19450.89 & Br-$\delta$ 19447 & \texttt{H  1 1.94456m}\\
+% 21661.178 & Br-$\gamma$ 21657 & \texttt{H  1 2.16553m}\\
+% 26258.71 & Br-$\beta$ 26254 & \texttt{H  1 2.62515m}\\
+% 30392.02 & Pf 30386 & \texttt{H  1 3.03837m}\\
+% 32969.8 & Pf-$\delta$ 32964 & \texttt{H  1 3.29609m}\\
+% 37405.76 & Pf-$\gamma$ 37398 & \texttt{H  1 3.73953m}\\
+% 40522.79 & Br-$\alpha$ 40515 & \texttt{H  1 4.05116m}\\
+% 46537.8 & Pf-$\beta$ 46529 & \texttt{H  1 4.65250m}\\
+% 51286.5 & Hu-$\delta$ 51277 & \texttt{H  1 5.12725m}\\
+% 59082.2 & Hu-$\gamma$ 59071 & \texttt{H  1 5.90659m}\\
+% 69852.74 & [Ar{\sc\,ii}] 7$\mu\mathrm{m}$ & \texttt{Ar 2 6.98000m}\\
+% 74599.0 & Pf-$\alpha$ 74585 & \texttt{H  1 7.45781m}\\
+% 75024.4 & Hu-$\beta$ 75011 & \texttt{H  1 7.50043m}\\
+% 89913.8 & [Ar{\sc\,iii}] 9$\mu\mathrm{m}$ & \texttt{Ar 3 9.00000m}\\
+% \hline
+% \end{tabular}
+% \end{center}
+% \end{table}
+
+% \begin{table}
+% \begin{center}
+% \caption{Emission lines included in FSPS (cont.)}
+% \begin{tabular}{ccc}
+% \hline\hline
+% 105105.0 & [S{{\sc\,iv}}] 10.5$\mu\mathrm{m}$ & \texttt{S  4 10.5100m}\\
+% 123719.12 & Hu-$\alpha$ 12.4$\mu\mathrm{m}$ & \texttt{H  1 12.3685m}\\
+% 128135.48 & [Ne{\sc\,ii}] 12.8$\mu\mathrm{m}$ & \texttt{Ne 2 12.8100m}\\
+% 143678.0 & [Cl{\sc\,ii}] 14.4$\mu\mathrm{m}$ & \texttt{Cl 2 14.4000m}\\
+% 155551.0 & [Ne{\sc\,iii}] 15.5$\mu\mathrm{m}$ & \texttt{Ne 3 15.5500m}\\
+% 187130.0 & [S{\sc\,iii}] 18.7$\mu\mathrm{m}$ & \texttt{S  3 18.6700m}\\
+% 218302.0 & [Ar{\sc\,iii}] 22$\mu\mathrm{m}$ & \texttt{Ar 3 21.8300m}\\
+% 328709.0 & [P{\sc\,ii}] 32$\mu\mathrm{m}$ & \texttt{P  2 32.8700m}\\
+% 334800.0 & [S{\sc\,iii}] 33.5$\mu\mathrm{m}$ & \texttt{S  3 33.4700m}\\
+% 348140.0 & [Si{\sc\,ii}] 35$\mu\mathrm{m}$ & \texttt{Si 2 34.8140m}\\
+% 360135.0 & [Ne{\sc\,iii}] 36$\mu\mathrm{m}$ & \texttt{Ne 3 36.0140m}\\
+% 518145.0 & [O{\sc\,iii}] 52$\mu\mathrm{m}$ & \texttt{O  3 51.8000m}\\
+% 573300.0 & [N{\sc\,iii}] 57$\mu\mathrm{m}$ & \texttt{N  3 57.2100m}\\
+% 606420.0 & [P{\sc\,ii}] 60$\mu\mathrm{m}$ & \texttt{P  2 60.6400m}\\
+% 631852.0 & [O{\sc\,i}] 63$\mu\mathrm{m}$ & \texttt{O  1 63.1700m}\\
+% 883564.0 & [O{\sc\,iii}] 88$\mu\mathrm{m}$ & \texttt{O  3 88.3300m}\\
+% 1218000.0 & [N{\sc\,ii}] 122$\mu\mathrm{m}$ & \texttt{N  2 121.700m}\\
+% 1455350.0 & [O{\sc\,i}] 145$\mu\mathrm{m}$ & \texttt{O  1 145.530m}\\
+% 1576429.62 & [C{\sc\,ii}] 157.7$\mu\mathrm{m}$ & \texttt{C  2 157.600m}\\
+% 2053000.0 & [N{\sc\,ii}] 205$\mu\mathrm{m}$ & \texttt{N  2 205.400m}\\
+% 3703700.0 & [C{\sc\,i}] 369$\mu\mathrm{m}$ & \texttt{C  1 369.700m}\\
+% 6097000.0 & [C{\sc\,i}] 610$\mu\mathrm{m}$ & \texttt{C  1 609.200m} \\
+% \hline
+% \end{tabular}
+% \end{center}
+% \end{table}
+
+
+
+\end{document}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

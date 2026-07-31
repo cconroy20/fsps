@@ -150,3 +150,40 @@
 04/2/21
  - Release of v3.2
  - added THEMIS dust emission model
+
+
+07/30/27
+ - release of v4.0
+ - Updated the MIST isochrones to MIST v2.5 (Z_sun=0.0185 vs the old AGSS09
+   0.0134) and including alpha-enhanced versions.  See Dotter et al. 2025 and
+   Park et al. 2025 for details.
+ - Added C3K spectra, using C3K v2.3 with microturbulence=1, and including
+   alpha-enhanced versions for the low resolution spectra.  Also uses the MIST2
+   definition of solar metallicity, Z_sun=0.0185 (Dotter et al 25, Dotter et al
+   08). The low resolution C3K models are now the default.
+ - Different C3K libraries (e.g. for different resolution) are located in
+   different subdirectory along with their metadata. Note that an earlier
+   version of C3K solar scaled models (C3K/v1.3, R~3000) was introduced since
+   v3.2 but is now removed. These were located at C3K/c3k_afe+0.0*
+ - Significant updates to enable alpha-anhanced models when C3K_LR and MIST are
+   combined via the AFE_FLAG directive, and to use a per-library logg-logt grid
+   for the spectra.
+ - Add spectral resolution arrays for the stellar libraries.
+ - Added additional Roman, Rubin, and Euclid filters, courtesy of Chris Usher,
+   and updated JWST curves.
+ - Added the Reddy (2015) attenuation and Gordon (2003) SMC bar extinction.
+ - Added a dust3 parameter for dust that only attenuates old stars.
+- Fixed a bug in the attenuation of AGN torus emission by diffuse dust. (d9a387)
+ - Added optional ULX population spectra, courtesy of Kristin Garofali.
+ - Updated nebular line list to include some weaker lines.  These new lines only
+   have non-zero entries in the BPASS nebular tables, provided by Kristin Garofali
+ - Note that some intermediate updates since v3.2 introduced a bug in the
+   nebular grids; this was resolved in commit 5b87175
+ - Nebular lines now added with linewidths corresponding to the library
+   resolution at all wavelengths. (d0c88b4)
+ - Add a common SSP weights array, and store the young and old population
+   spectra from COMPSP in common variables.
+ - Switch to using the regular stellar grid for O-rich TPAGB stars by default.
+ - Turn off use of the WMBasic hot star library by default.
+ - Fixed a bug in the stellar remnant calculation for low IMF upper limits.
+   (82a8735)
