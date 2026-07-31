@@ -5,7 +5,7 @@ PROGRAM AUTOSPS
   
   IMPLICIT NONE
 
-  INTEGER :: z
+  INTEGER :: z, afe
   REAL(SP), DIMENSION(ntfull,nspec)  :: spec_ssp
   REAL(SP), DIMENSION(ntfull)        :: mass_ssp,lbol_ssp
   CHARACTER(100) :: file1='',aux
@@ -90,6 +90,7 @@ PROGRAM AUTOSPS
 
   ENDIF
 
+  pset%afeindx = 1
   IF (pset%sfh.NE.2) THEN
      !set metallicity
      WRITE(6,*)
@@ -139,10 +140,11 @@ PROGRAM AUTOSPS
   WRITE(6,'(" ---> Running model.......")')
   
   IF (pset%sfh.EQ.2) THEN
-     CALL SPS_SETUP(-1) 
+     CALL SPS_SETUP(-1)
+     afe=pset%afeindx
      DO z=1,nz
         pset%zmet=z
-        CALL SSP_GEN(pset,mass_ssp_zz(:,z),lbol_ssp_zz(:,z),spec_ssp_zz(:,:,z))
+        CALL SSP_GEN(pset,mass_ssp_zz(:,z,afe),lbol_ssp_zz(:,z,afe),spec_ssp_zz(:,:,z,afe))
      ENDDO
      CALL COMPSP(3,nz,file1,mass_ssp_zz,lbol_ssp_zz,spec_ssp_zz,pset,ocompsp)
   ELSE

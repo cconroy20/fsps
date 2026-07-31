@@ -6,16 +6,16 @@ MODULE SPS_VARS
   SAVE
 
 !-------set the spectral library------!
+#ifndef C3K_LR
+#define C3K_LR 1
+#endif
+
+#ifndef C3K_HR
+#define C3K_HR 0
+#endif
+
 #ifndef MILES
-#define MILES 1
-#endif
-
-#ifndef BASEL
-#define BASEL 0
-#endif
-
-#ifndef C3K
-#define C3K 0
+#define MILES 0
 #endif
 
 !------set the isochrone library------!
@@ -45,6 +45,13 @@ MODULE SPS_VARS
 #define BPASS 0
 #endif
 
+!------use alpha-enhanced models------!
+! note: setting this flag=1 requires lots of memory
+! check with a developer before attempting to use this feature
+#ifndef AFE_FLAG
+#define AFE_FLAG 0
+#endif
+  
 !------set the dust emission model------!
 #ifndef DL07
 #define DL07 1
@@ -99,6 +106,10 @@ MODULE SPS_VARS
   !otherwise use Lancon & Wood (2002) empirical spectra
   INTEGER, PARAMETER :: cstar_aringer=1
 
+  !Use Lancon & Wood (2002) empirical library for TP-AGB
+  !stars if this is turned on; else use main grid
+  INTEGER :: use_lw_tpagb=0
+  
   !turn on/off computation of light-weighted stellar ages
   !NB: currently only works with sfh=1,4 options
   INTEGER :: compute_light_ages=0
@@ -119,7 +130,7 @@ MODULE SPS_VARS
 
   !Use Eldridge 2017 WMBasic library for stars hotter than 25,000 K
   !or this value, whichever is larger
-  real(SP) :: logt_wmb_hot = 0.0
+  REAL(SP) :: logt_wmb_hot = 10.0
 
   !turn on/off a Cloudy-based nebular emission model (cont+lines)
   !if set to 2, then the nebular emission lines are added at the SSP
@@ -202,9 +213,9 @@ MODULE SPS_VARS
   !nebular emission lines should be set up on initialization
   INTEGER :: setup_nebular_gaussians=0
 
-  !Width of Gaussian kernels for initial nebular smoothing
-  !if setup_nebular_gaussians=1 (units=km/s if smooth_velocity=1)
-  REAL(SP) :: nebular_smooth_init=100.
+  !Minimum width of Gaussian kernels for initial nebular line widths,
+  !in units of pix/HWHM. Make larger for better sampling of the line.
+  REAL(SP) :: nebular_smooth_factor=1.
 
   !flag to include emission lines in the spectrum
   !if not set, the line luminosities are still computed
@@ -219,31 +230,41 @@ MODULE SPS_VARS
   CHARACTER(4), PARAMETER :: isoc_type = 'bsti'
   INTEGER, PARAMETER :: nt=94
   INTEGER, PARAMETER :: nz=10
+  INTEGER, PARAMETER :: nafe=1
 #elif (GENEVA)
   REAL(SP), PARAMETER :: zsol = 0.020
   CHARACTER(4), PARAMETER :: isoc_type = 'gnva'
   INTEGER, PARAMETER :: nt=51
   INTEGER, PARAMETER :: nz=5
+  INTEGER, PARAMETER :: nafe=1
 #elif (MIST)
-  REAL(SP), PARAMETER :: zsol = 0.0142
+  REAL(SP), PARAMETER :: zsol = 0.0185
   CHARACTER(4), PARAMETER :: isoc_type = 'mist'
   INTEGER, PARAMETER :: nt=107
-  INTEGER, PARAMETER :: nz=12
+  INTEGER, PARAMETER :: nz=13
+#if (AFE_FLAG)
+  INTEGER, PARAMETER :: nafe=5
+#else
+  INTEGER, PARAMETER :: nafe=1
+#endif
 #elif (PARSEC)
   REAL(SP), PARAMETER :: zsol = 0.01524
   CHARACTER(4), PARAMETER :: isoc_type = 'prsc'
   INTEGER, PARAMETER :: nt=93
   INTEGER, PARAMETER :: nz=15
+  INTEGER, PARAMETER :: nafe=1
 #elif (PADOVA)
   REAL(SP), PARAMETER :: zsol = 0.019
   CHARACTER(4), PARAMETER :: isoc_type = 'pdva'
   INTEGER, PARAMETER :: nt=94
   INTEGER, PARAMETER :: nz=22
+  INTEGER, PARAMETER :: nafe=1
 #elif (BPASS)
   REAL(SP), PARAMETER :: zsol = 0.020
   CHARACTER(4), PARAMETER :: isoc_type = 'bpss'
   INTEGER, PARAMETER :: nt=43
   INTEGER, PARAMETER :: nz=12
+  INTEGER, PARAMETER :: nafe=1
 #endif
 
   !flag indicating type of spectral library to use
@@ -251,32 +272,75 @@ MODULE SPS_VARS
 #if (BPASS)
   REAL(SP), PARAMETER :: zsol_spec = 0.020
   CHARACTER(5), PARAMETER :: spec_type = 'bpass'
+  INTEGER, PARAMETER :: ndim_logt=1, ndim_logg=1  ! There's no spec lib so let's not waste memory
   INTEGER, PARAMETER :: nzinit=1
   INTEGER, PARAMETER :: nspec=15000
+  INTEGER, PARAMETER :: nafeinit=1
+  CHARACTER(4), DIMENSION(nafeinit), PARAMETER :: afe_str=''
+  CHARACTER(2), DIMENSION(nafeinit), PARAMETER :: afe_str_iso=''
+  REAL(SP), DIMENSION(nafeinit), PARAMETER     :: afe_val=0.0
+  INTEGER, PARAMETER :: afe_sol_indx=1
 #else
 #if (MILES)
   REAL(SP), PARAMETER :: zsol_spec = 0.019
   CHARACTER(5), PARAMETER :: spec_type = 'miles'
+  INTEGER, PARAMETER :: ndim_logt=68, ndim_logg=19
   INTEGER, PARAMETER :: nzinit=5
   INTEGER, PARAMETER :: nspec=5994
-#elif (C3K)
-  REAL(SP), PARAMETER :: zsol_spec = 0.0134
-  CHARACTER(11), PARAMETER :: spec_type = 'c3k_afe+0.0'
+  INTEGER, PARAMETER :: nafeinit=1
+  CHARACTER(4), DIMENSION(nafeinit), PARAMETER :: afe_str=''
+  CHARACTER(2), DIMENSION(nafeinit), PARAMETER :: afe_str_iso='p0'
+  REAL(SP), DIMENSION(nafeinit), PARAMETER     :: afe_val=0.0
+  INTEGER, PARAMETER :: afe_sol_indx=1
+#elif (C3K_LR)
+  REAL(SP), PARAMETER     :: zsol_spec = 0.0185
+  CHARACTER(7), PARAMETER :: spec_type = 'c3k_lr'
+  INTEGER, PARAMETER      :: ndim_logt=80, ndim_logg=14
+  INTEGER, PARAMETER      :: nzinit=11
+  INTEGER, PARAMETER      :: nspec=1936
+#if (AFE_FLAG)
+  ! the assumption here is that the iso and spec afe
+  ! grids are identical
+  INTEGER, PARAMETER :: nafeinit=5
+  CHARACTER(2), DIMENSION(nafeinit), PARAMETER :: &
+       afe_str_iso=(/'m2','p0','p2','p4','p6'/)
+  CHARACTER(4), DIMENSION(nafeinit), PARAMETER :: &
+       afe_str=(/'-0.2','+0.0','+0.2','+0.4','+0.6'/)
+  REAL(SP), DIMENSION(nafeinit), PARAMETER     :: &
+       afe_val=(/-0.2,0.0,0.2,0.4,0.6/)
+  INTEGER, PARAMETER :: afe_sol_indx=2
+#else
+  INTEGER, PARAMETER :: nafeinit=1
+  CHARACTER(2), DIMENSION(nafeinit), PARAMETER :: afe_str_iso='p0'
+  CHARACTER(4), DIMENSION(nafeinit), PARAMETER :: afe_str='+0.0'
+  REAL(SP), DIMENSION(nafeinit), PARAMETER     :: afe_val=0.0
+  INTEGER, PARAMETER :: afe_sol_indx=1
+#endif  
+#elif (C3K_HR)
+  REAL(SP), PARAMETER :: zsol_spec = 0.0185
+  CHARACTER(7), PARAMETER :: spec_type = 'c3k_hr'
+  INTEGER, PARAMETER      :: ndim_logt=80, ndim_logg=14
   INTEGER, PARAMETER :: nzinit=11
-  INTEGER, PARAMETER :: nspec=11149
-#elif (BASEL)
-  REAL(SP), PARAMETER :: zsol_spec = 0.020
-  CHARACTER(5), PARAMETER :: spec_type = 'basel'
-  INTEGER, PARAMETER :: nzinit=6
-  INTEGER, PARAMETER :: nspec=1963
+  INTEGER, PARAMETER :: nspec=10992
+#if (AFE_FLAG)
+  INTEGER, PARAMETER :: nafeinit=5
+  CHARACTER(2), DIMENSION(nafeinit), PARAMETER :: &
+       afe_str_iso=(/'m2','p0','p2','p4','p6'/)
+  CHARACTER(4), DIMENSION(nafeinit), PARAMETER :: &
+       afe_str=(/'-0.2','+0.0','+0.2','+0.4','+0.6'/)
+  REAL(SP), DIMENSION(nafeinit), PARAMETER     :: &
+       afe_val=(/-0.2,0.0,0.2,0.4,0.6/)
+  INTEGER, PARAMETER :: afe_sol_indx=2
+#else
+  INTEGER, PARAMETER :: nafeinit=1
+  CHARACTER(2), DIMENSION(nafeinit), PARAMETER :: afe_str_iso='p0'
+  CHARACTER(4), DIMENSION(nafeinit), PARAMETER :: afe_str='+0.0'
+  REAL(SP), DIMENSION(nafeinit), PARAMETER     :: afe_val=0.0
+  INTEGER, PARAMETER :: afe_sol_indx=1
+#endif
 #endif
 #endif
 
-  !flag indicating the type of normalization used in the BaSeL library
-  !pdva = normalized to Padova isochrones
-  !wlbc = normalized to Teff-color relations
-  !NB: currently only the wlbc option is included in the public release
-  CHARACTER(4), PARAMETER :: basel_str = 'wlbc'
 
   !---------Dimensions of various arrays----------!
 
@@ -296,7 +360,7 @@ MODULE SPS_VARS
   !max number of lines in tabulated SFH, LSF
   INTEGER, PARAMETER :: ntabmax=20000
   !dimensions of BaSeL library
-  INTEGER, PARAMETER :: ndim_logt=68, ndim_logg=19
+  !INTEGER, PARAMETER :: ndim_logt=80, ndim_logg=14
   !number of O-rich, C-rich AGB spectra (and Aringer C-rich spec)
   INTEGER, PARAMETER :: n_agb_o=9, n_agb_c=5, n_agb_car=9
   !number of post-AGB spectra
@@ -322,11 +386,12 @@ MODULE SPS_VARS
 
   !------------IMF-related Constants--------------!
 
-  !Salpeter IMF index
-  REAL(SP) :: salp_ind= 2.35
   !min/max masses for the IMF
   REAL(SP) :: imf_lower_limit = 0.08, imf_upper_limit=120.
   REAL(SP) :: imf_lower_bound
+
+  !Salpeter IMF index
+  REAL(SP) :: salp_ind= 2.35
   !Chabrier 2003 IMF parameters
   REAL(SP), PARAMETER :: chab_mc=0.08, chab_sigma2=0.69*0.69,&
        chab_ind=1.3
@@ -443,13 +508,13 @@ MODULE SPS_VARS
   REAL(SP), DIMENSION(nspec)  :: vega_spec=0.,sun_spec=0.
   !common wavelength and frequench arrays
   REAL(SP), DIMENSION(nspec)  :: spec_lambda=0.,spec_nu=0.0
-  !common wavelength and frequency arrays for dummy resolution files
+  !common arrays for resolution (sigma in km/s)
   REAL(SP), DIMENSION(nspec)  :: spec_res=0.
 
   !arrays for stellar spectral information in HR diagram
   REAL(SP), DIMENSION(ndim_logt) :: speclib_logt=0.
   REAL(SP), DIMENSION(ndim_logg) :: speclib_logg=0.
-  REAL(KIND(1.0)), DIMENSION(nspec,nz,ndim_logt,ndim_logg) :: speclib=0.
+  REAL(KIND(1.0)), DIMENSION(nspec,nz,nafe,ndim_logt,ndim_logg) :: speclib=0.
 
   !arrays for the WMBasic grid
   REAL(SP), DIMENSION(ndim_wmb_logt) :: wmb_logt=0.
@@ -512,7 +577,7 @@ MODULE SPS_VARS
   REAL(SP), DIMENSION(nebnz)   :: nebem_logz=0.
   REAL(SP), DIMENSION(nebnage) :: nebem_age=0.
   REAL(SP), DIMENSION(nebnip)  :: nebem_logu=0.
-  !minimum resolution for nebular lines, based
+  !minimum resolution (sigma in AA) for nebular lines, based
   !on the resolution of the spectral libraries.
   REAL(SP), DIMENSION(nspec)   :: neb_res_min=0.0
   REAL(SP), DIMENSION(nspec,nemline) :: gaussnebarr=0.0
@@ -522,24 +587,24 @@ MODULE SPS_VARS
   REAL(SP), DIMENSION(nspec,nagndust) :: agndust_spec=0.
 
   !arrays for the isochrone data
-  REAL(SP), DIMENSION(nz,nt,nm) :: mact_isoc=0.,logl_isoc=0.,&
+  REAL(SP), DIMENSION(nz,nafe,nt,nm) :: mact_isoc=0.,logl_isoc=0.,&
        logt_isoc=0.,logg_isoc=0.,ffco_isoc=0.,phase_isoc=0.,&
        mini_isoc=0.,lmdot_isoc=0.
 
   !arrays holding the number of mass elements for each isochrone,
   !the age of each isochrone, and the metallicity of each isochrone
-  INTEGER, DIMENSION(nz,nt)  :: nmass_isoc=0
-  REAL(SP), DIMENSION(nz,nt) :: timestep_isoc=0.
+  INTEGER, DIMENSION(nz,nafe,nt)  :: nmass_isoc=0
+  REAL(SP), DIMENSION(nz,nafe,nt) :: timestep_isoc=0.
   REAL(SP), DIMENSION(nz)    :: zlegend=-99.
   REAL(SP), DIMENSION(nzinit):: zlegendinit=-99.
 
   !arrays for the full Z-dep SSP spectra
-  REAL(SP), DIMENSION(nspec,ntfull,nz) :: spec_ssp_zz=0.
-  REAL(SP), DIMENSION(ntfull,nz)       :: mass_ssp_zz=0.,lbol_ssp_zz=0.
-  REAL(SP), DIMENSION(ntfull)          :: time_full=0.
+  REAL(SP), DIMENSION(nspec,ntfull,nz,nafe) :: spec_ssp_zz=0.
+  REAL(SP), DIMENSION(ntfull,nz,nafe)       :: mass_ssp_zz=0.,lbol_ssp_zz=0.
+  REAL(SP), DIMENSION(ntfull)               :: time_full=0.
 
   !array for ssp weights
-  REAL(SP), DIMENSION(ntfull,nz)       :: weight_ssp=0.
+  REAL(SP), DIMENSION(ntfull,nz) :: weight_ssp=0.
 
   !array for young and old ages
   REAL(SP), DIMENSION(nspec) :: spec_young=0.,spec_old=0.
@@ -553,22 +618,22 @@ MODULE SPS_VARS
   REAL(SP), DIMENSION(nspec,nt_xrb,nz_xrb) :: spec_xrb=0.
   REAL(SP), DIMENSION(nt_xrb) :: ages_xrb=0.0
   REAL(SP), DIMENSION(nz_xrb) :: zmet_xrb=0.0
-  
+
   !------------Define TYPE structures-------------!
 
   !structure for the set of parameters necessary to generate a model
   TYPE PARAMS
      REAL(SP) :: pagb=1.0,dell=0.,delt=0.,fbhb=0.,sbss=0.,tau=1.0,&
           const=0.,tage=0.,fburst=0.,tburst=11.0,dust1=0.,dust2=0.,&
-          logzsol=0.,zred=0.,pmetals=0.02,imf1=1.3,imf2=2.3,imf3=2.3,&
+          logzsol=0.,afe=0.0,zred=0.,pmetals=0.02,imf1=1.3,imf2=2.3,imf3=2.3,&
           vdmc=0.08,dust_clumps=-99.,frac_nodust=0.,dust_index=-0.7,&
           dust_tesc=7.0,frac_obrun=0.,uvb=1.0,mwr=3.1,redgb=1.0,agb=1.0,&
           dust1_index=-1.0,mdave=0.5,sf_start=0.,sf_trunc=0.,sf_slope=0.,&
           duste_gamma=0.01,duste_umin=1.0,duste_qpah=3.5,fcstar=1.0,&
           masscut=150.0,sigma_smooth=0.,agb_dust=1.0,min_wave_smooth=1E3,&
           max_wave_smooth=1E4,gas_logu=-2.0,gas_logz=0.,igm_factor=1.0,&
-          fagn=0.0,agn_tau=10.0,frac_xrb=1.0,dust3=0.
-     INTEGER :: zmet=1,sfh=0,wgp1=1,wgp2=1,wgp3=1,evtype=-1
+          fagn=0.0,agn_tau=10.0,frac_xrb=1.0,dust3=0.0
+     INTEGER :: zmet=1,afeindx=1,sfh=0,wgp1=1,wgp2=1,wgp3=1,evtype=-1
      INTEGER, DIMENSION(nbands) :: mag_compute=1
      INTEGER, DIMENSION(nt) :: ssp_gen_age=1
      CHARACTER(50) :: imf_filename='', sfh_filename=''

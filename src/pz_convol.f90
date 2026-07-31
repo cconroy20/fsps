@@ -1,9 +1,10 @@
-SUBROUTINE PZ_CONVOL(yield,zave,spec_pz,lbol_pz,mass_pz)
+SUBROUTINE PZ_CONVOL(pset,zave,spec_pz,lbol_pz,mass_pz)
 
   !routine to weight SSP(Z) by the MDF: P(Z)=Z**zpow*EXP(-Z/p).  
   !The yield is the only input. 
-  !zpow is set in sps_vars.f90; zpow=1 yields a closed-box
-  !requires that all the SSPs are set up in the common block
+  !zpow is set in sps_vars.f90; zpow=1 yields a closed-box model.
+  !We ignore alpha-enhancement, using the given pset%afeindx for every metallicity.
+  !Requires that all the SSPs are set up in the common block
   !variables spec_ssp_zz, mass_ssp_zz, and lbol_ssp_zz
   !The average metallicity is returned as zave
 
@@ -11,14 +12,15 @@ SUBROUTINE PZ_CONVOL(yield,zave,spec_pz,lbol_pz,mass_pz)
   USE sps_utils, ONLY : linterp
   IMPLICIT NONE
   
-  INTEGER  :: i,t,z
+  INTEGER  :: i,t,z,afe
   REAL(SP) :: norm
   REAL(SP), INTENT(out), DIMENSION(nspec,ntfull) :: spec_pz
   REAL(SP), INTENT(out), DIMENSION(ntfull) :: mass_pz, lbol_pz
   REAL(SP), INTENT(out)    :: zave
   REAL(SP), DIMENSION(nz)  ::  pzz1
   REAL(SP), DIMENSION(100) :: pzz2,zz2,zzspec
-  REAL(SP), INTENT(in) :: yield
+  REAL(SP) :: yield
+  TYPE(PARAMS), INTENT(in) :: pset
 
   !-----------------------------------------------------------!
 
@@ -27,6 +29,9 @@ SUBROUTINE PZ_CONVOL(yield,zave,spec_pz,lbol_pz,mass_pz)
   mass_pz = 0.0
   norm    = 0.0
   zave    = 0.0
+
+  afe  = pset%afeindx
+  yield = pset%pmetals
 
   !if using the Padova+BaSeL model, just use the native Z grid
   IF (nz.EQ.22) THEN
@@ -37,15 +42,15 @@ SUBROUTINE PZ_CONVOL(yield,zave,spec_pz,lbol_pz,mass_pz)
      !integrate over P(Z)
      DO z=1,nz-1
         spec_pz = spec_pz + (LOG(zlegend(z+1))-LOG(zlegend(z))) * &
-             (pzz1(z+1)*spec_ssp_zz(:,:,z+1) + pzz1(z)*spec_ssp_zz(:,:,z))/2.
+             (pzz1(z+1)*spec_ssp_zz(:,:,z+1,afe) + pzz1(z)*spec_ssp_zz(:,:,z,afe))/2.
         lbol_pz = lbol_pz + (LOG(zlegend(z+1))-LOG(zlegend(z))) * &
-             (pzz1(z+1)*lbol_ssp_zz(:,z+1) + pzz1(z)*lbol_ssp_zz(:,z))/2.
+             (pzz1(z+1)*lbol_ssp_zz(:,z+1,afe) + pzz1(z)*lbol_ssp_zz(:,z,afe))/2.
         mass_pz = mass_pz + (LOG(zlegend(z+1))-LOG(zlegend(z))) * &
-             (pzz1(z+1)*mass_ssp_zz(:,z+1) + pzz1(z)*mass_ssp_zz(:,z))/2.
+             (pzz1(z+1)*mass_ssp_zz(:,z+1,afe) + pzz1(z)*mass_ssp_zz(:,z,afe))/2.
         norm    = norm + (LOG(zlegend(z+1))-LOG(zlegend(z))) * &
-          (pzz1(z+1)+pzz1(z))/2.
+             (pzz1(z+1)+pzz1(z))/2.
         zave    = zave + (LOG(zlegend(z+1))-LOG(zlegend(z))) * &
-          (pzz1(z+1)*zlegend(z+1)+pzz1(z)*zlegend(z))/2.
+             (pzz1(z+1)*zlegend(z+1)+pzz1(z)*zlegend(z))/2.
      ENDDO
      
   ELSE
@@ -64,7 +69,7 @@ SUBROUTINE PZ_CONVOL(yield,zave,spec_pz,lbol_pz,mass_pz)
            !interpolate
            DO z=1,100
               zzspec(z) = 10**linterp(log10(zlegend),&
-                   log10(spec_ssp_zz(i,t,:)),log10(zz2(z)))
+                   log10(spec_ssp_zz(i,t,:,afe)),log10(zz2(z)))
            ENDDO
            !integrate
            DO z=1,100-1

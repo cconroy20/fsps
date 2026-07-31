@@ -35,16 +35,19 @@ SUBROUTINE ADD_NEBULAR(pset,sspi,sspo,nebemline)
   !in sps_setup.f90 this makes the code much faster
   IF (setup_nebular_gaussians.EQ.0.AND.nebemlineinspec.EQ.1) THEN
      DO i=1,nemline
-        IF (smooth_velocity.EQ.1) THEN
-           !smoothing variable is km/s
-           dlam = nebem_line_pos(i)*pset%sigma_smooth/clight*1E13
-        ELSE
-           !smoothing variable is A
-           dlam = pset%sigma_smooth
-        ENDIF
+        !Smoothing is handled by smoothspec after the lines are added to the stars!
+      !   IF (smooth_velocity.EQ.1) THEN
+      !      !smoothing variable is km/s
+      !      dlam = nebem_line_pos(i)*pset%sigma_smooth/clight*1E13
+      !   ELSE
+      !      !smoothing variable is A
+      !      dlam = pset%sigma_smooth
+      !   ENDIF
         !broaden the line to at least the resolution element
         !of the spectrum (x2).
-        dlam = MAX(dlam,neb_res_min(i)*2)
+        !dlam = MAX(dlam,neb_res_min(i)*2)
+        !broaden the line by the library resolution at this wavelength
+        dlam = neb_res_min(i)
         gaussnebarr(:,i) = 1/SQRT(2*mypi)/dlam*&
              EXP(-(spec_lambda-nebem_line_pos(i))**2/2/dlam**2)  / &
              clight*nebem_line_pos(i)**2
