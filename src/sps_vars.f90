@@ -296,7 +296,7 @@ MODULE SPS_VARS
   REAL(SP), PARAMETER     :: zsol_spec = 0.0185
   CHARACTER(7), PARAMETER :: spec_type = 'c3k_lr'
   INTEGER, PARAMETER      :: ndim_logt=80, ndim_logg=14
-  INTEGER, PARAMETER      :: nzinit=11
+  INTEGER, PARAMETER      :: nzinit=13
   INTEGER, PARAMETER      :: nspec=1936
 #if (AFE_FLAG)
   ! the assumption here is that the iso and spec afe
@@ -320,7 +320,7 @@ MODULE SPS_VARS
   REAL(SP), PARAMETER :: zsol_spec = 0.0185
   CHARACTER(7), PARAMETER :: spec_type = 'c3k_hr'
   INTEGER, PARAMETER      :: ndim_logt=80, ndim_logg=14
-  INTEGER, PARAMETER :: nzinit=11
+  INTEGER, PARAMETER :: nzinit=13
   INTEGER, PARAMETER :: nspec=10992
 #if (AFE_FLAG)
   INTEGER, PARAMETER :: nafeinit=5
