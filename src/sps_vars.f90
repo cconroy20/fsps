@@ -404,30 +404,58 @@ MODULE SPS_VARS
   !-------------Physical Constants---------------!
   !-------in cgs units where applicable----------!
 
-  !constant such that g = C MT^4/L
-  REAL(SP), PARAMETER :: gsig4pi = 1/4.13E10
-  !pi
-  REAL(SP), PARAMETER :: mypi    = 3.14159265
-  !hc/k (Ang*K)
-  REAL(SP), PARAMETER :: hck     = 1.43878E8
-  !speed of light (Ang/s)
-  REAL(SP), PARAMETER :: clight  = 2.9979E18
-  !hc^2/sigma_SB
-  REAL(SP), PARAMETER :: hc2sig  = 0.105021
-  !Solar mass in grams
-  REAL(SP), PARAMETER :: msun    = 1.989E33
-  !Solar radius in cm
-  REAL(SP), PARAMETER :: rsun    = 6.955E10
-  !Solar luminosity in erg/s
-  REAL(SP), PARAMETER :: lsun    = 3.839E33
-  !Newton's constant
-  REAL(SP), PARAMETER :: newton  = 6.67428E-8
+  ! ---------------------------------------------!
+  ! Fundamental Constants (CODATA 2018)
+  ! ---------------------------------------------!
+  ! Speed of light in Angstrom/s
+  REAL(SP), PARAMETER :: clight = 2.99792458e18_sp
+  ! Boltzmann constant in erg/K
+  REAL(SP), PARAMETER :: boltz  = 1.380649e-16_sp
+  ! Planck constant in erg s
+  REAL(SP), PARAMETER :: hplanck = 6.62607015e-27_sp
+  ! Gravitational constant in cm^3 g^-1 s^-2 (Recommended Value)
+  REAL(SP), PARAMETER :: newton = 6.6743e-8_sp
+
+  ! ---------------------------------------------!
+  ! Astronomical Constants (IAU 2015 Resolution B3)
+  ! ---------------------------------------------!
+  ! Nominal Solar Luminosity (erg/s) - Exact
+  REAL(SP), PARAMETER :: lsun = 3.828e33_sp
+  ! Nominal Solar Mass Parameter (cm^3 s^-2) - Exact
+  REAL(SP), PARAMETER :: gmsun = 1.3271244e26_sp
+  ! Derived Solar Mass (g)
+  REAL(SP), PARAMETER :: msun = gmsun / newton
+  ! Derived Solar Radius (cm)
+  REAL(SP), PARAMETER :: rsun = 6.957e10_sp
+
+  ! ---------------------------------------------!
+  ! Derived Constants
+  ! ---------------------------------------------!
+  ! Pi (Exact to precision)
+  REAL(SP), PARAMETER :: mypi = ACOS(-1.0_sp)
+
+  ! Stefan-Boltzmann constant in cgs: sigma = (2 * pi^5 * k^4) / (15 * c^2 * h^3)
+  REAL(SP), PARAMETER :: sigma_sb = (2.0_sp * mypi**5 * boltz**4) / &
+                                    (15.0_sp * (clight * 1.0e-8_sp)**2 * hplanck**3)
+
+  !hc^2/sigma_SB 0.105021
+  REAL(SP), PARAMETER :: hc2sig  = hplanck * (clight*1.0e-8_sp)**2 / sigma_sb
+
+  !hc/k (Ang*K) 1.4387E8
+  REAL(SP), PARAMETER :: hck     = (hplanck * clight) / boltz
+
+  ! gsig4pi corresponds to K = 4 * pi * G * sigma
+  ! Such that g = K * M * T^4 / L
+  REAL(SP), PARAMETER :: K_const = 4.0_SP * mypi * newton * sigma_sb
+  ! FSPS uses gsig4pi in a specific combination of solar units.
+  ! g = (K_const * M_sol * T^4) / L_sol * (M/M_sol) / (L/L_sol)
+  ! The code expects gsig4pi to be the coefficient for solar units:
+  REAL(SP), PARAMETER :: gsig4pi = K_const * msun / lsun
+
   !cm in a pc
   REAL(SP), PARAMETER :: pc2cm   = 3.08568E18
   !seconds per year
   REAL(SP), PARAMETER :: yr2sc   = 3.15569E7
-  !Planck's constant
-  REAL(SP), PARAMETER :: hplank  = 6.6261E-27
   !constant to convert mags into propert units (see getmags.f90)
   REAL(SP), PARAMETER :: mag2cgs = LOG10(lsun/4.0/mypi/(pc2cm*pc2cm)/100.0)
 

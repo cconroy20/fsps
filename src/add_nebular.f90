@@ -66,7 +66,7 @@ SUBROUTINE ADD_NEBULAR(pset,sspi,sspo,nebemline)
      !some fraction of the stars are "runaways" which means
      !that they are not embedded in the HII region
      qq = tsum(spec_nu(:whlylim),sspi(:whlylim,t)/spec_nu(:whlylim))/&
-          hplank*lsun
+          hplanck*lsun
      qq = qq * (1-pset%frac_obrun)
 
      !set up age interpolant

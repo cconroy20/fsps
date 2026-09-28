@@ -280,8 +280,8 @@ subroutine csp_gen(mass_ssp, lbol_ssp, spec_ssp, &
   lbol_csp = log10(sum(10**lbol_ssp * total_weights))
 
   ! Here we add young and old spectra with dust.
-  if (((pset%dust1.gt.tiny_number).or.(pset%dust2.gt.tiny_number).or.(dust_type.eq.3))&
-       .and.(compute_light_ages.eq.0)) then
+  if (((pset%dust1.gt.tiny_number).or.(pset%dust2.gt.tiny_number).or.(pset%dust3.gt.tiny_number)&
+       .or.(dust_type.eq.3)).and.(compute_light_ages.eq.0)) then
      call add_dust(pset, spec_young, spec_old, spec_csp, mdust_csp, ncsp1, ncsp2, emlin_csp)
 
   else

@@ -7,13 +7,13 @@ SUBROUTINE ADD_DUST(pset,csp1,csp2,specdust,mdust,ncsp1,ncsp2,nebdust)
   !   A `PARAMS` structure containing the dust parameters
   !
   !  csp1:
-  !   The spectrum of the young stars
+  !   The spectrum of the young stars (including frac_obrun scaling of the ionizing continuum)
   !
   !  csp2:
   !   The spectrum of the old stars
   !
   !  ncsp1:
-  !   The nebular fluxes for the young stars
+  !   The nebular fluxes for the young stars (including frac_obrun scaling)
   !
   !  ncsp2:
   !   The nebular fluxes for the old stars
@@ -42,8 +42,8 @@ SUBROUTINE ADD_DUST(pset,csp1,csp2,specdust,mdust,ncsp1,ncsp2,nebdust)
   REAL(SP), DIMENSION(nemline), INTENT(in) :: ncsp1,ncsp2
   REAL(SP), DIMENSION(nemline), INTENT(out) :: nebdust
   INTEGER :: i,qlo,ulo,iself=0
-  REAL(SP), DIMENSION(nspec)  :: diff_dust,tau_diff,cspi
-  REAL(SP), DIMENSION(nemline)  :: diff_dust_neb,ncspi
+  REAL(SP), DIMENSION(nspec)  :: diff_dust,tau_diff,cspi,cspy
+  REAL(SP), DIMENSION(nemline)  :: tau_diff_neb,ncspi
   REAL(SP), DIMENSION(nspec)  :: nu,dumin,dumax
   REAL(SP), DIMENSION(nspec)  :: mduste,duste,oduste,sduste,tduste
   REAL(SP) :: clump_ave,lboln,lbold,labs,gamma,norm,dq,du
@@ -73,51 +73,84 @@ SUBROUTINE ADD_DUST(pset,csp1,csp2,specdust,mdust,ncsp1,ncsp2,nebdust)
      STOP
   ENDIF
 
-  IF (pset%frac_obrun.LT.0.0.OR.pset%frac_obrun.GT.1.0.OR.&
+   IF (pset%frac_obrun.LT.0.0.OR.pset%frac_obrun.GT.1.0.OR.&
        pset%frac_nodust.LT.0.0.OR.pset%frac_nodust.GT.1.0) THEN
      WRITE(*,*) 'ADD_DUST ERROR: frac_obrun and/or frac_nodust out of bounds'
      STOP
-  ENDIF
+   ENDIF
+
+   ! Guard against cases where the frac_obrun math does not work out
+   IF (pset%frac_obrun.GT.tiny_number.AND.pset%frac_obrun.LT.1.0) THEN
+      IF (pset%dust1.GT.tiny_number.OR.pset%dust2.GT.tiny_number.OR.pset%dust3.GT.tiny_number.OR.dust_type.EQ.3) THEN
+         IF (nebemlineinspec.EQ.1.AND.add_neb_emission.EQ.1) THEN
+           WRITE(*,*) 'ADD_DUST ERROR: dust attenuation is not implemented for 0 < frac_obrun < 1 if the emission lines are added to the spectra directly.'
+           STOP
+         ENDIF
+      ENDIF
+   ENDIF
+
 
   !---------------------------------------------------------------!
   !----------------------Add dust absorption----------------------!
   !---------------------------------------------------------------!
 
   !compute attenuation curve for diffuse dust
-  tau_diff = attn_curve(spec_lambda,dust_type,pset)
+  tau_diff = attn_curve(spec_lambda, dust_type, pset)
 
+  ! Get the young star spectrum including *all* of the ionizing continuum, including runaways.
+  ! note this assumes that all the spectra composing csp1 had the same fraction
+  ! of the ionizing spectrum removed (i.e. that they are all < 20Myr old)
+  cspy = csp1
+  if (pset%frac_obrun.GT.tiny_number) THEN
+     cspy(1:whlylim) = csp1(1:whlylim) / pset%frac_obrun
+  ENDIF
+
+  ! --- Attenuate the stars ---
   !combine old and young stars, attenuating the young
   !with a fixed power-law attn curve, and allowing a fraction
   !of the young stars to be dust-free ("OB runaways")
   !and an extra attenuation towards old stars (patchy dust)
-  cspi = csp1 * EXP(-pset%dust1*(spec_lambda/5500.)**(pset%dust1_index))*&
-       (1-pset%frac_obrun) + csp1*pset%frac_obrun + &
-       csp2 * EXP(-pset%dust3*tau_diff)
 
+  ! Start with the embedded young stars
+  cspi = cspy * (1-pset%frac_obrun)
+  cspi(1:whlylim) = tiny_number  ! they lost their ionizing spectrum
+  cspi = cspi * EXP(-pset%dust1*(spec_lambda/5500.)**(pset%dust1_index))
+  ! Add the young stars that aren't embedded
+  ! Note this is incorrect if the young spectrum has emission lines (nebemlineinspec=1)
+  cspi = cspi + cspy * pset%frac_obrun
+  ! Add the old stars with any extra attenuation
+  cspi = cspi + csp2 * EXP(-pset%dust3*tau_diff)
+  ! Now apply diffuse dust
   !normalize diffuse dust curve unless Witt & Gordon
   IF (dust_type.EQ.3) THEN
     diff_dust = EXP(-tau_diff)
   ELSE
     diff_dust = EXP(-pset%dust2 * tau_diff)
   ENDIF
-
   !allow a fraction of the diffuse dust spectrum to be dust-free
-  specdust  = (1-pset%frac_nodust) * cspi*diff_dust + &
-               cspi*pset%frac_nodust
+  specdust  = (1-pset%frac_nodust) * cspi * diff_dust + &
+               pset%frac_nodust * cspi
 
-  !as above, for nebular line luminosities
-  diff_dust_neb = linterparr(spec_lambda,diff_dust,nebem_line_pos)
-  ncspi = ncsp1 * EXP(-pset%dust1*(nebem_line_pos/5500.)**(pset%dust1_index))*&
-       (1-pset%frac_obrun) + ncsp1*pset%frac_obrun + ncsp2
-  nebdust  = ncspi*diff_dust_neb*(1-pset%frac_nodust) + &
-       ncspi*pset%frac_nodust
+  ! --- As above, for nebular line luminosities ---
+  ! Note here we don't have to account for the line emission from the runaways
+  ! Set up the diffuse dust attenuation at the wavelength of the lines
+  tau_diff_neb = linterparr(spec_lambda,tau_diff,nebem_line_pos)
+  ! Add the embedded young stars. The line luminosities have already been scaled by (1-frac_obrun) in add_nebular
+  ncspi = ncsp1 * EXP(-pset%dust1*(nebem_line_pos/5500.)**(pset%dust1_index))
+  ! the runaways don't produce nebular emission
+  ! ncspi = ncspi + 0
+  ! Add the lines from the older stars, with the extra attenuation of those stars
+  ncspi = ncspi + ncsp2 * EXP(-pset%dust3*tau_diff_neb)
+  ! Now apply the diffuse dust attenuation to the nebular lines
+  nebdust = (1-pset%frac_nodust) * ncspi * EXP(-pset%dust2 * tau_diff_neb) + &
+            pset%frac_nodust * ncspi
 
   !---------------------------------------------------------------!
   !----------------------Add dust emission------------------------!
   !---------------------------------------------------------------!
 
-  ! The dust spectrum is computed according to Draine & Li 2007
-  ! we are computing the integral of the dust spectrum over P(U)dU
+  ! The dust spectrum is computed according to Draine & Li 2007.
+  ! We are computing the integral of the dust spectrum over P(U)dU
   ! by considering two components, a delta function at Umin and
   ! a power-law distribution from Umin to Umax=1E6 and alpha=2
   ! the relative weights of the two components are given by gamma
@@ -165,7 +198,7 @@ SUBROUTINE ADD_DUST(pset,csp1,csp2,specdust,mdust,ncsp1,ncsp2,nebdust)
         mduste = (1-gamma)*dumin + gamma*dumax
         mduste = MAX(mduste,tiny_number)
 
-        !normalize the dust emission to the luminosity absorbed by 
+        !normalize the dust emission to the luminosity absorbed by
         !the dust, i.e., demand that Lbol remains the same
         labs = (lboln-lbold)
         norm   = TSUM(nu,mduste)
@@ -191,8 +224,8 @@ SUBROUTINE ADD_DUST(pset,csp1,csp2,specdust,mdust,ncsp1,ncsp2,nebdust)
 
         ENDDO
 
-        !this factor assumes Md/Mh=0.01 (appropriate for the 
-        !MW3.1 models), and includes conversion factors from 
+        !this factor assumes Md/Mh=0.01 (appropriate for the
+        !MW3.1 models), and includes conversion factors from
         !Jy -> Lsun and the hydrogen mass in solar units
         mdust = 3.21E-3 / 4/mypi * labs/norm
 
